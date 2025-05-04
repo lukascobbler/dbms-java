@@ -49,6 +49,14 @@ public class Page {
         setBytes(offset, string.getBytes(CHARSET));
     }
 
+    public boolean getBoolean(int offset) {
+        return byteBuffer.get(offset) == 1;
+    }
+
+    public void setBoolean(int offset, boolean bool) {
+        byteBuffer.put(offset, (byte) (bool ? 1 : 0 ));
+    }
+
     public static int maxLength(int strlen) {
         float bytesPerChar = CHARSET.newEncoder().maxBytesPerChar();
         return Integer.BYTES + (strlen * (int)bytesPerChar);

@@ -28,21 +28,21 @@ public class FileMgr {
         }
     }
 
-    public synchronized void read(BlockId blockId, Page page) {
+    public synchronized int read(BlockId blockId, Page page) {
         try {
             RandomAccessFile f = getFile(blockId.getFilename());
             f.seek(blockId.getBlockNum() * blockSize);
-            f.getChannel().read(page.contents());
+            return f.getChannel().read(page.contents());
         } catch (IOException e) {
             throw new RuntimeException("cannot read block " + blockId);
         }
     }
 
-    public synchronized void write(BlockId blockId, Page page) {
+    public synchronized int write(BlockId blockId, Page page) {
         try {
             RandomAccessFile f = getFile(blockId.getFilename());
             f.seek(blockId.getBlockNum() * blockSize);
-            f.getChannel().write(page.contents());
+            return f.getChannel().write(page.contents());
         } catch (IOException e) {
             throw new RuntimeException("cannot write block " + blockId);
         }
