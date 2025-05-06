@@ -30,8 +30,8 @@ public class FileMgr {
 
     public synchronized int read(BlockId blockId, Page page) {
         try {
-            RandomAccessFile f = getFile(blockId.getFilename());
-            f.seek(blockId.getBlockNum() * blockSize);
+            RandomAccessFile f = getFile(blockId.filename());
+            f.seek(blockId.blockNum() * blockSize);
             return f.getChannel().read(page.contents());
         } catch (IOException e) {
             throw new RuntimeException("cannot read block " + blockId);
@@ -40,8 +40,8 @@ public class FileMgr {
 
     public synchronized int write(BlockId blockId, Page page) {
         try {
-            RandomAccessFile f = getFile(blockId.getFilename());
-            f.seek(blockId.getBlockNum() * blockSize);
+            RandomAccessFile f = getFile(blockId.filename());
+            f.seek(blockId.blockNum() * blockSize);
             return f.getChannel().write(page.contents());
         } catch (IOException e) {
             throw new RuntimeException("cannot write block " + blockId);
@@ -53,8 +53,8 @@ public class FileMgr {
         BlockId blockId = new BlockId(filename, newBlockNum);
         byte[] bytes = new byte[blockSize];
         try {
-            RandomAccessFile f = getFile(blockId.getFilename());
-            f.seek(blockId.getBlockNum() * blockSize);
+            RandomAccessFile f = getFile(blockId.filename());
+            f.seek(blockId.blockNum() * blockSize);
             f.write(bytes);
         } catch (IOException e) {
             throw new RuntimeException("cannot append block " + blockId);

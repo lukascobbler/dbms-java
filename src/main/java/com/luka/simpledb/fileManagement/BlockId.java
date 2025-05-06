@@ -1,30 +1,8 @@
 package com.luka.simpledb.fileManagement;
 
-import java.util.Objects;
-
-public class BlockId {
-    private final String filename;
-    private final int blockNum;
-
-    public BlockId(String filename, int blockNum) {
-        this.blockNum = blockNum;
-        this.filename = filename;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public int getBlockNum() {
-        return blockNum;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        BlockId blockId1 = (BlockId) o;
-        return blockNum == blockId1.blockNum && Objects.equals(filename, blockId1.filename);
-    }
+/// Simple record representing a block of a file.
+/// Does not care about system's block size.
+public record BlockId(String filename, int blockNum) {
 
     @Override
     public String toString() {

@@ -30,7 +30,7 @@ class LogIterator implements Iterator<byte[]> {
     /// OR if the block id count hasn't reached the first block in the log file
     /// (there are more blocks in the log file).
     public boolean hasNext() {
-        return currentPos < fileMgr.getBlockSize() || blockId.getBlockNum() > 0;
+        return currentPos < fileMgr.getBlockSize() || blockId.blockNum() > 0;
     }
 
     @Override
@@ -42,7 +42,7 @@ class LogIterator implements Iterator<byte[]> {
         // that means we need to go to the previous block to continue
         // reading from right to left
         if (currentPos == fileMgr.getBlockSize()) {
-            blockId = new BlockId(blockId.getFilename(), blockId.getBlockNum() - 1);
+            blockId = new BlockId(blockId.filename(), blockId.blockNum() - 1);
             moveToBlock(blockId); 
         }
 
