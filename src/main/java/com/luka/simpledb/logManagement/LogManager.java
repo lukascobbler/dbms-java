@@ -1,7 +1,7 @@
 package com.luka.simpledb.logManagement;
 
 import com.luka.simpledb.fileManagement.BlockId;
-import com.luka.simpledb.fileManagement.FileMgr;
+import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.fileManagement.Page;
 
 import java.util.Iterator;
@@ -9,8 +9,8 @@ import java.util.Iterator;
 /// The log management class responsible for writing logs
 /// to the log file when necessary. It is responsible for
 /// initializing the log file, and keeping it consistent.
-public class LogMgr {
-    private final FileMgr fileMgr;
+public class LogManager {
+    private final FileManager fileManager;
     private final String logFile;
     private final Page logPage;
     private BlockId currentBlockId;
@@ -22,14 +22,14 @@ public class LogMgr {
     /// log page the size of system's block size and appending
     /// an empty block to the log file if it's empty or reading
     /// the last block into memory if it's not empty.
-    public LogMgr(FileMgr fileMgr, String logFile) {
-        this.fileMgr = fileMgr;
+    public LogManager(FileManager fileManager, String logFile) {
+        this.fileManager = fileManager;
         this.logFile = logFile;
 
-        byte[] b = new byte[fileMgr.getBlockSize()];
+        byte[] b = new byte[fileManager.getBlockSize()];
         logPage = new Page(b);
 
-        int logSize = fileMgr.lengthInBlocks(logFile);
+        int logSize = fileManager.lengthInBlocks(logFile);
 
         if (logSize == 0) {
             // if the log file is empty, initialize it with a block
@@ -39,7 +39,7 @@ public class LogMgr {
         } else {
             // if the log file is not empty, read the last block into a page
             currentBlockId = new BlockId(logFile, logSize - 1);
-            fileMgr.read(currentBlockId, logPage);
+            fileManager.read(currentBlockId, logPage);
         }
     }
 
@@ -58,7 +58,7 @@ public class LogMgr {
     /// current block id.
     public Iterator<byte[]> iterator() {
         flush();
-        return new LogIterator(fileMgr, currentBlockId);
+        return new LogIterator(fileManager, currentBlockId);
     }
 
     /// Appends a new log record to the log file.
@@ -113,9 +113,9 @@ public class LogMgr {
     /// @return The new BlockId representing the last block
     /// in the log file.
     private BlockId appendNewBlock() {
-        BlockId newBlockId = fileMgr.append(logFile);
-        logPage.setInt(0, fileMgr.getBlockSize());
-        fileMgr.write(newBlockId, logPage);
+        BlockId newBlockId = fileManager.append(logFile);
+        logPage.setInt(0, fileManager.getBlockSize());
+        fileManager.write(newBlockId, logPage);
         return newBlockId;
     }
 
@@ -123,7 +123,7 @@ public class LogMgr {
     /// and updates the `lastSavedLSN` to be equal
     /// to the `latestLSN`.
     private void flush() {
-        fileMgr.write(currentBlockId, logPage);
+        fileManager.write(currentBlockId, logPage);
         lastSavedLSN = latestLSN;
     }
 }

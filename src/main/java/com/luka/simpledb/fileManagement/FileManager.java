@@ -10,7 +10,7 @@ import java.util.Objects;
 /// The class that is the main API interface to the operating
 /// system's files. Also called a Pager. Works exclusively with
 /// blocks and pages, not direct bytes.
-public class FileMgr {
+public class FileManager {
     private final File dbDirectory;
     private final int blockSize;
     private final boolean isNew;
@@ -19,7 +19,7 @@ public class FileMgr {
     /// The constructor initializes the directory where the database files will
     /// be stored by removing all files that start with "temp", or if the directory
     /// doesn't exist, it creates it.
-    public FileMgr(File dbDirectory, int blockSize) {
+    public FileManager(File dbDirectory, int blockSize) {
         this.dbDirectory = dbDirectory;
         this.blockSize = blockSize;
         isNew = !dbDirectory.exists();

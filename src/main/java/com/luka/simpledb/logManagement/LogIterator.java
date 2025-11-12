@@ -1,25 +1,25 @@
 package com.luka.simpledb.logManagement;
 
 import com.luka.simpledb.fileManagement.BlockId;
-import com.luka.simpledb.fileManagement.FileMgr;
+import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.fileManagement.Page;
 
 import java.util.Iterator;
 
 /// Class responsible for iterating over logs in the log file.
 class LogIterator implements Iterator<byte[]> {
-    private final FileMgr fileMgr;
+    private final FileManager fileManager;
     private BlockId blockId;
     private final Page page;
     private int currentPos;
 
     /// Initializes the iterator to a starting block id and prepares
     /// the current position variable for reverse reading of records.
-    public LogIterator(FileMgr fileMgr, BlockId blockId) {
-        this.fileMgr = fileMgr;
+    public LogIterator(FileManager fileManager, BlockId blockId) {
+        this.fileManager = fileManager;
         this.blockId = blockId;
 
-        byte[] b = new byte[fileMgr.getBlockSize()];
+        byte[] b = new byte[fileManager.getBlockSize()];
         page = new Page(b);
         moveToBlock(blockId);
     }
@@ -30,7 +30,7 @@ class LogIterator implements Iterator<byte[]> {
     /// OR if the block id count hasn't reached the first block in the log file
     /// (there are more blocks in the log file).
     public boolean hasNext() {
-        return currentPos < fileMgr.getBlockSize() || blockId.blockNum() > 0;
+        return currentPos < fileManager.getBlockSize() || blockId.blockNum() > 0;
     }
 
     @Override
@@ -41,7 +41,7 @@ class LogIterator implements Iterator<byte[]> {
         // if the current position reached the system's block size
         // that means we need to go to the previous block to continue
         // reading from right to left
-        if (currentPos == fileMgr.getBlockSize()) {
+        if (currentPos == fileManager.getBlockSize()) {
             blockId = new BlockId(blockId.filename(), blockId.blockNum() - 1);
             moveToBlock(blockId); 
         }
@@ -57,7 +57,7 @@ class LogIterator implements Iterator<byte[]> {
     /// Reads the provided block id to the iterator's internal page,
     /// and sets the current position to be the boundary of that page.
     private void moveToBlock(BlockId blockId) {
-        fileMgr.read(blockId, page);
+        fileManager.read(blockId, page);
         currentPos = page.getInt(0);
     }
 }

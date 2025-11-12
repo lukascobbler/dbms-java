@@ -1,7 +1,7 @@
 package com.luka.runnableExamples.simpledb;
 
 import com.luka.simpledb.fileManagement.BlockId;
-import com.luka.simpledb.fileManagement.FileMgr;
+import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.fileManagement.Page;
 
 import java.io.File;
@@ -9,7 +9,7 @@ import java.io.File;
 public class Main {
     public static void main(String[] args) {
         File dbDir = new File("./db_test1");
-        FileMgr mgr = new FileMgr(dbDir, 4096);
+        FileManager mgr = new FileManager(dbDir, 4096);
 
         BlockId b1 = new BlockId("temp_table1", 0);
         Page p1 = new Page(mgr.getBlockSize());
