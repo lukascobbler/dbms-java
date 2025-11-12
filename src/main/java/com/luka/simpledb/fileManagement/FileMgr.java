@@ -32,7 +32,7 @@ public class FileMgr {
 
         for (String filename : Objects.requireNonNull(dbDirectory.list())) {
             if (filename.startsWith("temp")) {
-                if (new File(dbDirectory, filename).delete()) {
+                if (!new File(dbDirectory, filename).delete()) {
                     throw new RuntimeException("could not delete temporary file: " + filename);
                 }
             }
