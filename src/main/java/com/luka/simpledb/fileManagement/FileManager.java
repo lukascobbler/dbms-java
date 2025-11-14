@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/// The class that is the main API interface to the operating
+/// The `FileManager` is the main API interface to the operating
 /// system's files. Also called a Pager. Works exclusively with
 /// blocks and pages, not direct bytes.
 public class FileManager {
@@ -40,7 +40,7 @@ public class FileManager {
     }
 
     /// Reads the given block, from the provided block id,
-    /// into the provided page. Method is synchronized because only one
+    /// into the provided page. Method is `synchronized` because only one
     /// access to any of the files at the same time.
     ///
     /// @return The number of bytes read.
@@ -55,7 +55,7 @@ public class FileManager {
     }
 
     /// Writes into the given block, from the provided block id,
-    /// from the provided page. Method is synchronized because only one
+    /// from the provided page. Method is `synchronized` because only one
     /// access to any of the files at the same time.
     ///
     /// @return The number of bytes written.
@@ -70,7 +70,7 @@ public class FileManager {
     }
 
     /// Appends a new empty block of the system's block size
-    /// to the end of the file. Method is synchronized because only one
+    /// to the end of the file. Method is `synchronized` because only one
     /// access to any of the files at the same time.
     ///
     /// @return The block id that corresponds to the newly written empty

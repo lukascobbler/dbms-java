@@ -6,7 +6,7 @@ import com.luka.simpledb.fileManagement.Page;
 
 import java.util.Iterator;
 
-/// The log management class responsible for writing logs
+/// The `LogManager` object is used for writing logs
 /// to the log file when necessary. It is responsible for
 /// initializing the log file, and keeping it consistent.
 public class LogManager {
