@@ -1,0 +1,156 @@
+package com.luka.simpledb.transactionManagement.recoveryManagement;
+
+import com.luka.simpledb.bufferManagement.Buffer;
+import com.luka.simpledb.bufferManagement.BufferManager;
+import com.luka.simpledb.fileManagement.BlockId;
+import com.luka.simpledb.logManagement.LogManager;
+import com.luka.simpledb.transactionManagement.Transaction;
+import com.luka.simpledb.transactionManagement.recoveryManagement.logRecordTypes.*;
+
+import java.util.*;
+
+/// The `RecoveryManager` object is used by the DBMS to handle:
+/// 1. Constructing and writing log entries at appropriate times;
+/// 2. Doing transaction rollbacks;
+/// 3. Doing system recovery.
+public class RecoveryManager {
+    private final LogManager logManager;
+    private final BufferManager bufferManager;
+    private final Transaction transaction;
+    private final int transactionNumber;
+
+    /// A recovery manager is instantiated with a given transaction, and is
+    /// tied to it until the end of its lifecycle. A buffer manager is needed
+    /// for flushing transactions, and a log manager is needed for writing out
+    /// log entries. On 'RecoveryManager' instantiation, a start log record type
+    /// is written out to the log file for the tied transaction.
+    public RecoveryManager(Transaction transaction, int transactionNumber,
+                           LogManager logManager, BufferManager bufferManager) {
+        this.transaction = transaction;
+        // todo get the number from the transaction instead of passing it
+        //  when transactions are completed
+        this.transactionNumber = transactionNumber;
+        this.logManager = logManager;
+        this.bufferManager = bufferManager;
+        StartRecord.writeToLog(logManager, transactionNumber);
+    }
+
+    /// Commits the tied transaction. Since the recovery algorithm implemented by the
+    /// recovery step is the 'Undo-Only' algorithm, the commit log record must be written
+    /// **after** all buffers used by the transaction are flushed, because that is what
+    /// the recovery algorithm assumes (the assumption is that all commited transactions
+    /// will have their changes written out in user data blocks meaning they won't need
+    /// to be reapplied on system recovery). This has a penalty on performance.
+    public void commit() {
+        bufferManager.flushAll(transactionNumber);
+        int lsn = CommitRecord.writeToLog(logManager, transactionNumber);
+        logManager.flush(lsn);
+    }
+
+    /// Rolls back the tied transaction. Immediately writes out the rollback to
+    /// disk.
+    public void rollback() {
+        transactionRollback();
+        bufferManager.flushAll(transactionNumber);
+        int lsn = RollbackRecord.writeToLog(logManager, transactionNumber);
+        logManager.flush(lsn);
+    }
+
+    /// Recovers the database to a reasonable state. A reasonable state can
+    /// be characterized as having two properties:
+    /// - all uncompleted transactions should be rolled back (*undo* all of them);
+    /// - all commited transactions should have their modifications written to disk (*redo* all of them).
+    /// The second assumption will always be met because of the 'Undo-Only' recovery
+    /// algorithm modification. When the system is finished with recovery, all undo operations
+    /// performed are written to the disk and a quiescent checkpoint can be written out since
+    /// the system is sure that the database is in a reasonable state.
+    public void recover() {
+        undoOnlyRecover();
+        bufferManager.flushAll(transactionNumber);
+        int lsn = QuiescentCheckpointRecord.writeToLog(logManager);
+        logManager.flush(lsn);
+    }
+
+    /// Creates an update log for updating an integer in a given buffer on a given offset.
+    /// The parameter `newValue` is not used when the system is configured to 'Undo-Only'
+    /// recovery to save space.
+    ///
+    /// @return The log sequence number for the record in the log file corresponding to the
+    /// call of this function.
+    public int setInt(Buffer buffer, int offset, int newValue) {
+        int oldValue = buffer.getContents().getInt(offset);
+        BlockId blockId = buffer.getBlockId();
+        return SetIntRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue);
+    }
+
+    /// Creates an update log for updating a string in a given buffer on a given offset.
+    /// The parameter `newValue` is not used when the system is configured to 'Undo-Only'
+    /// recovery to save space.
+    ///
+    /// @return The log sequence number for the record in the log file corresponding to the
+    /// call of this function.
+    public int setString(Buffer buffer, int offset, String newValue) {
+        String oldValue = buffer.getContents().getString(offset);
+        BlockId blockId = buffer.getBlockId();
+        return SetStringRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue);
+    }
+
+    /// The algorithm for rolling back a transaction. The transaction that
+    /// is being rolled back is the transaction that is tied to the instance
+    /// of the recovery manager.
+    private void transactionRollback() {
+        Iterator<byte[]> iter = logManager.iterator();
+
+        while (iter.hasNext()) {
+            byte[] bytes = iter.next();
+            LogRecord record = LogRecord.createLogRecord(bytes);
+            if (record.transactionNumber() == transactionNumber) {
+                if (record.op() == LogRecordType.START) {
+                    // no need to check earlier records because
+                    // there will be no records matching this
+                    // particular transaction before it was started
+                    return;
+                }
+                record.undo(transaction);
+            }
+        }
+    }
+
+    /// The 'Undo-Only' algorithm for system recovery.
+    private void undoOnlyRecover() {
+        // remember all completed transactions
+        HashSet<Integer> finishedTransactions = new HashSet<>();
+        Iterator<byte[]> iter = logManager.iterator();
+
+        while (iter.hasNext()) {
+            byte[] bytes = iter.next();
+            LogRecord record = LogRecord.createLogRecord(bytes);
+            if (record.op() == LogRecordType.QUIESCENT_CHECKPOINT) {
+                // if a quiescent checkpoint is found, that means the
+                // log doesn't need to be traversed any further because
+                // the database is guaranteed to be in a reasonable state
+                // in correspondence to the logs before the quiescent checkpoint
+                // log
+                return;
+            }
+            if (record.op() == LogRecordType.COMMIT || record.op() == LogRecordType.ROLLBACK) {
+                // a transaction is completed if it's rollback or commit log
+                // is found in the log file
+                finishedTransactions.add(record.transactionNumber());
+            } else if (!finishedTransactions.contains(record.transactionNumber())) {
+                // if some other than commit or rollback log record type
+                // is encountered, and its corresponding transaction is not
+                // completed (the traversing is done from the end of the file,
+                // so commit and rollback logs will always be encountered first)
+                // it means that record must be undone since a reasonable state is
+                // one where all uncompleted transactions are rolled back
+                record.undo(transaction);
+            }
+        }
+    }
+
+    /// The 'Undo-Redo' algorithm for system recovery.
+    private void undoRedoRecover() {
+        // todo
+    }
+}

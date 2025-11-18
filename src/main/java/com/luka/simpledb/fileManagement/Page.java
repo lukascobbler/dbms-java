@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-/// A page represents a block-sized chunk of memory that is
+/// A page represents an arbitrary sized chunk of memory that is
 /// currently in RAM. It is a wrapper around a sequence of bytes
 /// that allows easy write and read operations on various types.
 public class Page {
