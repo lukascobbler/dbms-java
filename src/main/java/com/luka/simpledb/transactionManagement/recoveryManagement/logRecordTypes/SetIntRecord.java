@@ -9,21 +9,15 @@ import com.luka.simpledb.transactionManagement.recoveryManagement.LogRecordType;
 
 /// Helper class for representing a string update log record type.
 ///
-/// Structure of the string update log record type (when the system is configured
-/// to use the 'Undo-Only' recovery algorithm):
-/// `<SETINT transactionNumber blockId offset oldValue>`
+/// Structure of the string update log record type:
+/// `<SETINT transactionNumber filename blockId offset oldValue newValue>`
 ///
-/// Example: `<SETINT 1 50 100 10>`
-///
-/// Structure of the string update log record type (when the system is configured
-/// to use the 'Undo-Redo' recovery algorithm):
-/// `<SETINT transactionNumber blockId offset oldValue newValue>`
-///
-/// Example: `<SETINT 1 50 100 10 100>`
+/// Example: `<SETINT 1 file1 50 100 10 100>`
 public class SetIntRecord implements LogRecord {
     private final int transactionNumber;
     private final int offset;
-    private final int value;
+    private final int oldValue;
+    private final int newValue;
     private final BlockId blockId;
 
     /// The integer update log record type is initialized with a page
@@ -44,8 +38,11 @@ public class SetIntRecord implements LogRecord {
         int offsetPosition = blockPosition + Integer.BYTES;
         offset = p.getInt(offsetPosition);
 
-        int valuePosition = offsetPosition + Integer.BYTES;
-        value = p.getInt(valuePosition);
+        int oldValuePosition = offsetPosition + Integer.BYTES;
+        oldValue = p.getInt(oldValuePosition);
+
+        int newValuePosition = oldValuePosition + Integer.BYTES;
+        newValue = p.getInt(newValuePosition);
     }
 
     /// Writes out a new update integer log type record to the log file.
@@ -54,24 +51,27 @@ public class SetIntRecord implements LogRecord {
     /// @return The log sequence number representing the newly added
     /// record to the log file.
     public static int writeToLog(LogManager logManager, int transactionNumber,
-                                 BlockId blockId, int offset, int value) {
-        int transactionPosition = Integer.BYTES;
+                                 BlockId blockId, int offset, int oldValue, int newValue) {
+        int logRecordTypePosition = 0;
+        int transactionPosition = logRecordTypePosition + Integer.BYTES;
         int filenamePosition = transactionPosition + Integer.BYTES;
         int blockPosition = filenamePosition + Page.maxLength(blockId.filename().length());
         int offsetPosition = blockPosition + Integer.BYTES;
-        int valuePosition = offsetPosition + Integer.BYTES;
+        int oldValuePosition = offsetPosition + Integer.BYTES;
+        int newValuePosition = oldValuePosition + Integer.BYTES;
 
-        int recordLength = valuePosition + Integer.BYTES;
+        int recordLength = newValuePosition + Integer.BYTES;
         byte[] record = new byte[recordLength];
 
         // page used for convenience of writing to a byte array
         Page p = new Page(record);
-        p.setInt(0, LogRecordType.SETSTRING.value);
+        p.setInt(0, LogRecordType.SETINT.value);
         p.setInt(transactionPosition, transactionNumber);
         p.setString(filenamePosition, blockId.filename());
         p.setInt(blockPosition, blockId.blockNum());
         p.setInt(offsetPosition, offset);
-        p.setInt(valuePosition, value);
+        p.setInt(oldValuePosition, oldValue);
+        p.setInt(newValuePosition, newValue);
 
         return logManager.append(record);
     }
@@ -93,13 +93,23 @@ public class SetIntRecord implements LogRecord {
     @Override
     public void undo(Transaction transaction) {
         transaction.pin(blockId);
-        transaction.setInt(blockId, offset, value, false);
+        transaction.setInt(blockId, offset, oldValue, false);
+        transaction.unpin(blockId);
+    }
+
+    /// Redoes the integer update for a given transaction. Does not log the
+    /// undo operations for the transaction, as that would create redundant
+    /// logs.
+    @Override
+    public void redo(Transaction transaction) {
+        transaction.pin(blockId);
+        transaction.setInt(blockId, offset, newValue, false);
         transaction.unpin(blockId);
     }
 
     @Override
     public String toString() {
-        return "<" + LogRecordType.SETINT + " " + transactionNumber
-                + " " + blockId + " " + offset + " " + value + ">";
+        return "<" + LogRecordType.SETINT + " " + transactionNumber + " " + blockId.filename()
+                + " " + blockId.blockNum() + " " + offset + " " + oldValue + " " + newValue + ">";
     }
 }

@@ -83,6 +83,10 @@ public class NonQuiescentCheckpointRecord implements LogRecord {
     @Override
     public void undo(Transaction transaction) { }
 
+    /// Does nothing as this is not an update record type.
+    @Override
+    public void redo(Transaction transaction) { }
+
     @Override
     public String toString() {
         return "<" + LogRecordType.NON_QUIESCENT_CHECKPOINT +

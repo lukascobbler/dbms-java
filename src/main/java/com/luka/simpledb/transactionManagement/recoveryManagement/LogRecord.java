@@ -20,6 +20,10 @@ public interface LogRecord {
     /// Does nothing for non-update log records.
     void undo(Transaction transaction);
 
+    /// Redoes any update operation. Makes sense only for update logs.
+    /// Does nothing for non-update logs.
+    void redo(Transaction transaction);
+
     /// Encapsulates the logic of initializing a typed log record
     /// from a list of bytes. Note that potentially not every log record
     /// will need the list of bytes.
