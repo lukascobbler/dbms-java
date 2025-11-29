@@ -3,6 +3,7 @@ package com.luka.simpledb.transactionManagement;
 import com.luka.simpledb.bufferManagement.Buffer;
 import com.luka.simpledb.bufferManagement.BufferManager;
 import com.luka.simpledb.fileManagement.BlockId;
+import com.luka.simpledb.transactionManagement.exceptions.BufferNotPinnedByThisTransactionException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +24,17 @@ public class BufferList {
 
     /// @return The buffer for the requested block id from the list of
     /// pinned buffers of a transaction.
+    ///
+    /// @throws BufferNotPinnedByThisTransactionException if the buffer
+    /// that the transaction is trying to get hasn't been pinned previously.
     public Buffer getBuffer(BlockId blockId) {
-        return buffers.get(blockId);
+        Buffer temp = buffers.get(blockId);
+
+        if (temp == null) {
+            throw new BufferNotPinnedByThisTransactionException();
+        }
+
+        return temp;
     }
 
     /// Pins a buffer to the passed block id and puts

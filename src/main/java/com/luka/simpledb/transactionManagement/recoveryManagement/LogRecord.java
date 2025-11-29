@@ -32,7 +32,6 @@ public interface LogRecord {
     static LogRecord createLogRecord(byte[] bytes) {
         Page p = new Page(bytes);
         switch (LogRecordType.valueOf(p.getInt(0))) {
-            case NON_QUIESCENT_CHECKPOINT -> { return new NonQuiescentCheckpointRecord(p); }
             case QUIESCENT_CHECKPOINT -> { return new QuiescentCheckpointRecord(); }
             case START -> { return new StartRecord(p); }
             case COMMIT -> { return new CommitRecord(p); }
