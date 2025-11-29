@@ -28,8 +28,6 @@ public class RecoveryManager {
     public RecoveryManager(Transaction transaction, int transactionNumber,
                            LogManager logManager, BufferManager bufferManager) {
         this.transaction = transaction;
-        // todo get the number from the transaction instead of passing it
-        //  when transactions are completed
         this.transactionNumber = transactionNumber;
         this.logManager = logManager;
         this.bufferManager = bufferManager;
