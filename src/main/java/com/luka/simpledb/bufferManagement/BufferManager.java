@@ -126,7 +126,7 @@ public class BufferManager {
     /// If the block from the requested block id is already in memory
     /// (it's mapped to a buffer in the buffer pool), this function returns it. The block may
     /// or may not be pinned. If it is pinned, it can be pinned again by a different client
-    /// and if it's unpinned it means the buffer hasn't yet been flushed to it's respective block.
+    /// and if it's unpinned it means the buffer hasn't yet been flushed to its respective block.
     ///
     /// @return A buffer mapped to the passed block id, if it is in memory, else 'null'.
     private Buffer findExistingBuffer(BlockId blockId) {
