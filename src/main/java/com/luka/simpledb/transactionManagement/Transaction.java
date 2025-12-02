@@ -101,6 +101,18 @@ public class Transaction {
         return buffer.getContents().getString(offset);
     }
 
+    /// Gets a boolean from a block id managed by the transaction.
+    /// Firstly, shared locking of the block id is performed, then the
+    /// string is returned.
+    ///
+    /// @return A boolean from a given block id at a given offset from a buffer
+    /// managed by this transaction.
+    public boolean getBoolean(BlockId blockId, int offset) {
+        concurrencyManager.lockShared(blockId);
+        Buffer buffer = myBuffers.getBuffer(blockId);
+        return buffer.getContents().getBoolean(offset);
+    }
+
     /// Sets an integer value to a block id on an offset.
     /// Firstly, exclusive locking of the block id is performed, then the
     /// value is set. The parameter `okToLog` indicates if the value will be
@@ -132,6 +144,23 @@ public class Transaction {
             lsn = recoveryManager.setString(buffer, offset, value);
         }
         buffer.getContents().setString(offset, value);
+        buffer.setModified(transactionNumber, lsn);
+    }
+
+    /// Sets a boolean value to a block id on an offset.
+    /// Firstly, exclusive locking of the block id is performed, then the
+    /// value is set. The parameter `okToLog` indicates if the value will be
+    /// written out to the recovery log (false when undoing the transaction).
+    /// Finally, the buffer is set to be modified with this transaction's id
+    /// and the LSN returned by the recovery manager if the set was logged.
+    public void setBoolean(BlockId blockId, int offset, boolean value, boolean okToLog) {
+        concurrencyManager.lockExclusive(blockId);
+        Buffer buffer = myBuffers.getBuffer(blockId);
+        int lsn = -1;
+        if (okToLog) {
+            lsn = recoveryManager.setBoolean(buffer, offset, value);
+        }
+        buffer.getContents().setBoolean(offset, value);
         buffer.setModified(transactionNumber, lsn);
     }
 

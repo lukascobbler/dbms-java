@@ -2,14 +2,14 @@ package com.luka.simpledb.transactionManagement.recoveryManagement;
 
 /// Different types of log records that can be found in the log file.
 public enum LogRecordType {
-    NON_QUIESCENT_CHECKPOINT(0),
     QUIESCENT_CHECKPOINT(1),
     START(2),
     COMMIT(3),
     ROLLBACK(4),
     SETINT(5),
     SETSTRING(6),
-    APPEND(7);
+    SETBOOLEAN(7),
+    APPEND(8);
 
     public final int value;
 

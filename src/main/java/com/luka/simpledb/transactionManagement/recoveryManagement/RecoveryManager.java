@@ -95,6 +95,16 @@ public class RecoveryManager {
         return SetStringRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue, newValue);
     }
 
+    /// Creates an update log for updating a boolean in a given buffer on a given offset.
+    ///
+    /// @return The log sequence number for the record in the log file corresponding to the
+    /// call of this function.
+    public int setBoolean(Buffer buffer, int offset, boolean newValue) {
+        boolean oldValue = buffer.getContents().getBoolean(offset);
+        BlockId blockId = buffer.getBlockId();
+        return SetBooleanRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue, newValue);
+    }
+
     /// Creates an append block log for a given filename.
     ///
     /// @return The log sequence number for the record in the log file corresponding to the
