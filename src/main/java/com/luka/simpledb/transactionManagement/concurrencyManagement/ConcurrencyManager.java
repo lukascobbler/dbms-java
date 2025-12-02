@@ -10,8 +10,14 @@ import java.util.Map;
 /// must share the same lock table because more than one
 /// transaction can access the same blocks.
 public class ConcurrencyManager {
-    private final static LockTable lockTable = new LockTable();
+    private final LockTable lockTable;
     private final Map<BlockId, Character> locks = new HashMap<>();
+
+    /// Initialize concurrency manager with a lock table that all
+    /// concurrency managers share.
+    public ConcurrencyManager(LockTable lockTable) {
+        this.lockTable = lockTable;
+    }
 
     /// Creates a shared lock for the passed block if it
     /// isn't present.

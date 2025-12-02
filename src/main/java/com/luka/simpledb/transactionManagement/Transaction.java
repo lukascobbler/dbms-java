@@ -6,6 +6,7 @@ import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.logManagement.LogManager;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.ConcurrencyManager;
+import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 import com.luka.simpledb.transactionManagement.recoveryManagement.RecoveryManager;
 
 /// A transaction represents one unit of work in the database.
@@ -29,10 +30,10 @@ public class Transaction {
     /// from a global number that all transactions share. Creates a
     /// concurrency manager and a recovery manager tied to this transaction.
     public Transaction(FileManager fileManager, LogManager logManager,
-                       BufferManager bufferManager) {
+                       BufferManager bufferManager, LockTable lockTable) {
         this.bufferManager = bufferManager;
         this.fileManager = fileManager;
-        this.concurrencyManager = new ConcurrencyManager();
+        this.concurrencyManager = new ConcurrencyManager(lockTable);
 
         transactionNumber = nextTransactionNumber();
         myBuffers = new BufferList(bufferManager);
