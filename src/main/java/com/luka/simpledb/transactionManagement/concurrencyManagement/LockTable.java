@@ -3,8 +3,8 @@ package com.luka.simpledb.transactionManagement.concurrencyManagement;
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.exceptions.LockAbortException;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /// A `LockTable` is responsible for knowing how many
 /// shared locks exist for a given block or if that block
@@ -13,7 +13,8 @@ import java.util.Map;
 /// is shared across every transaction.
 public class LockTable {
     public static final long MAX_TIME = 10_000;
-    private final Map<BlockId, Integer> locks = new HashMap<>();
+    private final Map<BlockId, Object> blockIdConcurrencyLocks = new ConcurrentHashMap<>();
+    private final Map<BlockId, Integer> perBlockIdLockValues = new ConcurrentHashMap<>();
 
     /// Tries to create a shared lock for the passed block. If
     /// the block already has a shared lock, increments the number
@@ -23,19 +24,24 @@ public class LockTable {
     ///
     /// @throws LockAbortException if the block wasn't successfully
     /// locked.
-    public synchronized void lockShared(BlockId blockId) {
-        try {
-            long timestamp = System.currentTimeMillis();
-            while (hasExclusiveLock(blockId) && !waitingTooLong(timestamp)) {
-                wait(MAX_TIME);
-            }
-            if (hasExclusiveLock(blockId)) {
+    public void lockShared(BlockId blockId) {
+        long timestamp = System.currentTimeMillis();
+
+        Object lock = getLock(blockId);
+
+        synchronized (lock) {
+            try {
+                while (hasExclusiveLock(blockId) && !waitingTooLong(timestamp)) {
+                    lock.wait(MAX_TIME);
+                }
+                if (hasExclusiveLock(blockId)) {
+                    throw new LockAbortException();
+                }
+                int currentLockValue = getLockValue(blockId);
+                perBlockIdLockValues.put(blockId, currentLockValue + 1);
+            } catch (InterruptedException e) {
                 throw new LockAbortException();
             }
-            int currentLockValue = getLockValue(blockId);
-            locks.put(blockId, currentLockValue + 1);
-        } catch (InterruptedException e) {
-            throw new LockAbortException();
         }
     }
 
@@ -45,18 +51,23 @@ public class LockTable {
     ///
     /// @throws LockAbortException if the block wasn't successfully
     /// locked.
-    public synchronized void lockExclusive(BlockId blockId) {
-        try {
-            long timestamp = System.currentTimeMillis();
-            while (hasOtherSharedLocks(blockId) && !waitingTooLong(timestamp)) {
-                wait(MAX_TIME);
-            }
-            if (hasOtherSharedLocks(blockId)) {
+    public void lockExclusive(BlockId blockId) {
+        long timestamp = System.currentTimeMillis();
+
+        Object lock = getLock(blockId);
+
+        synchronized (lock) {
+            try {
+                while (hasOtherSharedLocks(blockId) && !waitingTooLong(timestamp)) {
+                    lock.wait(MAX_TIME);
+                }
+                if (hasOtherSharedLocks(blockId)) {
+                    throw new LockAbortException();
+                }
+                perBlockIdLockValues.put(blockId, -1);
+            } catch (InterruptedException e) {
                 throw new LockAbortException();
             }
-            locks.put(blockId, -1);
-        } catch (InterruptedException e) {
-            throw new LockAbortException();
         }
     }
 
@@ -65,14 +76,18 @@ public class LockTable {
     /// number by one. Else, if the passed block has one shared
     /// lock or an exclusive lock assigned to it, calling 'unlock'
     /// removes the lock entirely. When the lock is removed entirely,
-    /// all threads waiting on all locks are notified. (todo slow)
-    public synchronized void unlock(BlockId blockId) {
-        int currentLockValue = getLockValue(blockId);
-        if (currentLockValue > 1) {
-            locks.put(blockId, currentLockValue - 1);
-        } else {
-            locks.remove(blockId);
-            notifyAll();
+    /// all threads waiting on all locks are notified.
+    public void unlock(BlockId blockId) {
+        Object lock = getLock(blockId);
+
+        synchronized (lock) {
+            int currentLockValue = getLockValue(blockId);
+            if (currentLockValue > 1) {
+                perBlockIdLockValues.put(blockId, currentLockValue - 1);
+            } else {
+                perBlockIdLockValues.remove(blockId);
+                lock.notifyAll();
+            }
         }
     }
 
@@ -104,6 +119,13 @@ public class LockTable {
     /// of shared locks if it is greater than 0, or an exclusive
     /// lock if it is equal to -1.
     private int getLockValue(BlockId blockId) {
-        return locks.getOrDefault(blockId, 0);
+        return perBlockIdLockValues.getOrDefault(blockId, 0);
+    }
+
+    /// If the block id doesn't exist in the concurrency lock table, add it.
+    ///
+    /// @return The lock for the specified block id.
+    private Object getLock(BlockId blockId) {
+        return blockIdConcurrencyLocks.computeIfAbsent(blockId, b -> new Object());
     }
 }
