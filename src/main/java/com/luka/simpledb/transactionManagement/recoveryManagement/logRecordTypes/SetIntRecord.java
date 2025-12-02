@@ -89,21 +89,27 @@ public class SetIntRecord implements LogRecord {
 
     /// Undoes the integer update for a given transaction. Does not log the
     /// undo operations for the transaction, as that would create redundant
-    /// logs.
+    /// logs. Only does the undo operation if the value written in the block
+    /// does not match the old value.
     @Override
     public void undo(Transaction transaction) {
         transaction.pin(blockId);
-        transaction.setInt(blockId, offset, oldValue, false);
+        if (transaction.getInt(blockId, offset) != oldValue) {
+            transaction.setInt(blockId, offset, oldValue, false);
+        }
         transaction.unpin(blockId);
     }
 
     /// Redoes the integer update for a given transaction. Does not log the
     /// undo operations for the transaction, as that would create redundant
-    /// logs.
+    /// logs. Only does the redo operation if the value written in the block
+    /// does not match the new value.
     @Override
     public void redo(Transaction transaction) {
         transaction.pin(blockId);
-        transaction.setInt(blockId, offset, newValue, false);
+        if (transaction.getInt(blockId, offset) != newValue) {
+            transaction.setInt(blockId, offset, newValue, false);
+        }
         transaction.unpin(blockId);
     }
 

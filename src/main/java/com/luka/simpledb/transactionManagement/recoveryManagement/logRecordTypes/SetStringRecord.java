@@ -90,21 +90,27 @@ public class SetStringRecord implements LogRecord {
 
     /// Undoes the string update for a given transaction. Does not log the
     /// undo operations for the transaction, as that would create redundant
-    /// logs.
+    /// logs. Only does the undo operation if the value written in the block
+    /// does not match the old value.
     @Override
     public void undo(Transaction transaction) {
         transaction.pin(blockId);
-        transaction.setString(blockId, offset, oldValue, false);
+        if (!transaction.getString(blockId, offset).equals(oldValue)) {
+            transaction.setString(blockId, offset, oldValue, false);
+        }
         transaction.unpin(blockId);
     }
 
     /// Redoes the integer update for a given transaction. Does not log the
     /// undo operations for the transaction, as that would create redundant
-    /// logs.
+    /// logs. Only does the redo operation if the value written in the block
+    /// does not match the new value.
     @Override
     public void redo(Transaction transaction) {
         transaction.pin(blockId);
-        transaction.setString(blockId, offset, newValue, false);
+        if (!transaction.getString(blockId, offset).equals(newValue)) {
+            transaction.setString(blockId, offset, newValue, false);
+        }
         transaction.unpin(blockId);
     }
 
