@@ -64,11 +64,15 @@ public class RecoveryManager {
     /// algorithm modification. When the system is finished with recovery, all undo operations
     /// performed are written to the disk and a quiescent checkpoint can be written out since
     /// the system is sure that the database is in a reasonable state.
-    public void recover() {
-        recoveryAlgorithm.systemRecovery();
+    ///
+    /// @return The transaction number latest in the log so that new transactions can start from this one + 1.
+    public int recover() {
+        int biggestTransactionNumber = recoveryAlgorithm.systemRecovery();
         bufferManager.flushAll(transactionNumber);
         int lsn = QuiescentCheckpointRecord.writeToLog(logManager);
         logManager.flush(lsn);
+
+        return biggestTransactionNumber;
     }
 
     /// Creates an update log for updating an integer in a given buffer on a given offset.
@@ -135,11 +139,14 @@ public class RecoveryManager {
         /// Recover the system if it crashed. The recovery is an idempotent
         /// function so if the system crashes in the middle of recovery,
         /// the system won't be left in an inconsistent state.
-        public void systemRecovery() {
+        ///
+        /// @return The transaction number latest in the log so that new
+        /// transactions can start from this one + 1.
+        public int systemRecovery() {
             if (undoOnly) {
-                undoOnlyRecover();
+                return undoOnlyRecover();
             } else {
-                undoRedoRecover();
+                return undoRedoRecover();
             }
         }
 
@@ -147,7 +154,7 @@ public class RecoveryManager {
         /// will have their changes written out in user data blocks meaning they won't need
         /// to be reapplied on system recovery.
         /// Advantage: faster recovery. Disadvantage: slower commits.
-        private void undoOnlyRecover() {
+        private int undoOnlyRecover() {
             Iterator<byte[]> iter = logManager.iterator();
 
             while (iter.hasNext()) {
@@ -159,7 +166,9 @@ public class RecoveryManager {
                     // the database is guaranteed to be in a reasonable state
                     // in correspondence to the logs before the quiescent checkpoint
                     // log
-                    return;
+                    return completedTransactions.stream()
+                            .max(Integer::compare)
+                            .orElse(0);
                 }
 
                 if (!undoOnly) {
@@ -182,13 +191,17 @@ public class RecoveryManager {
                     record.undo(transaction);
                 }
             }
+
+            return completedTransactions.stream()
+                    .max(Integer::compare)
+                    .orElse(0);
         }
 
         /// The 'Undo-Redo' algorithm for system recovery.
         /// Disadvantage: slow recovery, uses more memory.
-        private void undoRedoRecover() {
+        private int undoRedoRecover() {
             // firstly, call the undo portion of the algorithm
-            undoOnlyRecover();
+            int biggestTransactionNumber = undoOnlyRecover();
 
             // redo every record, but in reverse order
             for (LogRecord record : processedRecords.reversed()) {
@@ -202,6 +215,8 @@ public class RecoveryManager {
                     record.redo(transaction);
                 }
             }
+
+            return biggestTransactionNumber;
         }
     }
 }

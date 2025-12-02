@@ -60,9 +60,11 @@ public class Transaction {
     }
 
     /// Recovers the whole system including this transaction.
-    public void recover() {
+    ///
+    /// @return The transaction number latest in the log so that new transactions can start from this one + 1.
+    public int recover() {
         bufferManager.flushAll(transactionNumber);
-        recoveryManager.recover();
+        return recoveryManager.recover();
     }
 
     /// Pin a block id from this transaction.
