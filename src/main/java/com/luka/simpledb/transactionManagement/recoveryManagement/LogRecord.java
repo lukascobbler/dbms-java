@@ -38,6 +38,7 @@ public interface LogRecord {
             case ROLLBACK -> { return new RollbackRecord(p); }
             case SETINT -> { return new SetIntRecord(p); }
             case SETSTRING -> { return new SetStringRecord(p); }
+            case APPEND -> { return new AppendBlockRecord(p); }
             case null, default -> throw new LogRecordParseException();
         }
     }

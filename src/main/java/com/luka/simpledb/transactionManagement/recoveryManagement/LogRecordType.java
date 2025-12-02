@@ -8,7 +8,8 @@ public enum LogRecordType {
     COMMIT(3),
     ROLLBACK(4),
     SETINT(5),
-    SETSTRING(6);
+    SETSTRING(6),
+    APPEND(7);
 
     public final int value;
 

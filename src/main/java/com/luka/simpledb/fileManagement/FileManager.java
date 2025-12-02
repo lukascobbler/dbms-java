@@ -1,5 +1,7 @@
 package com.luka.simpledb.fileManagement;
 
+import com.luka.simpledb.fileManagement.exceptions.FileException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -26,14 +28,14 @@ public class FileManager {
 
         if (isNew) {
             if (!dbDirectory.mkdirs()) {
-                throw new RuntimeException("could not initialize directory: " + dbDirectory);
+                throw new FileException("could not initialize directory: " + dbDirectory);
             }
         }
 
         for (String filename : Objects.requireNonNull(dbDirectory.list())) {
             if (filename.startsWith("temp")) {
                 if (!new File(dbDirectory, filename).delete()) {
-                    throw new RuntimeException("could not delete temporary file: " + filename);
+                    throw new FileException("could not delete temporary file: " + filename);
                 }
             }
         }
@@ -50,7 +52,7 @@ public class FileManager {
             f.seek((long) blockId.blockNum() * blockSize);
             return f.getChannel().read(page.contents());
         } catch (IOException e) {
-            throw new RuntimeException("cannot read block " + blockId);
+            throw new FileException("cannot read block " + blockId);
         }
     }
 
@@ -65,7 +67,7 @@ public class FileManager {
             f.seek((long) blockId.blockNum() * blockSize);
             return f.getChannel().write(page.contents());
         } catch (IOException e) {
-            throw new RuntimeException("cannot write block " + blockId);
+            throw new FileException("cannot write block " + blockId);
         }
     }
 
@@ -84,10 +86,24 @@ public class FileManager {
             f.seek((long) blockId.blockNum() * blockSize);
             f.write(bytes);
         } catch (IOException e) {
-            throw new RuntimeException("cannot append block " + blockId);
+            throw new FileException("cannot append block " + blockId);
         }
 
         return blockId;
+    }
+
+    /// Truncates a file by removing the last block,
+    /// regardless of its contents. Method is `synchronized`
+    /// because only one access to any of the files at the same time.
+    public synchronized void truncate(String filename) {
+        try {
+            RandomAccessFile f = getFile(filename);
+            long length = f.length();
+            long newLength = length > blockSize ? length - blockSize : 0;
+            f.setLength(newLength);
+        } catch (IOException e) {
+            throw new FileException("cannot truncate file " + filename);
+        }
     }
 
     /// @return The number of blocks that the provided file consists of.
@@ -96,7 +112,7 @@ public class FileManager {
             RandomAccessFile f = getFile(filename);
             return (int)(f.length() / blockSize);
         } catch (IOException e) {
-            throw new RuntimeException("cannot access " + filename);
+            throw new FileException("cannot access " + filename);
         }
     }
 
@@ -132,5 +148,12 @@ public class FileManager {
         }
 
         return f;
+    }
+
+    private static boolean isAllZero(byte[] buffer) {
+        for (byte b : buffer) {
+            if (b != 0) return false;
+        }
+        return true;
     }
 }

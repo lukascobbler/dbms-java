@@ -91,6 +91,14 @@ public class RecoveryManager {
         return SetStringRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue, newValue);
     }
 
+    /// Creates an append block log for a given filename.
+    ///
+    /// @return The log sequence number for the record in the log file corresponding to the
+    /// call of this function.
+    public int appendBlock(String filename) {
+        return AppendBlockRecord.writeToLog(logManager, transactionNumber, filename);
+    }
+
     /// The algorithm for rolling back a transaction. The transaction that
     /// is being rolled back is the transaction that is tied to the instance
     /// of the recovery manager.
