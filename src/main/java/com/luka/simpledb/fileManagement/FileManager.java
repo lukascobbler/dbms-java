@@ -61,9 +61,17 @@ public class FileManager {
     /// access to any of the files at the same time.
     ///
     /// @return The number of bytes written.
+    /// @throws FileException if writing is done beyond current file size.
+    /// Blocks need to be appended first.
     public synchronized int write(BlockId blockId, Page page) {
         try {
             RandomAccessFile f = getFile(blockId.filename());
+
+            if (f.length() <= (long) blockId.blockNum() * blockSize) {
+                throw new FileException("cannot write to block with index " +
+                        "greater than length of blocks for file " + blockId.filename());
+            }
+
             f.seek((long) blockId.blockNum() * blockSize);
             return f.getChannel().write(page.contents());
         } catch (IOException e) {

@@ -78,7 +78,15 @@ public class Buffer {
     void flush() {
         if (transactionNumber >= 0) {
             logManager.flush(lsn);
-            fileManager.write(blockId, contents);
+            if (blockId.blockNum() < fileManager.lengthInBlocks(blockId.filename())) {
+                // since append block operations on a file are eager, meaning they get
+                // written out to the log and the file immediately upon happening, the
+                // undoing of them (and reducing the file) will happen before the undoing
+                // of update operations, so the update operations won't have their block
+                // to undo to therefore it's unnecessary to even flush the block ids that
+                // have a block number greater than the last block number in the file
+                fileManager.write(blockId, contents);
+            }
             transactionNumber = -1;
         }
     }

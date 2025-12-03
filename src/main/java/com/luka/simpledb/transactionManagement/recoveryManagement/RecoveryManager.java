@@ -17,20 +17,23 @@ public class RecoveryManager {
     private final LogManager logManager;
     private final BufferManager bufferManager;
     private final Transaction transaction;
-    private final int transactionNumber;
-    private final RecoveryAlgorithm recoveryAlgorithm = new RecoveryAlgorithm(true);
+    private int transactionNumber;
+    private final RecoveryAlgorithm recoveryAlgorithm;
 
     /// A recovery manager is instantiated with a given transaction, and is
     /// tied to it until the end of its lifecycle. A buffer manager is needed
     /// for flushing transactions, and a log manager is needed for writing out
     /// log entries. On 'RecoveryManager' instantiation, a start log record type
-    /// is written out to the log file for the tied transaction.
+    /// is written out to the log file for the tied transaction. The type of recovery
+    /// is also passed.
     public RecoveryManager(Transaction transaction, int transactionNumber,
-                           LogManager logManager, BufferManager bufferManager) {
+                           LogManager logManager, BufferManager bufferManager,
+                           boolean undoOnlyRecovery) {
         this.transaction = transaction;
         this.transactionNumber = transactionNumber;
         this.logManager = logManager;
         this.bufferManager = bufferManager;
+        recoveryAlgorithm = new RecoveryAlgorithm(undoOnlyRecovery);
         StartRecord.writeToLog(logManager, transactionNumber);
     }
 
@@ -60,16 +63,17 @@ public class RecoveryManager {
     /// be characterized as having two properties:
     /// - all uncompleted transactions should be rolled back (*undo* all of them);
     /// - all commited transactions should have their modifications written to disk (*redo* all of them).
-    /// The second assumption will always be met because of the 'Undo-Only' recovery
-    /// algorithm modification. When the system is finished with recovery, all undo operations
+    /// When the system is finished with recovery, all undo and or redo operations
     /// performed are written to the disk and a quiescent checkpoint can be written out since
     /// the system is sure that the database is in a reasonable state.
     ///
-    /// @return The transaction number latest in the log so that new transactions can start from this one + 1.
+    /// @return The transaction number latest in the log so that new transactions can start where
+    /// old transactions left.
     public int recover() {
         int biggestTransactionNumber = recoveryAlgorithm.systemRecovery();
+        transactionNumber = biggestTransactionNumber + 1;
         bufferManager.flushAll(transactionNumber);
-        int lsn = QuiescentCheckpointRecord.writeToLog(logManager);
+        int lsn = QuiescentCheckpointRecord.writeToLog(logManager, biggestTransactionNumber);
         logManager.flush(lsn);
 
         return biggestTransactionNumber;
@@ -105,12 +109,16 @@ public class RecoveryManager {
         return SetBooleanRecord.writeToLog(logManager, transactionNumber, blockId, offset, oldValue, newValue);
     }
 
-    /// Creates an append block log for a given filename.
+    /// Creates an append block log for a given filename. Block appends require
+    /// a flush because they modify a more global state, the file.
     ///
     /// @return The log sequence number for the record in the log file corresponding to the
     /// call of this function.
     public int appendBlock(String filename) {
-        return AppendBlockRecord.writeToLog(logManager, transactionNumber, filename);
+        int lsn = AppendBlockRecord.writeToLog(logManager, transactionNumber, filename);
+        logManager.flush(lsn);
+
+        return lsn;
     }
 
     /// The algorithm for rolling back a transaction. The transaction that
@@ -138,7 +146,9 @@ public class RecoveryManager {
     class RecoveryAlgorithm {
         private final ArrayList<LogRecord> processedRecords = new ArrayList<>();
         private final HashSet<Integer> completedTransactions = new HashSet<>();
+        private int lastTransactionNumber = 0;
         public final boolean undoOnly;
+
 
         /// When `undoOnly` is set to `false`, the algorithm
         /// used is the 'Undo-Redo' algorithm.
@@ -170,15 +180,21 @@ public class RecoveryManager {
             while (iter.hasNext()) {
                 byte[] bytes = iter.next();
                 LogRecord record = LogRecord.createLogRecord(bytes);
+
                 if (record.op() == LogRecordType.QUIESCENT_CHECKPOINT) {
                     // if a quiescent checkpoint is found, that means the
                     // log doesn't need to be traversed any further because
                     // the database is guaranteed to be in a reasonable state
                     // in correspondence to the logs before the quiescent checkpoint
-                    // log
-                    return completedTransactions.stream()
-                            .max(Integer::compare)
-                            .orElse(0);
+                    // log, and it contains the last transaction number
+
+                    // however, there may be a transaction that occurred after the
+                    // quiescent checkpoint and if that is the case, it's transaction number
+                    // is larger and must be returned
+
+                    QuiescentCheckpointRecord quiescentCheckpointRecord = (QuiescentCheckpointRecord) record;
+
+                    return Integer.max(quiescentCheckpointRecord.getLastTransactionNumber(), lastTransactionNumber);
                 }
 
                 if (!undoOnly) {
@@ -191,6 +207,10 @@ public class RecoveryManager {
                     // a transaction is completed if it's rollback or commit log
                     // is found in the log file
                     completedTransactions.add(record.transactionNumber());
+
+                    if (record.transactionNumber() > lastTransactionNumber) {
+                        lastTransactionNumber = record.transactionNumber();
+                    }
                 } else if (!completedTransactions.contains(record.transactionNumber())) {
                     // if some other than commit or rollback log record type
                     // is encountered, and its corresponding transaction is not
@@ -202,9 +222,7 @@ public class RecoveryManager {
                 }
             }
 
-            return completedTransactions.stream()
-                    .max(Integer::compare)
-                    .orElse(0);
+            return lastTransactionNumber;
         }
 
         /// The 'Undo-Redo' algorithm for system recovery.
@@ -215,7 +233,7 @@ public class RecoveryManager {
 
             // redo every record, but in reverse order
             for (LogRecord record : processedRecords.reversed()) {
-                if (!completedTransactions.contains(record.transactionNumber())) {
+                if (completedTransactions.contains(record.transactionNumber())) {
                     // if some other than commit or rollback log record type
                     // is encountered, and its corresponding transaction is
                     // completed (list of completed transactions already exists from

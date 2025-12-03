@@ -23,14 +23,17 @@ public class Transaction {
     private final BufferManager bufferManager;
     private final FileManager fileManager;
 
-    private final int transactionNumber;
+    private int transactionNumber;
     private final BufferList myBuffers;
 
     /// Initializes a transaction with a transaction id that is pooled
     /// from a global number that all transactions share. Creates a
     /// concurrency manager and a recovery manager tied to this transaction.
+    /// Recovery type is chosen, but should be uniform for every transaction in
+    /// the system.
     public Transaction(FileManager fileManager, LogManager logManager,
-                       BufferManager bufferManager, LockTable lockTable) {
+                       BufferManager bufferManager, LockTable lockTable,
+                       boolean undoOnlyRecovery) {
         this.bufferManager = bufferManager;
         this.fileManager = fileManager;
         this.concurrencyManager = new ConcurrencyManager(lockTable);
@@ -39,7 +42,7 @@ public class Transaction {
         myBuffers = new BufferList(bufferManager);
 
         this.recoveryManager = new RecoveryManager(
-                this, transactionNumber, logManager, bufferManager);
+                this, transactionNumber, logManager, bufferManager, undoOnlyRecovery);
     }
 
     /// Commits the transaction by commiting to the recovery file,
@@ -60,12 +63,12 @@ public class Transaction {
         myBuffers.unpinAll();
     }
 
-    /// Recovers the whole system including this transaction.
-    ///
-    /// @return The transaction number latest in the log so that new transactions can start from this one + 1.
-    public int recover() {
+    /// Recovers the whole system including this transaction. Sets the transaction id
+    /// to the latest transaction id + 1.
+    public void recover() {
         bufferManager.flushAll(transactionNumber);
-        return recoveryManager.recover();
+        nextTransactionNum = recoveryManager.recover();
+        this.transactionNumber = nextTransactionNumber();
     }
 
     /// Pin a block id from this transaction.
@@ -213,5 +216,9 @@ public class Transaction {
     private static synchronized int nextTransactionNumber() {
         nextTransactionNum++;
         return nextTransactionNum;
+    }
+
+    public int getTransactionNumber() {
+        return transactionNumber;
     }
 }

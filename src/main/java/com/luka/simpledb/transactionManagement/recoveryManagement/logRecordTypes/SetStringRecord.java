@@ -61,7 +61,7 @@ public class SetStringRecord implements LogRecord {
         int oldValuePosition = offsetPosition + Integer.BYTES;
         int newValuePosition = oldValuePosition + Page.maxLength(oldValue.length());
 
-        int recordLength = newValuePosition + Page.maxLength(newValue.length());
+        int recordLength = newValuePosition + Page.maxLength(newValue.length()) + Integer.BYTES;
         byte[] record = new byte[recordLength];
 
         // page used for convenience of writing to a byte array
@@ -117,6 +117,7 @@ public class SetStringRecord implements LogRecord {
     @Override
     public String toString() {
         return "<" + LogRecordType.SETSTRING + " " + transactionNumber
-               + " " + blockId + " " + offset + " " + oldValue + ">";
+               + " " + blockId.filename() + " " + blockId.blockNum() + " "
+                + offset + " " + oldValue +  newValue + ">";
     }
 }

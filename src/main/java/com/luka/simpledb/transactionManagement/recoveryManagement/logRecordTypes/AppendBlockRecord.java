@@ -38,7 +38,7 @@ public class AppendBlockRecord implements LogRecord {
         int transactionPosition = logRecordTypePosition + Integer.BYTES;
         int filenamePosition = transactionPosition + Integer.BYTES;
 
-        int recordLength = filenamePosition + Integer.BYTES;
+        int recordLength = filenamePosition + Page.maxLength(filename.length()) + Integer.BYTES;
         byte[] record = new byte[recordLength];
 
         // page used for convenience of writing to a byte array
@@ -67,14 +67,11 @@ public class AppendBlockRecord implements LogRecord {
         transaction.truncate(filename);
     }
 
-    /// Redoes the append block for a given transaction. Does not log the
-    /// undo operations for the transaction, as that would create redundant
-    /// logs. Only does the redo operation if the value written in the block
-    /// does not match the new value.
+    /// Redoing of append block operations is not done because
+    /// if a transaction completed, the correct number of blocks
+    /// exist in a file, since block appending is an eager operation.
     @Override
-    public void redo(Transaction transaction) {
-        transaction.append(filename, false);
-    }
+    public void redo(Transaction transaction) { }
 
     @Override
     public String toString() {
