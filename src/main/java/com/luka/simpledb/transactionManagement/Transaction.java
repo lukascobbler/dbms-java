@@ -169,10 +169,10 @@ public class Transaction {
     }
 
     /// Firstly, shared locking of the whole file is performed, then the
-    /// size is returned.
+    /// length in blocks is returned.
     ///
     /// @return The size of the file.
-    public int size(String filename) {
+    public int lengthInBlocks(String filename) {
         BlockId dummyBlock = new BlockId(filename, END_OF_FILE);
         concurrencyManager.lockShared(dummyBlock);
         return fileManager.lengthInBlocks(filename);

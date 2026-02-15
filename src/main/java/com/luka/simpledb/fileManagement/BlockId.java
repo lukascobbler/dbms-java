@@ -7,9 +7,4 @@ public record BlockId(String filename, int blockNum) {
     public String toString() {
         return "[file " + filename + ", block " + blockNum + "]";
     }
-
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
-    }
 }

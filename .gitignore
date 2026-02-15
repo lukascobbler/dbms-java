@@ -43,3 +43,5 @@ build/
 **/*.log
 
 **/db_*/**
+.obsidian/*
+.obsidian/
