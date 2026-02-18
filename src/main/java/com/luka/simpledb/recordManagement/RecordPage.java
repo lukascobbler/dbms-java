@@ -2,13 +2,17 @@ package com.luka.simpledb.recordManagement;
 
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
+import com.luka.simpledb.recordManagement.exceptions.FieldLengthExceededException;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import static java.sql.Types.*;
 
-/// A record page is an array of records stored in some block.
+/// A `RecordPage` object represents an interface to the records of some block.
+/// It is an abstraction over getters and setters of fields, but leaves the
+/// exact record where fields should be stored to the API caller.
 public class RecordPage {
     public static final int EMPTY = 0, USED = 1;
+
     private final Transaction transaction;
     private final BlockId blockId;
     private final Layout layout;
@@ -19,6 +23,19 @@ public class RecordPage {
         this.transaction = transaction;
         this.blockId = blockId;
         this.layout = layout;
+    }
+
+    /// @return Whether the field currently has a null value.
+    public boolean isNull(int slot, String fieldName) {
+        int nullBitPosition = layout.fieldOrderPosition(fieldName) + 1;
+        int isNullMask = 1 << nullBitPosition;
+        int slotPosition = offset(slot);
+
+        transaction.pin(blockId);
+        int slotMarker = transaction.getInt(blockId, slotPosition);
+        transaction.unpin(blockId);
+
+        return (slotMarker & isNullMask) != 0;
     }
 
     /// Pins the block id to the tied transaction so that the block must stay in memory.
@@ -63,6 +80,19 @@ public class RecordPage {
         return returnBoolean;
     }
 
+    /// Sets the field name null bit to 1, meaning the value for that field is null.
+    public void setNull(int slot, String fieldName) {
+        int nullBitPosition = layout.fieldOrderPosition(fieldName) + 1;
+        int setNotNullMask = 1 << nullBitPosition;
+        int slotPosition = offset(slot);
+
+        transaction.pin(blockId);
+        int slotMarker = transaction.getInt(blockId, slotPosition);
+        slotMarker = slotMarker | setNotNullMask;
+        transaction.setInt(blockId, slotPosition, slotMarker, true);
+        transaction.unpin(blockId);
+    }
+
     /// Pins the block id to the tied transaction so that the block must stay in memory.
     /// Calculates the offset of the record in the block using the slot number and calculates
     /// the offset of the field in that record.
@@ -72,6 +102,7 @@ public class RecordPage {
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.pin(blockId);
         transaction.setInt(blockId, fieldPosition, value, true);
+        setNonNull(slot, fieldName);
         transaction.unpin(blockId);
     }
 
@@ -81,9 +112,13 @@ public class RecordPage {
     ///
     /// Sets a string in some slot, in some field with some value.
     public void setString(int slot, String fieldName, String value) {
+        if (value.length() > layout.getSchema().length(fieldName)) {
+            throw new FieldLengthExceededException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.pin(blockId);
         transaction.setString(blockId, fieldPosition, value, true);
+        setNonNull(slot, fieldName);
         transaction.unpin(blockId);
     }
 
@@ -96,6 +131,7 @@ public class RecordPage {
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.pin(blockId);
         transaction.setBoolean(blockId, fieldPosition, value, true);
+        setNonNull(slot, fieldName);
         transaction.unpin(blockId);
     }
 
@@ -117,9 +153,9 @@ public class RecordPage {
             for (String fieldName : schema.getFields()) {
                 int fieldPosition = offset(slot) + layout.getOffset(fieldName);
                 switch (schema.type(fieldName)) {
-                    case INTEGER -> transaction.setInt(blockId, slot, 0, false);
-                    case BOOLEAN -> transaction.setBoolean(blockId, slot, false, false);
-                    case VARCHAR -> transaction.setString(blockId, slot, "", false);
+                    case INTEGER -> transaction.setInt(blockId, fieldPosition, 0, false);
+                    case BOOLEAN -> transaction.setBoolean(blockId, fieldPosition, false, false);
+                    case VARCHAR -> transaction.setString(blockId, fieldPosition, "", false);
                     default -> throw new DatabaseTypeNotImplementedException();
                 }
             }
@@ -152,7 +188,25 @@ public class RecordPage {
         slot++;
         transaction.pin(blockId);
         while (isValidSlot(slot)) {
-            if (transaction.getInt(blockId, offset(slot)) == flag) {
+            if (getSlotFlag(slot) == flag) {
+                transaction.unpin(blockId);
+                return slot;
+            }
+            slot++;
+        }
+
+        transaction.unpin(blockId);
+        return -1;
+    }
+
+    /// Pins the block id to the tied transaction so that the block must stay in memory.
+    ///
+    /// @return The first slot number before `slot` that is of the flag `flag`, starting from the last record.
+    private int searchBefore(int slot, int flag) {
+        slot++;
+        transaction.pin(blockId);
+        while (isValidSlot(slot)) {
+            if (getSlotFlag(slot) == flag) {
                 transaction.unpin(blockId);
                 return slot;
             }
@@ -168,12 +222,42 @@ public class RecordPage {
         return offset(slot + 1) <= transaction.blockSize();
     }
 
+    /// @return The flag at the given slot. Can be 0 or 1, corresponding to `USED` or `EMPTY`.
+    private int getSlotFlag(int slot) {
+        int slotPosition = offset(slot);
+
+        int slotMarker = transaction.getInt(blockId, slotPosition);
+
+        return slotMarker & 1;
+    }
+
     /// Sets the flag of `slot` to `flag`. The flag is stored at the start
-    /// of the slot.
+    /// of the slot, in the first bit.
     private void setFlag(int slot, int flag) {
+        int slotPosition = offset(slot);
+
         transaction.pin(blockId);
-        transaction.setInt(blockId, offset(slot), flag, true);
+        int slotMarker = transaction.getInt(blockId, slotPosition);
+        if (flag == USED) {
+            slotMarker |= 1;
+        } else if (flag == EMPTY) {
+            slotMarker &= ~1;
+        }
+        transaction.setInt(blockId, slotPosition, slotMarker, true);
         transaction.unpin(blockId);
+    }
+
+    /// Sets the field name null bit to 0, meaning the value for that field is non-null.
+    /// Should be called only from the corresponding set \[type\] functions, and assumes the
+    /// transaction pinned the block.
+    private void setNonNull(int slot, String fieldName) {
+        int nullBitPosition = layout.fieldOrderPosition(fieldName) + 1;
+        int setNullMask = ~(1 << nullBitPosition);
+        int slotPosition = offset(slot);
+
+        int slotMarker = transaction.getInt(blockId, slotPosition);
+        slotMarker = slotMarker & setNullMask;
+        transaction.setInt(blockId, slotPosition, slotMarker, true);
     }
 
     /// @return The offset of `slot`.

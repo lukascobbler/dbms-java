@@ -2,9 +2,12 @@ package com.luka.simpledb.recordManagement;
 
 import com.luka.simpledb.fileManagement.Page;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
+import com.luka.simpledb.recordManagement.exceptions.FieldMissingException;
+import com.luka.simpledb.recordManagement.exceptions.RecordTooLongException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.sql.Types.*;
 
@@ -14,25 +17,37 @@ import static java.sql.Types.*;
 public class Layout {
     private final Schema schema;
     private final Map<String, Integer> offsets;
+    private final Map<String, Integer> fieldPositions;
     private final int slotSize;
 
     /// A `Layout` can be instantiated from a schema (when a table is created).
-    public Layout(Schema schema) {
+    public Layout(Schema schema, int blockSize) {
         this.schema = schema;
         offsets = new HashMap<>();
-        int position = Integer.BYTES; // space for the in use flag (basic record manager)
+        fieldPositions = new HashMap<>();
+
+        int position = Integer.BYTES; // space for the in use flag
+        int i = 0;
+
         for (String fieldName : schema.getFields()) {
+            fieldPositions.put(fieldName, i);
             offsets.put(fieldName, position);
             position += lengthInBytes(fieldName);
+            i += 1;
         }
         slotSize = position;
+
+        if (slotSize > blockSize) {
+            throw new RecordTooLongException();
+        }
     }
 
-    /// A `Layout` can be instantiated from a schema, precalculated offsets, and a
-    /// precalculated slot size.
-    public Layout(Schema schema, Map<String, Integer> offsets, int slotSize) {
+    /// A `Layout` can be instantiated from a schema, previously calculated offsets,
+    /// previously calculated slot size and previously calculated field positions.
+    public Layout(Schema schema, Map<String, Integer> offsets, Map<String, Integer> fieldPositions, int slotSize) {
         this.schema = schema;
         this.offsets = offsets;
+        this.fieldPositions = fieldPositions;
         this.slotSize = slotSize;
     }
 
@@ -42,7 +57,10 @@ public class Layout {
         switch (type) {
             case INTEGER -> { return Integer.BYTES; }
             case BOOLEAN -> { return Byte.BYTES; }
-            case VARCHAR -> { return Page.maxLength(schema.length(fieldName)); }
+            case VARCHAR -> {
+                int rawLen = Page.maxLength(schema.length(fieldName));
+                return padToFour(rawLen);
+            }
             default -> throw new DatabaseTypeNotImplementedException();
         }
     }
@@ -59,7 +77,18 @@ public class Layout {
 
     /// @return The offset of the field i.e. where the field starts.
     public int getOffset(String fieldName) {
-        // todo error handling
-        return offsets.get(fieldName);
+        return Optional.ofNullable(offsets.get(fieldName))
+                .orElseThrow(FieldMissingException::new);
+    }
+
+    /// @return The ordered position of the field.
+    public int fieldOrderPosition(String fieldName) {
+        return Optional.ofNullable(fieldPositions.get(fieldName))
+                .orElseThrow(FieldMissingException::new);
+    }
+
+    /// @return Length value padded to nearest 4-byte multiple.
+    private int padToFour(int len) {
+        return (len + 3) & ~3;
     }
 }

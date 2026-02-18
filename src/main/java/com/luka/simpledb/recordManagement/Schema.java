@@ -1,5 +1,7 @@
 package com.luka.simpledb.recordManagement;
 
+import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,34 +14,50 @@ import static java.sql.Types.*;
 public class Schema {
     private final List<String> fields = new ArrayList<>();
     private final Map<String, FieldInfo> info = new HashMap<>();
+    private static final int MAX_FIELDS = 31;
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
     /// the length of that type.
     public void addField(String fieldName, int type, int length) {
+        if (fields.size() + 1 > MAX_FIELDS) {
+            throw new FieldLimitException();
+        }
         fields.add(fieldName);
         info.put(fieldName, new FieldInfo(type, length));
     }
 
     /// Add an integer field.
     public void addIntField(String fieldName) {
+        if (fields.size() + 1 > MAX_FIELDS) {
+            throw new FieldLimitException();
+        }
         fields.add(fieldName);
-        info.put(fieldName, new FieldInfo(INTEGER, 0));
+        info.put(fieldName, new FieldInfo(INTEGER, 4));
     }
 
     /// Add a string field with the maximum length (VARCHAR type).
     public void addStringField(String fieldName, int length) {
+        if (fields.size() + 1 > MAX_FIELDS) {
+            throw new FieldLimitException();
+        }
         fields.add(fieldName);
         info.put(fieldName, new FieldInfo(VARCHAR, length));
     }
 
     /// Add a boolean field.
     public void addBooleanField(String fieldName) {
+        if (fields.size() + 1 > MAX_FIELDS) {
+            throw new FieldLimitException();
+        }
         fields.add(fieldName);
-        info.put(fieldName, new FieldInfo(BOOLEAN, 0));
+        info.put(fieldName, new FieldInfo(BOOLEAN, 1));
     }
 
     /// Add a field described by its name from some other schema.
     public void add(String fieldName, Schema otherSchema) {
+        if (fields.size() + 1 > MAX_FIELDS) {
+            throw new FieldLimitException();
+        }
         int type = otherSchema.type(fieldName);
         int length = otherSchema.length(fieldName);
         addField(fieldName, type, length);
