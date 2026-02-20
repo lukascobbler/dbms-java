@@ -18,6 +18,8 @@ public class Schema {
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
     /// the length of that type.
+    ///
+    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addField(String fieldName, int type, int length) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
@@ -27,6 +29,8 @@ public class Schema {
     }
 
     /// Add an integer field.
+    ///
+    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addIntField(String fieldName) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
@@ -36,6 +40,8 @@ public class Schema {
     }
 
     /// Add a string field with the maximum length (VARCHAR type).
+    ///
+    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addStringField(String fieldName, int length) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
@@ -45,6 +51,8 @@ public class Schema {
     }
 
     /// Add a boolean field.
+    ///
+    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addBooleanField(String fieldName) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
@@ -54,6 +62,8 @@ public class Schema {
     }
 
     /// Add a field described by its name from some other schema.
+    ///
+    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void add(String fieldName, Schema otherSchema) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
@@ -88,6 +98,14 @@ public class Schema {
     /// @return The length of the field described by its name.
     public int length(String fieldName) {
         return info.get(fieldName).length();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Schema schema = (Schema) o;
+        return getFields().equals(schema.getFields()) && info.equals(schema.info);
     }
 }
 

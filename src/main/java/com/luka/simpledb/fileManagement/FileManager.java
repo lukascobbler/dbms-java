@@ -21,6 +21,8 @@ public class FileManager {
     /// The constructor initializes the directory where the database files will
     /// be stored by removing all files that start with "temp", or if the directory
     /// doesn't exist, it creates it.
+    ///
+    /// @throws FileException if the directory couldn't be initialized properly.
     public FileManager(File dbDirectory, int blockSize) {
         this.dbDirectory = dbDirectory;
         this.blockSize = blockSize;
@@ -46,6 +48,7 @@ public class FileManager {
     /// access to any of the files at the same time.
     ///
     /// @return The number of bytes read.
+    /// @throws FileException if the block couldn't be read.
     public synchronized int read(BlockId blockId, Page page) {
         try {
             RandomAccessFile f = getFile(blockId.filename());
@@ -85,6 +88,7 @@ public class FileManager {
     ///
     /// @return The block id that corresponds to the newly written empty
     /// block of the given file.
+    /// @throws FileException if the block couldn't be appended.
     public synchronized BlockId append(String filename) {
         int newBlockNum = lengthInBlocks(filename);
         BlockId blockId = new BlockId(filename, newBlockNum);
@@ -103,6 +107,8 @@ public class FileManager {
     /// Truncates a file by removing the last block,
     /// regardless of its contents. Method is `synchronized`
     /// because only one access to any of the files at the same time.
+    ///
+    /// @throws FileException if the file couldn't be truncated.
     public synchronized void truncate(String filename) {
         try {
             RandomAccessFile f = getFile(filename);
@@ -115,6 +121,7 @@ public class FileManager {
     }
 
     /// @return The number of blocks that the provided file consists of.
+    /// @throws FileException if the file couldn't be accessed.
     public int lengthInBlocks(String filename) {
         try {
             RandomAccessFile f = getFile(filename);

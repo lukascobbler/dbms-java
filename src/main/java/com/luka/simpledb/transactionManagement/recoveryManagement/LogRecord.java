@@ -29,6 +29,7 @@ public interface LogRecord {
     /// will need the list of bytes.
     ///
     /// @return An initialized typed log record.
+    /// @throws LogRecordParseException if the found log type doesn't match any known log type.
     static LogRecord createLogRecord(byte[] bytes) {
         Page p = new Page(bytes);
         switch (LogRecordType.valueOf(p.getInt(0))) {

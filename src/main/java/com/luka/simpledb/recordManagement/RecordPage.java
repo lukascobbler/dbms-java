@@ -111,6 +111,9 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets a string in some slot, in some field with some value.
+    ///
+    /// @throws FieldLengthExceededException if the length of the passed values exceeds
+    /// the maximum length defined by the schema for that field.
     public void setString(int slot, String fieldName, String value) {
         if (value.length() > layout.getSchema().length(fieldName)) {
             throw new FieldLengthExceededException();
@@ -142,6 +145,8 @@ public class RecordPage {
 
     /// Marks every slot in the block as empty and sets all field values to empty
     /// (0 for ints, false for booleans, "" for strings).
+    ///
+    /// @throws DatabaseTypeNotImplementedException if the type for that field is not implemented in the system.
     public void format() {
         int slot = 0;
 
