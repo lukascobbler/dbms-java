@@ -21,6 +21,8 @@ public class Layout {
     private final int slotSize;
 
     /// A `Layout` can be instantiated from a schema (when a table is created).
+    ///
+    /// @throws RecordTooLongException if the slot size is greater than the block size of the system.
     public Layout(Schema schema, int blockSize) {
         this.schema = schema;
         offsets = new HashMap<>();
@@ -42,16 +44,24 @@ public class Layout {
         }
     }
 
-    /// A `Layout` can be instantiated from a schema, previously calculated offsets,
-    /// previously calculated slot size and previously calculated field positions.
-    public Layout(Schema schema, Map<String, Integer> offsets, Map<String, Integer> fieldPositions, int slotSize) {
+    /// A `Layout` can be instantiated from a schema, previously calculated offsets and
+    /// previously calculated slot size.
+    public Layout(Schema schema, Map<String, Integer> offsets, int slotSize) {
         this.schema = schema;
         this.offsets = offsets;
-        this.fieldPositions = fieldPositions;
         this.slotSize = slotSize;
+
+        this.fieldPositions = new HashMap<>();
+
+        int i = 0;
+        for (String fieldName : schema.getFields()) {
+            fieldPositions.put(fieldName, i);
+            i += 1;
+        }
     }
 
     /// @return The number of bytes for a given field.
+    /// @throws DatabaseTypeNotImplementedException if the type for that field is not implemented in the system.
     private int lengthInBytes(String fieldName) {
         int type = schema.type(fieldName);
         switch (type) {
