@@ -1,0 +1,87 @@
+package com.luka.simpledb.metadataManagement;
+
+import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
+import com.luka.simpledb.queryManagement.TableScan;
+import com.luka.simpledb.recordManagement.Layout;
+import com.luka.simpledb.transactionManagement.Transaction;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/// Keeps track of useful statistics for each table. They include: number of blocks,
+/// number of records, number of unique values for each field. It uses the implementation
+/// approach of keeping the statistics in-memory and recalculates them on system startup.
+public class StatisticsMetadataManager {
+    private final TableMetadataManager tableMetadataManager;
+    private Map<String, StatisticsInfo> tableStats;
+    private int numCalls;
+
+    /// Initializes the statistics data manager by calculating
+    /// statistics for every table.
+    public StatisticsMetadataManager(TableMetadataManager tableMetadataManager, Transaction transaction) {
+        this.tableMetadataManager = tableMetadataManager;
+        refreshStatistics(transaction);
+    }
+
+    /// @return Statistical information for a given table. If the stats don't
+    /// exist for that table at the time of calling, they are calculated and returned.
+    /// Every 100 invocations, the statistics for the whole database get recalculated.
+    public synchronized StatisticsInfo getStatisticsInfo(String tableName, Layout layout, Transaction transaction) {
+        numCalls++;
+
+        if (numCalls > 100) {
+            refreshStatistics(transaction);
+        }
+
+        StatisticsInfo statisticsInfo = tableStats.get(tableName);
+
+        if (statisticsInfo == null) {
+            statisticsInfo = calculateTableStats(tableName, layout, transaction);
+            tableStats.put(tableName, statisticsInfo);
+        }
+
+        return statisticsInfo;
+    }
+
+    /// Goes over every table and recalculates statistical data for every table.
+    /// Synchronized because this should not be happening more than once
+    /// at the same time in the whole system.
+    private synchronized void refreshStatistics(Transaction transaction) {
+        tableStats = new HashMap<>();
+        numCalls = 0;
+
+        Layout tableCatalogLayout = tableMetadataManager.getLayout("tablecatalog", transaction);
+        TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
+
+        try (tableCatalogScan) {
+            while (tableCatalogScan.next()) {
+                String tableName = tableCatalogScan.getString("tablename");
+                Layout layout = tableMetadataManager.getLayout(tableName, transaction);
+                StatisticsInfo statisticsInfo = calculateTableStats(tableName, layout, transaction);
+                tableStats.put(tableName, statisticsInfo);
+            }
+        }
+    }
+
+    /// Does a full table scan, incrementing the number of records and
+    /// getting the latest block number for every record. Synchronized
+    /// because threads no two threads should be calculating stats for the
+    /// same table at the same time.
+    ///
+    /// @return Calculated statistics for the given table.
+    private synchronized StatisticsInfo calculateTableStats(String tableName, Layout layout, Transaction transaction) {
+        int numRecords = 0;
+        int numBlocks = 0;
+
+        TableScan tableScan = new TableScan(transaction, tableName, layout);
+
+        try (tableScan) {
+            while (tableScan.next()) {
+                numRecords++;
+                numBlocks = tableScan.getRecordId().blockNum() + 1;
+            }
+        }
+
+        return new StatisticsInfo(numBlocks, numRecords);
+    }
+}
