@@ -1,11 +1,14 @@
 package com.luka.transactionManagement;
 
+import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.bufferManagement.BufferManager;
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.logManagement.LogManager;
+import com.luka.simpledb.simpleDB.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
+import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -13,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,26 +23,12 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetInt(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction1");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction1");
-        boolean s1 = dbDir.mkdirs();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = simpleDB.newTransaction();
+        Transaction transaction2 = simpleDB.newTransaction();
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -59,26 +47,12 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetIntRollback(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction2");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction2");
-        boolean s1 = dbDir.mkdirs();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "temp_log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = simpleDB.newTransaction();
+        Transaction transaction2 = simpleDB.newTransaction();
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -99,27 +73,13 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testConcurrentGetIntSameBlockSameTime(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction3");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction3");
-        boolean s1 = dbDir.mkdirs();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        Transaction transaction0 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction0 = simpleDB.newTransaction();
+        Transaction transaction1 = simpleDB.newTransaction();
+        Transaction transaction2 = simpleDB.newTransaction();
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -143,26 +103,17 @@ public class TransactionManagementTests {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testSystemRecoveryUndoNonCommitedAppendBlocks(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+    public void testSystemRecoveryUndoNonCommitedAppendBlocks(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction4");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction4");
-        boolean s1 = dbDir.mkdirs();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
 
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        Transaction transaction0 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         transaction0.append("file1", true);
         transaction0.append("file1", true);
@@ -170,37 +121,26 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        fileManager = new FileManager(dbDir, 4096);
-        logManager = new LogManager(fileManager, "log_file");
-        bufferManager = new BufferManager(fileManager, logManager, 10);
-        lockTable = new LockTable();
+        simpleDB = new SimpleDB(tempDirectory);
 
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = simpleDB.newTransaction();
         transaction1.recover();
 
-        assertEquals(0, fileManager.lengthInBlocks("file1"));
+        File dbTableFile = new File(tempDirectory, "file1");
+
+        try (RandomAccessFile f = new RandomAccessFile(dbTableFile, "rws")) {
+            assertEquals(0, f.length());
+        } catch (IOException e) {
+            throw new IOException();
+        }
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testSystemRecoveryUndoNonCommitedUpdates(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+    public void testSystemRecoveryUndoNonCommitedUpdates(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction5");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction5");
-        boolean s1 = dbDir.mkdirs();
-
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
         BlockId b0 = new BlockId("file1", 0);
 
@@ -208,12 +148,17 @@ public class TransactionManagementTests {
         String setString = "test";
         boolean setBoolean = true;
 
-        Transaction transaction0 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
+
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         transaction0.append("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setString(b0, 100, setString, true);
@@ -221,15 +166,13 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        fileManager = new FileManager(dbDir, 4096);
-        logManager = new LogManager(fileManager, "log_file");
-        bufferManager = new BufferManager(fileManager, logManager, 10);
-        lockTable = new LockTable();
+        simpleDB = new SimpleDB(tempDirectory);
+        fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
 
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction2 = simpleDB.newTransaction();
         transaction2.recover();
 
-        assertEquals(1, fileManager.lengthInBlocks("file1"));
+        assertEquals(1, fm.lengthInBlocks("file1"));
 
         transaction2.pin(b0);
         int retunedInt = transaction2.getInt(b0, 0);
@@ -243,24 +186,10 @@ public class TransactionManagementTests {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testSystemRecoveryUndoNonCommitedMixed(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+    public void testSystemRecoveryUndoNonCommitedMixed(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction6");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction6");
-        boolean s1 = dbDir.mkdirs();
-
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
         BlockId b0 = new BlockId("file1", 0);
         BlockId b3 = new BlockId("file1", 3);
@@ -269,12 +198,17 @@ public class TransactionManagementTests {
         String setString = "test";
         boolean setBoolean = true;
 
-        Transaction transaction0 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
+
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         transaction0.append("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setString(b0, 100, setString, true);
@@ -287,15 +221,16 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        fileManager = new FileManager(dbDir, 4096);
-        logManager = new LogManager(fileManager, "log_file");
-        bufferManager = new BufferManager(fileManager, logManager, 10);
-        lockTable = new LockTable();
+        simpleDB = new SimpleDB(tempDirectory);
+        fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
 
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction2.recover();
 
-        assertEquals(1, fileManager.lengthInBlocks("file1"));
+        assertEquals(1, fm.lengthInBlocks("file1"));
 
         transaction2.pin(b0);
         int retunedInt = transaction2.getInt(b0, 0);
@@ -309,71 +244,67 @@ public class TransactionManagementTests {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testTransactionNumbersContinuingAfterRecoveryWithQuiescentCheckpointing(boolean undoOnlyRecovery) throws NoSuchFieldException, IllegalAccessException, IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+    public void testTransactionNumbersContinuingAfterRecoveryWithQuiescentCheckpointing(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction7");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction7");
-        boolean s1 = dbDir.mkdirs();
-
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
-
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
-
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        BlockId b0 = new BlockId("file1", 0);
+        SimpleDBSettings recoverySettings = new SimpleDBSettings();
+        recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
         Field field = Transaction.class.getDeclaredField("nextTransactionNum");
         field.setAccessible(true);
         field.set(null, 0);
 
-        Transaction transaction0 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+
+        BlockId b0 = new BlockId("file1", 0);
+
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
+
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         transaction0.append("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, 1, true);
         transaction1.commit();
 
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction2.pin(b0);
         transaction2.setInt(b0, 0, 2, true);
         transaction2.commit();
 
-        Transaction transaction3 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction3 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction3.pin(b0);
         transaction3.setInt(b0, 0, 3, true);
         transaction3.commit();
 
-        Transaction transaction4 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction4 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
         transaction4.pin(b0);
         transaction4.setInt(b0, 0, 4, true);
         transaction4.commit();
 
         // simulating system crash by manager reinstantiation
-        fileManager = new FileManager(dbDir, 4096);
-        logManager = new LogManager(fileManager, "log_file");
-        bufferManager = new BufferManager(fileManager, logManager, 10);
-        lockTable = new LockTable();
-
         field.set(null, 0);
+        simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
 
         // first test without quiescent checkpointing
-        Transaction transaction5 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        transaction5.recover();
+        Transaction transaction5 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        assertEquals(1, fileManager.lengthInBlocks("file1"));
+        assertEquals(1, fm.lengthInBlocks("file1"));
 
-        assertEquals(6, transaction5.getTransactionNumber());
+        // the expected transaction number is 8 because there will be one additional
+        // transaction on every SimpleDB object creation (and there were two of them)
+        // plus the 6 that are defined in this test
+        assertEquals(8, transaction5.getTransactionNumber());
 
         transaction5.pin(b0);
         int retunedInt = transaction5.getInt(b0, 0);
@@ -381,34 +312,27 @@ public class TransactionManagementTests {
         assertEquals(4, retunedInt);
 
         // with quiescent checkpointing
-        Transaction transaction6 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        transaction6.recover();
+        Transaction transaction6 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        assertEquals(6, transaction5.getTransactionNumber());
+        assertEquals(8, transaction5.getTransactionNumber());
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testRedoRecovery(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = System.getProperty("java.io.tmpdir");
+    public void testRedoRecovery(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction8");
 
-        File dbDir = new File(tempDirectory + "/temp_transaction8");
-        boolean s1 = dbDir.mkdirs();
+        SimpleDBSettings recoverySettings = new SimpleDBSettings();
+        recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        for (String filename : Objects.requireNonNull(dbDir.list())) {
-            boolean s2 = new File(dbDir, filename).delete();
-        }
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, recoverySettings);
 
-        // log file initialization
-        RandomAccessFile f = new RandomAccessFile(dbDir + "/log_file", "rws");
-        f.close();
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
 
-        FileManager fileManager = new FileManager(dbDir, 4096);
-        LogManager logManager = new LogManager(fileManager, "log_file");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 10);
-        LockTable lockTable = new LockTable();
-
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -421,13 +345,13 @@ public class TransactionManagementTests {
         transaction1.commit();
 
         // simulating system crash by manager reinstantiation
-        fileManager = new FileManager(dbDir, 4096);
-        logManager = new LogManager(fileManager, "log_file");
-        bufferManager = new BufferManager(fileManager, logManager, 10);
-        lockTable = new LockTable();
+        simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(simpleDB, "lockTable");
 
-        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
-        transaction2.recover();
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
         transaction2.pin(b0);
         int retunedInt = transaction2.getInt(b0, 0);

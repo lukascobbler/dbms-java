@@ -8,6 +8,7 @@ import com.luka.simpledb.transactionManagement.Transaction;
 
 import static java.sql.Types.*;
 
+// todo comment class once indexes are implemented
 public class IndexInfo {
     private final String indexName, fieldName;
     private final IndexType indexType;
@@ -68,13 +69,5 @@ public class IndexInfo {
         }
 
         return new Layout(schema, transaction.blockSize());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-
-        IndexInfo indexInfo = (IndexInfo) o;
-        return indexName.equals(indexInfo.indexName) && fieldName.equals(indexInfo.fieldName) && indexType == indexInfo.indexType && tableSchema.equals(indexInfo.tableSchema);
     }
 }

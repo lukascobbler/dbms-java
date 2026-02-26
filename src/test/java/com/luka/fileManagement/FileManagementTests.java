@@ -35,6 +35,7 @@ public class FileManagementTests {
 
         File dbDir = new File(tempDirectory + "/temp_page_writing");
         FileManager mgr = new FileManager(dbDir, 200);
+        mgr.append("read_write");
 
         BlockId b1 = new BlockId("read_write", 0);
         Page p1 = new Page(mgr.getBlockSize());
