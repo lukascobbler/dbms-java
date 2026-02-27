@@ -40,7 +40,7 @@ public class MetadataManager {
     }
 
     /// @return The layout associated with the passed table name.
-    /// @throws TableLayoutNotFoundException if the table was not found.
+    /// @throws TableNotFoundException if the table was not found.
     public Layout getLayout(String tableName, Transaction transaction) {
         return tableMetadataManager.getLayout(tableName, transaction);
     }

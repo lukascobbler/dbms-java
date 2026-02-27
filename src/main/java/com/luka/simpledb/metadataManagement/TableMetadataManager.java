@@ -1,6 +1,6 @@
 package com.luka.simpledb.metadataManagement;
 
-import com.luka.simpledb.metadataManagement.exceptions.TableLayoutNotFoundException;
+import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
@@ -15,12 +15,14 @@ import java.util.Map;
 public class TableMetadataManager {
     public static final int MAX_NAME_LENGTH = 32;
     private final Layout tableCatalogLayout, fieldCatalogLayout;
+    private static int nextTableNum = 0;
 
     /// Instantiates a new `TableMetadataManager` that has always in-memory layouts
     /// for catalog tables to improve efficiency. If the system is initialized for the first time
     /// (noted by `isNew`), the manager creates catalog tables as well.
     public TableMetadataManager(boolean isNew, Transaction transaction) {
         Schema tableCatalogSchema = new Schema();
+        tableCatalogSchema.addIntField("tableid", false);
         tableCatalogSchema.addStringField("tablename", MAX_NAME_LENGTH, false);
         tableCatalogSchema.addIntField("slotsize", false);
         tableCatalogLayout = new Layout(tableCatalogSchema, transaction.blockSize());
@@ -29,14 +31,17 @@ public class TableMetadataManager {
         fieldCatalogSchema.addIntField("type", false);
         fieldCatalogSchema.addIntField("length", false);
         fieldCatalogSchema.addIntField("offset", false);
-        fieldCatalogSchema.addStringField("tablename", MAX_NAME_LENGTH, false);
+        fieldCatalogSchema.addIntField("tableid", false);
         fieldCatalogSchema.addStringField("fieldname", MAX_NAME_LENGTH, false);
         fieldCatalogSchema.addBooleanField("nullable", false);
         fieldCatalogLayout = new Layout(fieldCatalogSchema, transaction.blockSize());
 
         if (isNew) {
+            nextTableNum = 1;
             createTable("tablecatalog", tableCatalogSchema, transaction);
             createTable("fieldcatalog", fieldCatalogSchema, transaction);
+        } else {
+            nextTableNum = getLatestTableIdNum(transaction);
         }
     }
 
@@ -45,10 +50,12 @@ public class TableMetadataManager {
     /// of that table in the field catalog.
     public void createTable(String tableName, Schema schema, Transaction transaction) {
         Layout layout = new Layout(schema, transaction.blockSize());
+        int tableIdNum = nextTableIdNum();
 
         TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
         try (tableCatalogScan) {
             tableCatalogScan.insert();
+            tableCatalogScan.setInt("tableid", tableIdNum);
             tableCatalogScan.setString("tablename", tableName);
             tableCatalogScan.setInt("slotsize", layout.getSlotSize());
         }
@@ -57,7 +64,7 @@ public class TableMetadataManager {
         try (fieldCatalogScan) {
             for (String fieldName : schema.getFields()) {
                 fieldCatalogScan.insert();
-                fieldCatalogScan.setString("tablename", tableName);
+                fieldCatalogScan.setInt("tableid", tableIdNum);
                 fieldCatalogScan.setString("fieldname", fieldName);
                 fieldCatalogScan.setBoolean("nullable", schema.isNullable(fieldName));
                 fieldCatalogScan.setInt("type", schema.type(fieldName));
@@ -72,22 +79,24 @@ public class TableMetadataManager {
     /// lengths. Reconstructs a layout from all that information.
     ///
     /// @return The layout matching the table name passed.
-    /// @throws TableLayoutNotFoundException if the table was not found.
+    /// @throws TableNotFoundException if the table was not found.
     public Layout getLayout(String tableName, Transaction transaction) {
         int size = -1;
+        int tableId = -1;
         TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
                 if (tableCatalogScan.getString("tablename").equals(tableName)) {
                     size = tableCatalogScan.getInt("slotsize");
+                    tableId = tableCatalogScan.getInt("tableid");
                     break;
                 }
             }
         }
 
         if (size == -1) {
-            throw new TableLayoutNotFoundException();
+            throw new TableNotFoundException();
         }
 
         Schema schema = new Schema();
@@ -97,7 +106,7 @@ public class TableMetadataManager {
 
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
-                if (fieldCatalogScan.getString("tablename").equals(tableName)) {
+                if (fieldCatalogScan.getInt("tableid") == tableId) {
                     String fieldName = fieldCatalogScan.getString("fieldname");
                     int fieldType = fieldCatalogScan.getInt("type");
                     int fieldLength = fieldCatalogScan.getInt("length");
@@ -115,17 +124,61 @@ public class TableMetadataManager {
     /// Removes the metadata for the field, thereby making the field
     /// not accessible anymore by any means.
     public void removeField(String tableName, String fieldName, Transaction transaction) {
+        int tableId = -1;
+        TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
+
+        try (tableCatalogScan) {
+            while (tableCatalogScan.next()) {
+                if (tableCatalogScan.getString("tablename").equals(tableName)) {
+                    tableId = tableCatalogScan.getInt("tableid");
+                    break;
+                }
+            }
+        }
+
+        if (tableId == -1) {
+            throw new TableNotFoundException();
+        }
+
         TableScan fieldCatalogScan = new TableScan(transaction, "fieldcatalog", fieldCatalogLayout);
 
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
                 if (
-                    fieldCatalogScan.getString("tablename").equals(tableName) &&
+                    fieldCatalogScan.getInt("tableid") == tableId &&
                     fieldCatalogScan.getString("fieldname").equals(fieldName)
                 ) {
                     fieldCatalogScan.delete();
                 }
             }
         }
+    }
+
+    /// @return The largest table id number. Should be run only on startup.
+    private int getLatestTableIdNum(Transaction transaction) {
+        int maxTableNumber = -1;
+
+        TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
+
+        try (tableCatalogScan) {
+            while (tableCatalogScan.next()) {
+                int currentTableId = tableCatalogScan.getInt("tableid");
+                if (currentTableId > maxTableNumber) {
+                    maxTableNumber = currentTableId;
+                }
+            }
+        }
+
+        return maxTableNumber;
+    }
+
+    /// Method is `synchronized` to ensure that two table
+    /// creations don't get the same table id number.
+    ///
+    /// @return The table id number representing the next
+    /// table id in the system.
+    private static synchronized int nextTableIdNum() {
+        nextTableNum++;
+        return nextTableNum;
     }
 }

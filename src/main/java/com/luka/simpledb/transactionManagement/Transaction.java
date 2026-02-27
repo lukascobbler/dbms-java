@@ -209,10 +209,11 @@ public class Transaction {
         return bufferManager.available();
     }
 
+    /// Method is `synchronized` to ensure that two transactions
+    /// don't get the  same transaction number.
+    ///
     /// @return The transaction number representing the next
-    /// transaction in the system. Method is `synchronized`
-    /// to ensure that two transactions don't get the
-    /// same transaction number.
+    /// transaction in the system.
     private static synchronized int nextTransactionNumber() {
         nextTransactionNum++;
         return nextTransactionNum;
