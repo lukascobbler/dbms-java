@@ -51,7 +51,7 @@ public class SimpleDB {
             transaction.recover();
         }
 
-        metadataManager = new MetadataManager(isNew, transaction);
+        metadataManager = new MetadataManager(transaction, fileManager);
         transaction.commit();
     }
 

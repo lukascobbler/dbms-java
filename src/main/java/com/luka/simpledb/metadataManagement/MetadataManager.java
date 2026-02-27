@@ -1,5 +1,6 @@
 package com.luka.simpledb.metadataManagement;
 
+import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
@@ -19,7 +20,8 @@ public class MetadataManager {
     private final IndexMetadataManager indexMetadataManager;
 
     /// Initializes every type of metadata manager, starting from the table manager.
-    public MetadataManager(boolean isNew, Transaction transaction) {
+    public MetadataManager(Transaction transaction, FileManager fileManager) {
+        boolean isNew = fileManager.lengthInBlocks("tablecatalog.table") == 0;
         tableMetadataManager = new TableMetadataManager(isNew, transaction);
         viewMetadataManager = new ViewMetadataManager(isNew, tableMetadataManager, transaction);
         statisticsMetadataManager = new StatisticsMetadataManager(tableMetadataManager, transaction);

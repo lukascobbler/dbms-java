@@ -34,4 +34,10 @@ public abstract class TestUtils {
         field.setAccessible(true);
         return field.get(instance);
     }
+
+    /// @return Whether a file exists.
+    public static boolean fileExists(File dbDirectory, String fileName) {
+        File file = new File(dbDirectory, fileName);
+        return file.exists() && file.isFile();
+    }
 }

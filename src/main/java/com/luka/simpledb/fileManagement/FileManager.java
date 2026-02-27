@@ -5,6 +5,8 @@ import com.luka.simpledb.fileManagement.exceptions.FileException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -107,6 +109,7 @@ public class FileManager {
     /// Truncates a file by removing the last block,
     /// regardless of its contents. Method is `synchronized`
     /// because only one access to any of the files at the same time.
+    /// If the file is to be at 0 bytes after truncation, remove it.
     ///
     /// @throws FileException if the file couldn't be truncated.
     public synchronized void truncate(String filename) {
@@ -115,6 +118,10 @@ public class FileManager {
             long length = f.length();
             long newLength = length > blockSize ? length - blockSize : 0;
             f.setLength(newLength);
+
+            if (newLength == 0) {
+                removeFile(filename);
+            }
         } catch (IOException e) {
             throw new FileException("cannot truncate file " + filename);
         }
@@ -165,10 +172,28 @@ public class FileManager {
         return f;
     }
 
-    private static boolean isAllZero(byte[] buffer) {
-        for (byte b : buffer) {
-            if (b != 0) return false;
+    /// Removes a file managed by this database.
+    /// @throws FileException if the file couldn't be deleted or is not managed by this database.
+    private synchronized void removeFile(String filename) {
+        RandomAccessFile f = openFiles.remove(filename);
+
+        if (f == null) {
+            throw new FileException("cannot remove file not managed by this database: " + filename);
         }
-        return true;
+
+        try {
+            f.close();
+        } catch (IOException e) {
+            System.err.println("warning: Failed to close handle for " + filename);
+        }
+
+        File file = new File(dbDirectory, filename);
+        Path filePath = file.toPath();
+
+        try {
+            Files.delete(filePath);
+        } catch (IOException e) {
+            throw new FileException("failed to delete file: " + filename);
+        }
     }
 }

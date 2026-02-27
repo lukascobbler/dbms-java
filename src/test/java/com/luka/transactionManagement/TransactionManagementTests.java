@@ -359,4 +359,33 @@ public class TransactionManagementTests {
 
         assertEquals(setInt, retunedInt);
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testRemoveFileAddedByTransactionOneBlockLargeIfCommitNotSuccessful(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction9");
+        File dbDirectory = new File(tempDirectory);
+
+        SimpleDBSettings recoverySettings = new SimpleDBSettings();
+        recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+
+        FileManager fileManager = new FileManager(dbDirectory, 4096);
+        LogManager logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_SIZE);
+        LockTable lockTable = new LockTable();
+
+        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+
+        transaction1.append("file1", true);
+
+        fileManager = new FileManager(dbDirectory, 4096);
+        logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
+        bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_SIZE);
+        lockTable = new LockTable();
+
+        Transaction transaction2 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        transaction2.recover();
+
+        assertFalse(TestUtils.fileExists(dbDirectory, "file1"));
+    }
 }

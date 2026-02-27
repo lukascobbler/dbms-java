@@ -83,8 +83,8 @@ public class RecordManagementTests {
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
-        sch.addIntField("A", false);
-        sch.addStringField("B", 50, false);
+        sch.addIntField("A", true);
+        sch.addStringField("B", 50, true);
         Layout layout = new Layout(sch, tx.blockSize());
 
         BlockId blk = tx.append("testfile", true);

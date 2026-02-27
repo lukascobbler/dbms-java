@@ -38,7 +38,7 @@ public class TableMetadataManagerTests {
     // the test from the book Fig 7.5
     @Test
     public void testTableCatalog() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table1");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table2");
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -59,12 +59,12 @@ public class TableMetadataManagerTests {
 
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
-                String tableName = fieldCatalogScan.getString("tablename");
+                int tableId = fieldCatalogScan.getInt("tableid");
                 String fieldName = fieldCatalogScan.getString("fieldname");
                 int type = fieldCatalogScan.getInt("type");
                 int length = fieldCatalogScan.getInt("length");
                 int offset = fieldCatalogScan.getInt("offset");
-                System.out.println("Table name: " + tableName + ", field name: " +
+                System.out.println("Table Id: " + tableId + ", field name: " +
                         fieldName + ", field type: " + type + ", length: " + length + ", offset: " + offset);
             }
         }
