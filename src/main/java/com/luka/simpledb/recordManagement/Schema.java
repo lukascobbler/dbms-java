@@ -1,6 +1,6 @@
 package com.luka.simpledb.recordManagement;
 
-import com.luka.simpledb.recordManagement.exceptions.FieldAlreadyAddedException;
+import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
 import java.util.ArrayList;
@@ -21,13 +21,13 @@ public class Schema {
     /// the length of that type.
     ///
     /// @throws FieldLimitException if the maximum number of fields is reached.
-    /// @throws FieldAlreadyAddedException if the field already exists within this schema.
+    /// @throws FieldDuplicateNameException if the field already exists within this schema.
     public void addField(String fieldName, int type, int length, boolean isNullable) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
         }
         if (fields.contains(fieldName)) {
-            throw new FieldAlreadyAddedException();
+            throw new FieldDuplicateNameException();
         }
         fields.add(fieldName);
         info.put(fieldName, new FieldInfo(type, length, isNullable));

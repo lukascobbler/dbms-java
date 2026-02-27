@@ -1,5 +1,6 @@
 package com.luka.simpledb.metadataManagement;
 
+import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
@@ -48,7 +49,19 @@ public class TableMetadataManager {
     /// Creates a table with `tableName` that is defined by `schema` in current transaction.
     /// Internally, it adds a new row to the table catalog, and adds a new row for every field
     /// of that table in the field catalog.
+    ///
+    /// @throws TableDuplicateNameException if the table already exists with the same name in the system.
     public void createTable(String tableName, Schema schema, Transaction transaction) {
+        TableScan tableCatalogDuplicateScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
+
+        try (tableCatalogDuplicateScan) {
+            while (tableCatalogDuplicateScan.next()) {
+                if (tableCatalogDuplicateScan.getString("tablename").equals(tableName)) {
+                    throw new TableDuplicateNameException();
+                }
+            }
+        }
+
         Layout layout = new Layout(schema, transaction.blockSize());
         int tableIdNum = nextTableIdNum();
 

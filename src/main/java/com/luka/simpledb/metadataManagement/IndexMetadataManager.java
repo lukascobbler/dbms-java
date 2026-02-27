@@ -1,5 +1,8 @@
 package com.luka.simpledb.metadataManagement;
 
+import com.luka.simpledb.metadataManagement.exceptions.IndexDuplicateNameException;
+import com.luka.simpledb.metadataManagement.exceptions.IndexTableIncorrectException;
+import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
@@ -38,7 +41,30 @@ public class IndexMetadataManager {
     }
 
     /// Creates a new index on a field in a table. Adds the index to the index catalog.
+    ///
+    /// @throws IndexTableIncorrectException if either the table was not found, or the field in that table
+    /// was not found.
+    /// @throws IndexDuplicateNameException if an index with the same name already exists.
     public void createIndex(String indexName, String tableName, String fieldName, IndexType indexType, Transaction transaction) {
+        try {
+            Layout tableLayout = tableMetadataManager.getLayout(tableName, transaction);
+            if (!tableLayout.getSchema().hasField(fieldName)) {
+                throw new IndexTableIncorrectException();
+            }
+        } catch (TableNotFoundException _e) {
+            throw new IndexTableIncorrectException();
+        }
+
+        TableScan indexCatalogDuplicateScan = new TableScan(transaction, "indexcatalog", indexCatalogLayout);
+
+        try (indexCatalogDuplicateScan) {
+            while (indexCatalogDuplicateScan.next()) {
+                if (indexCatalogDuplicateScan.getString("indexname").equals(indexName)) {
+                    throw new IndexDuplicateNameException();
+                }
+            }
+        }
+
         TableScan indexCatalogScan = new TableScan(transaction, "indexcatalog", indexCatalogLayout);
 
         try (indexCatalogScan) {
@@ -61,6 +87,7 @@ public class IndexMetadataManager {
                     indexCatalogScan.getString("fieldname").equals(fieldName)
                 ) {
                     indexCatalogScan.delete();
+                    return;
                 }
             }
         }

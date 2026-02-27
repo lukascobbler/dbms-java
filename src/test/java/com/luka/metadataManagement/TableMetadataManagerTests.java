@@ -1,5 +1,7 @@
 package com.luka.metadataManagement;
 
+import com.luka.simpledb.metadataManagement.MetadataManager;
+import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 public class TableMetadataManagerTests {
     // the test from the book Fig 7.2, modified so
@@ -68,6 +71,23 @@ public class TableMetadataManagerTests {
                         fieldName + ", field type: " + type + ", length: " + length + ", offset: " + offset);
             }
         }
+
+        tx.commit();
+    }
+
+    @Test
+    public void testDuplicateTableName() throws IOException {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table3");
+
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        Transaction tx = simpleDB.newTransaction();
+        MetadataManager metadataManager = simpleDB.getMetadataManager();
+
+        Schema schema = new Schema();
+        schema.addIntField("field", false);
+
+        metadataManager.createTable("tbl1", schema, tx);
+        assertThrowsExactly(TableDuplicateNameException.class, () -> metadataManager.createTable("tbl1", schema, tx));
 
         tx.commit();
     }

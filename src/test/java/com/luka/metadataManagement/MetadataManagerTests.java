@@ -1,13 +1,14 @@
 package com.luka.metadataManagement;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
+import com.luka.simpledb.metadataManagement.TableMetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
-import com.luka.simpledb.recordManagement.exceptions.FieldMissingException;
+import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
@@ -73,7 +74,7 @@ public class MetadataManagerTests {
     }
 
     @Test
-    public void testRemoveFieldReconstructTableAndIndex() throws IOException {
+    public void testRemoveFieldReconstructTableAndIndex() throws Exception {
         String tempDirectory = TestUtils.setUpTempDirectory("temp_queries3");
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
@@ -122,14 +123,37 @@ public class MetadataManagerTests {
                 assertEquals(100, tableScanGet.getInt("not-removed3"));
                 assertFalse(tableScanGet.hasField("removed1"));
                 assertFalse(tableScanGet.hasField("removed2"));
-                assertThrowsExactly(FieldMissingException.class, () -> tableScanGet.getInt("removed1"));
-                assertThrowsExactly(FieldMissingException.class, () -> tableScanGet.getInt("removed2"));
+                assertThrowsExactly(FieldNotFoundException.class, () -> tableScanGet.getInt("removed1"));
+                assertThrowsExactly(FieldNotFoundException.class, () -> tableScanGet.getInt("removed2"));
             }
         }
 
         Map<String, IndexInfo> indexes = metadataManager.getIndexInfo("TestTable1", transaction);
         assertFalse(indexes.containsKey("removed1"));
         assertFalse(indexes.containsKey("removed2"));
+
+        TableMetadataManager tableMetadataManager = (TableMetadataManager) TestUtils.getPrivateField(metadataManager, "tableMetadataManager");
+        Layout fieldCatalogLayout = (Layout) TestUtils.getPrivateField(tableMetadataManager, "fieldCatalogLayout");
+        TableScan fieldCatalogScan = new TableScan(transaction, "fieldcatalog", fieldCatalogLayout);
+
+        boolean removed1Found = false, removed2Found = false, removed3Found = false;
+        try (fieldCatalogScan) {
+            while (fieldCatalogScan.next()) {
+                if (fieldCatalogScan.getString("fieldname").equals("removed1")) {
+                    removed1Found = true;
+                }
+                if (fieldCatalogScan.getString("fieldname").equals("removed2")) {
+                    removed2Found = true;
+                }
+                if (fieldCatalogScan.getString("fieldname").equals("removed3")) {
+                    removed3Found = true;
+                }
+            }
+        }
+
+        assertFalse(removed1Found);
+        assertFalse(removed2Found);
+        assertFalse(removed3Found);
 
         transaction.commit();
     }

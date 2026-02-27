@@ -2,7 +2,7 @@ package com.luka.simpledb.recordManagement;
 
 import com.luka.simpledb.fileManagement.Page;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
-import com.luka.simpledb.recordManagement.exceptions.FieldMissingException;
+import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.recordManagement.exceptions.RecordTooLongException;
 
 import java.util.HashMap;
@@ -86,17 +86,17 @@ public class Layout {
     }
 
     /// @return The offset of the field i.e. where the field starts.
-    /// @throws FieldMissingException if the field does not exist on this layout.
+    /// @throws FieldNotFoundException if the field does not exist on this layout.
     public int getOffset(String fieldName) {
         return Optional.ofNullable(offsets.get(fieldName))
-                .orElseThrow(FieldMissingException::new);
+                .orElseThrow(FieldNotFoundException::new);
     }
 
     /// @return The ordered position of the field.
-    /// @throws FieldMissingException if the field does not exist on this layout.
+    /// @throws FieldNotFoundException if the field does not exist on this layout.
     public int fieldOrderPosition(String fieldName) {
         return Optional.ofNullable(fieldPositions.get(fieldName))
-                .orElseThrow(FieldMissingException::new);
+                .orElseThrow(FieldNotFoundException::new);
     }
 
     /// @return Length value padded to nearest 4-byte multiple.
