@@ -111,4 +111,21 @@ public class TableMetadataManager {
 
         return new Layout(schema, offsets, size);
     }
+
+    /// Removes the metadata for the field, thereby making the field
+    /// not accessible anymore by any means.
+    public void removeField(String tableName, String fieldName, Transaction transaction) {
+        TableScan fieldCatalogScan = new TableScan(transaction, "fieldcatalog", fieldCatalogLayout);
+
+        try (fieldCatalogScan) {
+            while (fieldCatalogScan.next()) {
+                if (
+                    fieldCatalogScan.getString("tablename").equals(tableName) &&
+                    fieldCatalogScan.getString("fieldname").equals(fieldName)
+                ) {
+                    fieldCatalogScan.delete();
+                }
+            }
+        }
+    }
 }

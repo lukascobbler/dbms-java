@@ -86,12 +86,14 @@ public class Layout {
     }
 
     /// @return The offset of the field i.e. where the field starts.
+    /// @throws FieldMissingException if the field does not exist on this layout.
     public int getOffset(String fieldName) {
         return Optional.ofNullable(offsets.get(fieldName))
                 .orElseThrow(FieldMissingException::new);
     }
 
     /// @return The ordered position of the field.
+    /// @throws FieldMissingException if the field does not exist on this layout.
     public int fieldOrderPosition(String fieldName) {
         return Optional.ofNullable(fieldPositions.get(fieldName))
                 .orElseThrow(FieldMissingException::new);

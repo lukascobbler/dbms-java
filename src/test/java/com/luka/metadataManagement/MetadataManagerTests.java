@@ -7,6 +7,7 @@ import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.exceptions.FieldMissingException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
@@ -15,8 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MetadataManagerTests {
     // the test from the book Fig 7.18, modified so
@@ -68,6 +68,68 @@ public class MetadataManagerTests {
         Map<String, IndexInfo> indexInfo = metadataManager.getIndexInfo("TestTable1", transaction);
         assertTrue(indexInfo.get("A").recordsOutput() > 50 / 40);
         assertTrue(indexInfo.get("B").recordsOutput() > 50 / 40);
+
+        transaction.commit();
+    }
+
+    @Test
+    public void testRemoveFieldReconstructTableAndIndex() throws IOException {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries3");
+
+        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        Transaction transaction = simpleDB.newTransaction();
+        MetadataManager metadataManager = simpleDB.getMetadataManager();
+
+        Schema schema = new Schema();
+        schema.addIntField("not-removed1", false);
+        schema.addIntField("removed1", false);
+        schema.addIntField("not-removed2", false);
+        schema.addIntField("removed2", false);
+        schema.addIntField("not-removed3", false);
+
+        metadataManager.createTable("TestTable1", schema, transaction);
+        metadataManager.createIndex("idx1", "TestTable1", "not-removed1", IndexType.HASH, transaction);
+        metadataManager.createIndex("idx2", "TestTable1", "not-removed2", IndexType.HASH, transaction);
+        metadataManager.createIndex("idx3", "TestTable1", "not-removed3", IndexType.HASH, transaction);
+        metadataManager.createIndex("idx4", "TestTable1", "removed1", IndexType.HASH, transaction);
+        metadataManager.createIndex("idx5", "TestTable1", "removed2", IndexType.HASH, transaction);
+        Layout layout = metadataManager.getLayout("TestTable1", transaction);
+
+        TableScan tableScanInsert = new TableScan(transaction, "TestTable1", layout);
+
+        try (tableScanInsert) {
+            for (int i = 0; i < 1000; i++) {
+                tableScanInsert.insert();
+                tableScanInsert.setInt("not-removed1", 100);
+                tableScanInsert.setInt("removed1", 100);
+                tableScanInsert.setInt("not-removed2", 100);
+                tableScanInsert.setInt("removed2", 100);
+                tableScanInsert.setInt("not-removed3", 100);
+            }
+        }
+
+        metadataManager.removeField("TestTable1", "removed1", transaction);
+        metadataManager.removeField("TestTable1", "removed2", transaction);
+
+        layout = metadataManager.getLayout("TestTable1", transaction);
+        TableScan tableScanGet = new TableScan(transaction, "TestTable1", layout);
+
+        try (tableScanGet) {
+            tableScanGet.beforeFirst();
+            while (tableScanGet.next()) {
+                assertEquals(100, tableScanGet.getInt("not-removed1"));
+                assertEquals(100, tableScanGet.getInt("not-removed2"));
+                assertEquals(100, tableScanGet.getInt("not-removed3"));
+                assertFalse(tableScanGet.hasField("removed1"));
+                assertFalse(tableScanGet.hasField("removed2"));
+                assertThrowsExactly(FieldMissingException.class, () -> tableScanGet.getInt("removed1"));
+                assertThrowsExactly(FieldMissingException.class, () -> tableScanGet.getInt("removed2"));
+            }
+        }
+
+        Map<String, IndexInfo> indexes = metadataManager.getIndexInfo("TestTable1", transaction);
+        assertFalse(indexes.containsKey("removed1"));
+        assertFalse(indexes.containsKey("removed2"));
 
         transaction.commit();
     }

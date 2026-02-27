@@ -50,6 +50,22 @@ public class IndexMetadataManager {
         }
     }
 
+    /// Removes the metadata for the index given by the table name and field name.
+    public void removeIndex(String tableName, String fieldName, Transaction transaction) {
+        TableScan indexCatalogScan = new TableScan(transaction, "indexcatalog", indexCatalogLayout);
+
+        try (indexCatalogScan) {
+            while (indexCatalogScan.next()) {
+                if (
+                    indexCatalogScan.getString("tablename").equals(tableName) &&
+                    indexCatalogScan.getString("fieldname").equals(fieldName)
+                ) {
+                    indexCatalogScan.delete();
+                }
+            }
+        }
+    }
+
     /// @return The index info for every field of a table name.
     public Map<String, IndexInfo> getIndexInfo(String tableName, Transaction transaction) {
         Map<String, IndexInfo> result = new HashMap<>();

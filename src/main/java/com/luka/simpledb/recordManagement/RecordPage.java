@@ -10,7 +10,7 @@ import static java.sql.Types.*;
 
 /// A `RecordPage` object represents an interface to the records of some block.
 /// It is an abstraction over getters and setters of fields, but leaves the
-/// exact record where fields should be stored to the API caller.
+/// exact record that is being manipulated to its caller.
 public class RecordPage {
     public static final int EMPTY = 0, USED = 1;
     private final Transaction transaction;

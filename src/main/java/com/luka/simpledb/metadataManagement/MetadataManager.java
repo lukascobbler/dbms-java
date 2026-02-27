@@ -31,6 +31,14 @@ public class MetadataManager {
         tableMetadataManager.createTable(tableName, schema, transaction);
     }
 
+    /// Removes a field from a table and removes an index associated with that field
+    /// if it exists. Does not remove data that that field contains or the index files for
+    /// that field.
+    public void removeField(String tableName, String fieldName, Transaction transaction) {
+        tableMetadataManager.removeField(tableName, fieldName, transaction);
+        indexMetadataManager.removeIndex(tableName, fieldName, transaction);
+    }
+
     /// @return The layout associated with the passed table name.
     /// @throws TableLayoutNotFoundException if the table was not found.
     public Layout getLayout(String tableName, Transaction transaction) {
