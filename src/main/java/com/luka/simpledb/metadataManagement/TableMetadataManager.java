@@ -162,6 +162,7 @@ public class TableMetadataManager {
                     fieldCatalogScan.getString("fieldname").equals(fieldName)
                 ) {
                     fieldCatalogScan.delete();
+                    return;
                 }
             }
         }

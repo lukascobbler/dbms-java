@@ -29,7 +29,7 @@ public class RecordManagementTests {
         sch.addStringField("B", 9, false);
         Layout layout = new Layout(sch, tx.blockSize());
 
-        BlockId blk = tx.append("testfile", true);
+        BlockId blk = tx.appendEmptyBlock("testfile", true);
         RecordPage rp = new RecordPage(tx, blk, layout);
         rp.format();
 
@@ -87,7 +87,7 @@ public class RecordManagementTests {
         sch.addStringField("B", 50, true);
         Layout layout = new Layout(sch, tx.blockSize());
 
-        BlockId blk = tx.append("testfile", true);
+        BlockId blk = tx.appendEmptyBlock("testfile", true);
         RecordPage rp = new RecordPage(tx, blk, layout);
         rp.format();
 

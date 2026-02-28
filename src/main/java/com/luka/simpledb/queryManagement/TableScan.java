@@ -165,7 +165,7 @@ public class TableScan implements AutoCloseable {
     /// sequential operations can start from the start of the block.
     private void moveToNewBlock() {
         close();
-        BlockId blockId = transaction.append(filename, true);
+        BlockId blockId = transaction.appendEmptyBlock(filename, true);
         recordPage = new RecordPage(transaction, blockId, layout);
         recordPage.format();
         currentSlot = -1;

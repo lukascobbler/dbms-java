@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,7 +56,7 @@ public class TransactionManagementTests {
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
 
-        transaction1.append("file1", true);
+        BlockId tmp = transaction1.appendEmptyBlock("file1", true);
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.rollback();
@@ -115,24 +114,15 @@ public class TransactionManagementTests {
 
         Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        transaction0.append("file1", true);
-        transaction0.append("file1", true);
-        transaction0.append("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        simpleDB = new SimpleDB(tempDirectory);
+        new SimpleDB(tempDirectory);
 
-        Transaction transaction1 = simpleDB.newTransaction();
-        transaction1.recover();
-
-        File dbTableFile = new File(tempDirectory, "file1");
-
-        try (RandomAccessFile f = new RandomAccessFile(dbTableFile, "rws")) {
-            assertEquals(0, f.length());
-        } catch (IOException e) {
-            throw new IOException();
-        }
+        assertFalse(TestUtils.fileExists(new File(tempDirectory), "file1"));
     }
 
     @ParameterizedTest
@@ -155,7 +145,7 @@ public class TransactionManagementTests {
 
         Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        transaction0.append("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
         Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
@@ -205,7 +195,7 @@ public class TransactionManagementTests {
 
         Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        transaction0.append("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
         Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
@@ -213,9 +203,9 @@ public class TransactionManagementTests {
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setString(b0, 100, setString, true);
         transaction1.setBoolean(b0, 200, setBoolean, true);
-        transaction1.append("file1", true);
-        transaction1.append("file1", true);
-        transaction1.append("file1", true);
+        transaction1.appendEmptyBlock("file1", true);
+        transaction1.appendEmptyBlock("file1", true);
+        transaction1.appendEmptyBlock("file1", true);
         transaction1.pin(b3);
         transaction1.setInt(b3, 0, 123, true);
         // no commit or rollback
@@ -265,7 +255,7 @@ public class TransactionManagementTests {
 
         Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
 
-        transaction0.append("file1", true);
+        transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
         Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery);
@@ -338,7 +328,7 @@ public class TransactionManagementTests {
         int setInt = 5;
 
         transaction1.pin(b0);
-        transaction1.append("file1", true);
+        transaction1.appendEmptyBlock("file1", true);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setInt(b0, 100, 2500, true);
         transaction1.setString(b0, 200, "no", true);
@@ -369,16 +359,16 @@ public class TransactionManagementTests {
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        FileManager fileManager = new FileManager(dbDirectory, 4096);
+        FileManager fileManager = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
         LogManager logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
         BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_SIZE);
         LockTable lockTable = new LockTable();
 
         Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
 
-        transaction1.append("file1", true);
+        transaction1.appendEmptyBlock("file1", true);
 
-        fileManager = new FileManager(dbDirectory, 4096);
+        fileManager = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
         logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
         bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_SIZE);
         lockTable = new LockTable();

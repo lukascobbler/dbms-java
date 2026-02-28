@@ -1,5 +1,6 @@
 package com.luka.simpledb.transactionManagement.recoveryManagement.logRecordTypes;
 
+import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.fileManagement.Page;
 import com.luka.simpledb.logManagement.LogManager;
 import com.luka.simpledb.transactionManagement.Transaction;
@@ -9,12 +10,12 @@ import com.luka.simpledb.transactionManagement.recoveryManagement.LogRecordType;
 /// Helper class for representing an append block log record type.
 ///
 /// Structure of the append block log record type:
-/// `<APPEND transactionNumber filename>`
+/// `<APPEND transactionNumber filename blockId>`
 ///
-/// Example: `<APPEND 1 file1>`
+/// Example: `<APPEND 1 file1 47>`
 public class AppendBlockRecord implements LogRecord {
     private final int transactionNumber;
-    private final String filename;
+    private final BlockId lastBlock;
 
     /// The append block log record type is initialized with a page
     /// of a specific structure defined in the class documentation.
@@ -25,7 +26,11 @@ public class AppendBlockRecord implements LogRecord {
         transactionNumber = p.getInt(transactionPosition);
 
         int filenamePosition = transactionPosition + Integer.BYTES;
-        filename = p.getString(filenamePosition);
+        String filename = p.getString(filenamePosition);
+
+        int blockPosition = filenamePosition + Page.maxLength(filename.length());
+        int blockNumber = p.getInt(blockPosition);
+        lastBlock = new BlockId(filename, blockNumber);
     }
 
     /// Writes out a new append block log type record to the log file.
@@ -33,19 +38,21 @@ public class AppendBlockRecord implements LogRecord {
     ///
     /// @return The log sequence number representing the newly added
     /// record to the log file.
-    public static int writeToLog(LogManager logManager, int transactionNumber, String filename) {
+    public static int writeToLog(LogManager logManager, int transactionNumber, BlockId blockId) {
         int logRecordTypePosition = 0;
         int transactionPosition = logRecordTypePosition + Integer.BYTES;
         int filenamePosition = transactionPosition + Integer.BYTES;
+        int blockPosition = filenamePosition + Page.maxLength(blockId.filename().length());
 
-        int recordLength = filenamePosition + Page.maxLength(filename.length()) + Integer.BYTES;
+        int recordLength = blockPosition + Integer.BYTES;
         byte[] record = new byte[recordLength];
 
         // page used for convenience of writing to a byte array
         Page p = new Page(record);
         p.setInt(0, LogRecordType.APPEND.value);
         p.setInt(transactionPosition, transactionNumber);
-        p.setString(filenamePosition, filename);
+        p.setString(filenamePosition, blockId.filename());
+        p.setInt(blockPosition, blockId.blockNum());
 
         return logManager.append(record);
     }
@@ -64,7 +71,7 @@ public class AppendBlockRecord implements LogRecord {
     /// Undoes the append block for a given transaction.
     @Override
     public void undo(Transaction transaction) {
-        transaction.truncate(filename);
+        transaction.undoAppendBlock(lastBlock.filename());
     }
 
     /// Redoing of append block operations is not done because
@@ -75,6 +82,6 @@ public class AppendBlockRecord implements LogRecord {
 
     @Override
     public String toString() {
-        return "<" + LogRecordType.APPEND + " " + transactionNumber + " " + filename + ">";
+        return "<" + LogRecordType.APPEND + " " + transactionNumber + " " + lastBlock.filename() + " " + lastBlock.blockNum() + ">";
     }
 }

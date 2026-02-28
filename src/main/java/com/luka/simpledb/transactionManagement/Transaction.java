@@ -180,8 +180,13 @@ public class Transaction {
 
     /// Firstly, exclusive locking of the whole file is performed, then a
     /// new block is appended. The parameter `okToLog` indicates if the value will be
-    /// written out to the recovery log (false when undoing the transaction)
-    public BlockId append(String filename, boolean okToLog) {
+    /// written out to the recovery log (false when undoing the transaction).
+    /// Caution when using because the global state (the whole file) is immediately
+    /// modified, unlike the standard set methods where everything is done in-memory,
+    /// and it is preserved on disk only when buffers are flushed.
+    ///
+    /// @return The newly appended block id.
+    public BlockId appendEmptyBlock(String filename, boolean okToLog) {
         BlockId dummyBlock = new BlockId(filename, END_OF_FILE);
         concurrencyManager.lockExclusive(dummyBlock);
         if (okToLog) {
@@ -192,7 +197,12 @@ public class Transaction {
 
     /// Firstly, exclusive locking of the whole file is performed, then a
     /// block from the end of the file is truncated.
-    public void truncate(String filename) {
+    /// Caution when using because the global state (the whole file) is immediately
+    /// modified, unlike the standard set methods where everything is done in-memory,
+    /// and it is preserved on disk only when buffers are flushed.
+    /// This is the undo operation to the block append operation.
+    /// Do not use this as a truncate operation because data loss may occur.
+    public void undoAppendBlock(String filename) {
         BlockId dummyBlock = new BlockId(filename, END_OF_FILE);
         concurrencyManager.lockExclusive(dummyBlock);
         fileManager.truncate(filename);

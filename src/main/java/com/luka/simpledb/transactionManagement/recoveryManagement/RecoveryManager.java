@@ -115,7 +115,8 @@ public class RecoveryManager {
     /// @return The log sequence number for the record in the log file corresponding to the
     /// call of this function.
     public int appendBlock(String filename) {
-        int lsn = AppendBlockRecord.writeToLog(logManager, transactionNumber, filename);
+        BlockId lastBlockId = new BlockId(filename, transaction.lengthInBlocks(filename));
+        int lsn = AppendBlockRecord.writeToLog(logManager, transactionNumber, lastBlockId);
         logManager.flush(lsn);
 
         return lsn;

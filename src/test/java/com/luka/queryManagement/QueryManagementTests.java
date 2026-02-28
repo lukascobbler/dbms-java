@@ -1,5 +1,6 @@
 package com.luka.queryManagement;
 
+import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -11,6 +12,8 @@ import com.luka.simpledb.simpleDB.SimpleDBSettings;
 import com.luka.testUtils.TestUtils;
 import com.luka.simpledb.transactionManagement.Transaction;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 
@@ -72,9 +75,96 @@ public class QueryManagementTests {
         tx.commit();
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testTableScanAddMultipleRecordsCommitRollback(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries2");
+
+        SimpleDBSettings settings = new SimpleDBSettings();
+        settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        Transaction tx = simpleDB.newTransaction();
+
+        Schema sch = new Schema();
+        sch.addIntField("A", false);
+        sch.addStringField("B", 9, false);
+        Layout layout = new Layout(sch, tx.blockSize());
+        TableScan ts = new TableScan(tx, "B", layout);
+
+        try (ts) {
+            ts.beforeFirst();
+            for (int i = 0; i <= 1000; i++) {
+                ts.insert();
+                ts.setInt("A", i);
+                ts.setString("B", String.format("rec%03d", i));
+            }
+        }
+
+        tx.commit();
+
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+
+        assertEquals(10, fm.lengthInBlocks("B.table"));
+
+        Transaction tx2 = simpleDB.newTransaction();
+        TableScan ts2 = new TableScan(tx2, "B", layout);
+
+        try (ts2) {
+            ts2.beforeFirst();
+            for (int i = 0; i <= 1000; i++) {
+                ts2.insert();
+                ts2.setInt("A", i);
+                ts2.setString("B", String.format("rec%03d", i));
+            }
+        }
+
+        tx2.rollback();
+
+        assertEquals(10, fm.lengthInBlocks("B.table"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testTableScanAddMultipleRecordsCommitCrash(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries3");
+
+        SimpleDBSettings settings = new SimpleDBSettings();
+        settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        Transaction tx = simpleDB.newTransaction();
+
+        Schema sch = new Schema();
+        sch.addIntField("A", false);
+        sch.addStringField("B", 9, false);
+        Layout layout = new Layout(sch, tx.blockSize());
+        TableScan ts = new TableScan(tx, "B", layout);
+
+        try (ts) {
+            ts.beforeFirst();
+            for (int i = 0; i <= 1000; i++) {
+                ts.insert();
+                ts.setInt("A", i);
+                ts.setString("B", String.format("rec%03d", i));
+            }
+        }
+
+        tx.commit();
+
+        FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+
+        assertEquals(10, fm.lengthInBlocks("B.table"));
+
+        simpleDB = new SimpleDB(tempDirectory, settings);
+        fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
+
+        assertEquals(10, fm.lengthInBlocks("B.table"));
+    }
+
     @Test
     public void testTableScanNullValues() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries2");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries4");
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();

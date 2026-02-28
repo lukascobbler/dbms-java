@@ -65,6 +65,7 @@ public class Buffer {
         return transactionNumber;
     }
 
+    /// Reads the specified block into a buffer.
     void assignToBlock(BlockId blockId) {
         flush();
         this.blockId = blockId;

@@ -138,6 +138,31 @@ public class FileManager {
         }
     }
 
+    /// Removes a file managed by this database.
+    /// @throws FileException if the file couldn't be deleted or is not managed by this database.
+    public synchronized void removeFile(String filename) {
+        RandomAccessFile f = openFiles.remove(filename);
+
+        if (f == null) {
+            throw new FileException("cannot remove file not managed by this database: " + filename);
+        }
+
+        try {
+            f.close();
+        } catch (IOException e) {
+            System.err.println("warning: Failed to close handle for " + filename);
+        }
+
+        File file = new File(dbDirectory, filename);
+        Path filePath = file.toPath();
+
+        try {
+            Files.delete(filePath);
+        } catch (IOException e) {
+            throw new FileException("failed to delete file: " + filename);
+        }
+    }
+
     /// @return Block size of the file manager.
     /// Also called the system's block size.
     public int getBlockSize() {
@@ -170,30 +195,5 @@ public class FileManager {
         }
 
         return f;
-    }
-
-    /// Removes a file managed by this database.
-    /// @throws FileException if the file couldn't be deleted or is not managed by this database.
-    private synchronized void removeFile(String filename) {
-        RandomAccessFile f = openFiles.remove(filename);
-
-        if (f == null) {
-            throw new FileException("cannot remove file not managed by this database: " + filename);
-        }
-
-        try {
-            f.close();
-        } catch (IOException e) {
-            System.err.println("warning: Failed to close handle for " + filename);
-        }
-
-        File file = new File(dbDirectory, filename);
-        Path filePath = file.toPath();
-
-        try {
-            Files.delete(filePath);
-        } catch (IOException e) {
-            throw new FileException("failed to delete file: " + filename);
-        }
     }
 }
