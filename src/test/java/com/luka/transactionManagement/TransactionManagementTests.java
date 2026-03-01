@@ -378,4 +378,30 @@ public class TransactionManagementTests {
 
         assertFalse(TestUtils.fileExists(dbDirectory, "file1"));
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testDontCreateFileDefinedInThisTransactionAfterRollback(boolean undoOnlyRecovery) throws Exception {
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction10");
+        File dbDirectory = new File(tempDirectory);
+
+        SimpleDBSettings recoverySettings = new SimpleDBSettings();
+        recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+
+        FileManager fileManager = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
+        LogManager logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_SIZE);
+        LockTable lockTable = new LockTable();
+
+        BlockId b0 = new BlockId("file1", 0);
+
+        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery);
+        transaction1.appendEmptyBlock("file1", true);
+        transaction1.pin(b0);
+        transaction1.setInt(b0, 0, 100, true);
+        transaction1.unpin(b0);
+        transaction1.rollback();
+
+        assertFalse(TestUtils.fileExists(dbDirectory, "file1"));
+    }
 }

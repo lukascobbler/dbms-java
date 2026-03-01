@@ -54,6 +54,13 @@ public class Buffer {
         }
     }
 
+    /// Sets the modified status of the buffer like it's never been
+    /// touched by any transaction.
+    public void setUnmodified() {
+        transactionNumber = -1;
+        lsn = -1;
+    }
+
     /// @return Whether the buffer is pinned to a block or not.
     public boolean isPinned() {
         return pins > 0;

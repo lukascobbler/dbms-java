@@ -202,10 +202,15 @@ public class Transaction {
     /// and it is preserved on disk only when buffers are flushed.
     /// This is the undo operation to the block append operation.
     /// Do not use this as a truncate operation because data loss may occur.
-    public void undoAppendBlock(String filename) {
-        BlockId dummyBlock = new BlockId(filename, END_OF_FILE);
+    /// Requires buffer to be pinned.
+    public void undoAppendBlock(BlockId blockId) {
+        BlockId dummyBlock = new BlockId(blockId.filename(), END_OF_FILE);
         concurrencyManager.lockExclusive(dummyBlock);
-        fileManager.truncate(filename);
+
+        Buffer buffer = myBuffers.getBuffer(blockId);
+        buffer.setUnmodified();
+
+        fileManager.truncate(blockId.filename());
     }
 
     /// @return The block size of the system from the file manager.

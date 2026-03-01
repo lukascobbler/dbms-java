@@ -71,7 +71,9 @@ public class AppendBlockRecord implements LogRecord {
     /// Undoes the append block for a given transaction.
     @Override
     public void undo(Transaction transaction) {
-        transaction.undoAppendBlock(lastBlock.filename());
+        transaction.pin(lastBlock);
+        transaction.undoAppendBlock(lastBlock);
+        transaction.unpin(lastBlock);
     }
 
     /// Redoing of append block operations is not done because
