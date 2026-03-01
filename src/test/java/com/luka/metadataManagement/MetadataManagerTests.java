@@ -75,7 +75,7 @@ public class MetadataManagerTests {
 
     @Test
     public void testRemoveFieldReconstructTableAndIndex() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_queries3");
+        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_all2");
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction transaction = simpleDB.newTransaction();

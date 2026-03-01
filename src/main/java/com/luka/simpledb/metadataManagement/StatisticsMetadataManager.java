@@ -1,12 +1,17 @@
 package com.luka.simpledb.metadataManagement;
 
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
+import com.luka.simpledb.metadataManagement.infoClasses.UniqueFieldsInfo;
 import com.luka.simpledb.queryManagement.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
+import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.sql.Types.*;
 
 /// Keeps track of useful statistics for each table. They include: number of blocks,
 /// number of records, number of unique values for each field. It uses the implementation
@@ -64,7 +69,8 @@ public class StatisticsMetadataManager {
     }
 
     /// Does a full table scan, incrementing the number of records and
-    /// getting the latest block number for every record. Synchronized
+    /// getting the latest block number for every record. Calculates the
+    /// approximated number of unique values per field. Synchronized
     /// because threads no two threads should be calculating stats for the
     /// same table at the same time.
     ///
@@ -72,16 +78,27 @@ public class StatisticsMetadataManager {
     private synchronized StatisticsInfo calculateTableStats(String tableName, Layout layout, Transaction transaction) {
         int numRecords = 0;
         int numBlocks = 0;
+        UniqueFieldsInfo uniqueFieldsInfo = new UniqueFieldsInfo();
 
         TableScan tableScan = new TableScan(transaction, tableName, layout);
+        Schema tableSchema = layout.getSchema();
 
         try (tableScan) {
             while (tableScan.next()) {
                 numRecords++;
                 numBlocks = tableScan.getRecordId().blockNum() + 1;
+
+                for (String fieldName : tableSchema.getFields()) {
+                    switch (tableSchema.type(fieldName)) {
+                        case INTEGER -> uniqueFieldsInfo.addValue(fieldName, tableScan.getInt(fieldName));
+                        case VARCHAR -> uniqueFieldsInfo.addValue(fieldName, tableScan.getString(fieldName));
+                        case BOOLEAN -> uniqueFieldsInfo.addValue(fieldName, tableScan.getBoolean(fieldName));
+                        default -> throw new DatabaseTypeNotImplementedException();
+                    }
+                }
             }
         }
 
-        return new StatisticsInfo(numBlocks, numRecords);
+        return new StatisticsInfo(numBlocks, numRecords, uniqueFieldsInfo);
     }
 }

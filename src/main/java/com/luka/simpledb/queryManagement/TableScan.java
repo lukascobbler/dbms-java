@@ -76,7 +76,7 @@ public class TableScan implements AutoCloseable {
     //  if it's marked as null (null marking is done separately from value retrival at some location)
     //
     // todo solution: use `Constant` from the java sql when this class is implemented fully, and change it's usage in other
-    //  places as well
+    //  places as well, be wary of nulls in statistics and indexes
     public boolean isNull(String fieldName) {
         return recordPage.isNull(currentSlot, fieldName);
     }
