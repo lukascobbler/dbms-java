@@ -5,7 +5,7 @@ import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.fileManagement.Page;
-import com.luka.simpledb.queryManagement.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.simpleDB.SimpleDBSettings;

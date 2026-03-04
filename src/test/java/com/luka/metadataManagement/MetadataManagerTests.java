@@ -5,7 +5,7 @@ import com.luka.simpledb.metadataManagement.TableMetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
-import com.luka.simpledb.queryManagement.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;

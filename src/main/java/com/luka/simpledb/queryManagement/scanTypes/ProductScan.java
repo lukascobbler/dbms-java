@@ -1,7 +1,8 @@
-package com.luka.simpledb.queryManagement;
+package com.luka.simpledb.queryManagement.scanTypes;
 
-import com.luka.simpledb.queryManagement.expressions.Constant;
-import com.luka.simpledb.queryManagement.scanTypes.Scan;
+import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 
 public class ProductScan implements Scan {
     private final Scan scan1, scan2;
@@ -9,6 +10,7 @@ public class ProductScan implements Scan {
     public ProductScan(Scan scan1, Scan scan2) {
         this.scan1 = scan1;
         this.scan2 = scan2;
+        scan1.beforeFirst();
     }
 
     @Override
@@ -33,8 +35,11 @@ public class ProductScan implements Scan {
         if (scan1.hasField(fieldName)) {
             return scan1.getInt(fieldName);
         }
+        if (scan2.hasField(fieldName)) {
+            return scan2.getInt(fieldName);
+        }
 
-        return scan2.getInt(fieldName);
+        throw new FieldNotFoundInScanException();
     }
 
     @Override
@@ -42,8 +47,11 @@ public class ProductScan implements Scan {
         if (scan1.hasField(fieldName)) {
             return scan1.getString(fieldName);
         }
+        if (scan2.hasField(fieldName)) {
+            return scan2.getString(fieldName);
+        }
 
-        return scan2.getString(fieldName);
+        throw new FieldNotFoundInScanException();
     }
 
     @Override
@@ -51,8 +59,11 @@ public class ProductScan implements Scan {
         if (scan1.hasField(fieldName)) {
             return scan1.getBoolean(fieldName);
         }
+        if (scan2.hasField(fieldName)) {
+            return scan2.getBoolean(fieldName);
+        }
 
-        return scan2.getBoolean(fieldName);
+        throw new FieldNotFoundInScanException();
     }
 
     @Override
@@ -60,8 +71,11 @@ public class ProductScan implements Scan {
         if (scan1.hasField(fieldName)) {
             return scan1.getValue(fieldName);
         }
+        if (scan2.hasField(fieldName)) {
+            return scan2.getValue(fieldName);
+        }
 
-        return scan2.getValue(fieldName);
+        throw new FieldNotFoundInScanException();
     }
 
     @Override

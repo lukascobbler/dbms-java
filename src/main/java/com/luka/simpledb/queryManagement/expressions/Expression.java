@@ -1,6 +1,8 @@
 package com.luka.simpledb.queryManagement.expressions;
 
-import com.luka.simpledb.queryManagement.scanTypes.Scan;
+import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.expressions.constants.NullConstant;
+import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.recordManagement.Schema;
 
 public class Expression {

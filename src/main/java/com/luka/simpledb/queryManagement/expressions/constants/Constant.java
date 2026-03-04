@@ -1,9 +1,9 @@
-package com.luka.simpledb.queryManagement.expressions;
+package com.luka.simpledb.queryManagement.expressions.constants;
 
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 
 public sealed interface Constant extends Comparable<Constant>
-        permits IntConstant, StringConstant, BoolConstant, NullConstant {
+        permits IntConstant, StringConstant, BooleanConstant, NullConstant {
 
     @Override
     default int compareTo(Constant other) {
@@ -12,10 +12,10 @@ public sealed interface Constant extends Comparable<Constant>
         }
 
         return switch (this) {
-            case IntConstant i    -> i.value().compareTo(((IntConstant) other).value());
+            case IntConstant i -> i.value().compareTo(((IntConstant) other).value());
             case StringConstant s -> s.value().compareTo(((StringConstant) other).value());
-            case BoolConstant b   -> b.value().compareTo(((BoolConstant) other).value());
-            case NullConstant n   -> 0;
+            case BooleanConstant b -> b.value().compareTo(((BooleanConstant) other).value());
+            case NullConstant n -> 0;
         };
     }
 
@@ -30,14 +30,7 @@ public sealed interface Constant extends Comparable<Constant>
     }
 
     default boolean asBoolean() {
-        if (this instanceof BoolConstant(Boolean value)) return value;
+        if (this instanceof BooleanConstant(Boolean value)) return value;
         throw new IncompatibleConstantTypeException();
     }
-}
-
-record IntConstant(Integer value) implements Constant {}
-record StringConstant(String value) implements Constant {}
-record BoolConstant(Boolean value) implements Constant {}
-record NullConstant() implements Constant {
-    @Override public String toString() { return "null"; }
 }

@@ -3,7 +3,7 @@ package com.luka.metadataManagement;
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.StatisticsMetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
-import com.luka.simpledb.queryManagement.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;

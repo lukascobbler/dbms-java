@@ -1,12 +1,21 @@
-package com.luka.simpledb.queryManagement;
+package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.fileManagement.BlockId;
+import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.expressions.constants.BooleanConstant;
+import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.expressions.constants.IntConstant;
+import com.luka.simpledb.queryManagement.expressions.constants.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.RecordPage;
+import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLengthExceededException;
+import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.transactionManagement.Transaction;
+
+import static java.sql.Types.*;
 
 /// A table scan is a temporary object that is used for accessing one
 /// table. It has the power to go through every sequentially and get / set
@@ -59,17 +68,29 @@ public class TableScan implements AutoCloseable {
 
     /// @return The integer for the current record, with the provided field name.
     public int getInt(String fieldName) {
-        return recordPage.getInt(currentSlot, fieldName);
+        try {
+            return recordPage.getInt(currentSlot, fieldName);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     /// @return The string for the current record, with the provided field name.
     public String getString(String fieldName) {
-        return recordPage.getString(currentSlot, fieldName);
+        try {
+            return recordPage.getString(currentSlot, fieldName);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     /// @return The boolean for the current record, with the provided field name.
     public boolean getBoolean(String fieldName) {
-        return recordPage.getBoolean(currentSlot, fieldName);
+        try {
+            return recordPage.getBoolean(currentSlot, fieldName);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     // todo this should be checked in the usage of higher abstraction managers because a value shouldn't be returned
@@ -82,14 +103,14 @@ public class TableScan implements AutoCloseable {
     }
 
     // todo uncomment and give docs once chap 8. is complete
-//    public Constant getValue(String fieldName) {
-//        switch (layout.getSchema().type(fieldName)) {
-//            case INTEGER -> { return new IntConstant(getInt(fieldName)); }
-//            case BOOLEAN -> { return new BooleanConstant(getBoolean(fieldName)); }
-//            case VARCHAR, CHAR, CLOB -> { return new StringConstant(getString(fieldName)); }
-//            default -> throw new DatabaseTypeNotImplementedException();
-//        }
-//    }
+    public Constant getValue(String fieldName) {
+        switch (layout.getSchema().type(fieldName)) {
+            case INTEGER -> { return new IntConstant(getInt(fieldName)); }
+            case BOOLEAN -> { return new BooleanConstant(getBoolean(fieldName)); }
+            case VARCHAR -> { return new StringConstant(getString(fieldName)); }
+            default -> throw new DatabaseTypeNotImplementedException();
+        }
+    }
 
     /// @return Whether the table the scan is defined for has some field name.
     public boolean hasField(String fieldName) {
@@ -98,36 +119,52 @@ public class TableScan implements AutoCloseable {
 
     /// Sets the integer field with the provided integer value.
     public void setInt(String fieldName, int value) {
-        recordPage.setInt(currentSlot, fieldName, value);
+        try {
+            recordPage.setInt(currentSlot, fieldName, value);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     /// Sets the string field with the provided string value.
     ///
     /// @throws FieldLengthExceededException – if the length of the passed values exceeds the maximum length defined by the schema for that field.
     public void setString(String fieldName, String value) {
-        recordPage.setString(currentSlot, fieldName, value);
+        try {
+            recordPage.setString(currentSlot, fieldName, value);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     /// Sets the integer field with the provided integer value.
     public void setBoolean(String fieldName, boolean value) {
-        recordPage.setBoolean(currentSlot, fieldName, value);
+        try {
+            recordPage.setBoolean(currentSlot, fieldName, value);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     /// Sets the field to the null value.
     ///
     /// @throws FieldCannotBeNullException – if the field isn't nullable according to the schema.
     public void setNull(String fieldName) {
-        recordPage.setNull(currentSlot, fieldName);
+        try {
+            recordPage.setNull(currentSlot, fieldName);
+        } catch (FieldNotFoundException e) {
+            throw new FieldNotFoundInScanException();
+        }
     }
 
     // todo uncomment and give docs once chap 8. is complete
-//    public void setVal(String fieldName, Constant val) {
-//        switch (layout.getSchema().type(fieldName)) {
-//            case INTEGER -> setInt(fieldName (Integer)val.asJavaVal());
-//            case VARCHAR -> setInt(fieldName (String)val.asJavaVal());
-//            case BOOLEAN -> setInt(fieldName (Boolean)val.asJavaVal());
-//        }
-//    }
+    public void setVal(String fieldName, Constant value) {
+        switch (layout.getSchema().type(fieldName)) {
+            case INTEGER -> setInt(fieldName, value.asInt());
+            case VARCHAR -> setString(fieldName, value.asString());
+            case BOOLEAN -> setBoolean(fieldName, value.asBoolean());
+        }
+    }
 
     /// Inserts a new record in the table at the end.
     public void insert() {

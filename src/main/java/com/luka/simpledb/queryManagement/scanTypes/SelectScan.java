@@ -1,10 +1,11 @@
-package com.luka.simpledb.queryManagement;
+package com.luka.simpledb.queryManagement.scanTypes;
 
+import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.exceptions.ScanCantBeUpdateScanException;
-import com.luka.simpledb.queryManagement.expressions.Constant;
+import com.luka.simpledb.queryManagement.expressions.constants.Constant;
 import com.luka.simpledb.queryManagement.expressions.Predicate;
-import com.luka.simpledb.queryManagement.scanTypes.Scan;
-import com.luka.simpledb.queryManagement.scanTypes.UpdateScan;
+import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.recordManagement.RecordId;
 
 public class SelectScan implements UpdateScan {
@@ -34,21 +35,33 @@ public class SelectScan implements UpdateScan {
 
     @Override
     public int getInt(String fieldName) {
+        if (!hasField(fieldName)) {
+            throw new FieldNotFoundInScanException();
+        }
         return scan.getInt(fieldName);
     }
 
     @Override
     public String getString(String fieldName) {
+        if (!hasField(fieldName)) {
+            throw new FieldNotFoundInScanException();
+        }
         return scan.getString(fieldName);
     }
 
     @Override
     public boolean getBoolean(String fieldName) {
+        if (!hasField(fieldName)) {
+            throw new FieldNotFoundInScanException();
+        }
         return scan.getBoolean(fieldName);
     }
 
     @Override
     public Constant getValue(String fieldName) {
+        if (!hasField(fieldName)) {
+            throw new FieldNotFoundInScanException();
+        }
         return scan.getValue(fieldName);
     }
 
@@ -61,6 +74,9 @@ public class SelectScan implements UpdateScan {
     public void setInt(String fieldName, int value) {
         try {
             UpdateScan updateScan = (UpdateScan) scan;
+            if (!hasField(fieldName)) {
+                throw new FieldNotFoundInScanException();
+            }
             updateScan.setInt(fieldName, value);
         } catch (ClassCastException e) {
             throw new ScanCantBeUpdateScanException();
@@ -71,6 +87,9 @@ public class SelectScan implements UpdateScan {
     public void setString(String fieldName, String value) {
         try {
             UpdateScan updateScan = (UpdateScan) scan;
+            if (!hasField(fieldName)) {
+                throw new FieldNotFoundInScanException();
+            }
             updateScan.setString(fieldName, value);
         } catch (ClassCastException e) {
             throw new ScanCantBeUpdateScanException();
@@ -81,6 +100,9 @@ public class SelectScan implements UpdateScan {
     public void setBoolean(String fieldName, boolean value) {
         try {
             UpdateScan updateScan = (UpdateScan) scan;
+            if (!hasField(fieldName)) {
+                throw new FieldNotFoundInScanException();
+            }
             updateScan.setBoolean(fieldName, value);
         } catch (ClassCastException e) {
             throw new ScanCantBeUpdateScanException();
@@ -91,6 +113,9 @@ public class SelectScan implements UpdateScan {
     public void setValue(String fieldName, Constant value) {
         try {
             UpdateScan updateScan = (UpdateScan) scan;
+            if (!hasField(fieldName)) {
+                throw new FieldNotFoundInScanException();
+            }
             updateScan.setValue(fieldName, value);
         } catch (ClassCastException e) {
             throw new ScanCantBeUpdateScanException();
