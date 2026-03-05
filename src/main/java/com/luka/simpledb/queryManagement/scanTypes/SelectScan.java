@@ -2,8 +2,8 @@ package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.exceptions.ScanCantBeUpdateScanException;
-import com.luka.simpledb.queryManagement.expressions.constants.Constant;
-import com.luka.simpledb.queryManagement.expressions.Predicate;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.recordManagement.RecordId;

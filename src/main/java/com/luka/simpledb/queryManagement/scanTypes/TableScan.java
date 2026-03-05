@@ -2,10 +2,10 @@ package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
-import com.luka.simpledb.queryManagement.expressions.constants.BooleanConstant;
-import com.luka.simpledb.queryManagement.expressions.constants.Constant;
-import com.luka.simpledb.queryManagement.expressions.constants.IntConstant;
-import com.luka.simpledb.queryManagement.expressions.constants.StringConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.BooleanConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.RecordPage;

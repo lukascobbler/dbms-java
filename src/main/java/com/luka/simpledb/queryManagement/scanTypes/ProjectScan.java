@@ -1,7 +1,7 @@
 package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
-import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 
 import java.util.Collection;

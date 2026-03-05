@@ -1,6 +1,6 @@
 package com.luka.simpledb.queryManagement.scanDefinitions;
 
-import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
 
 public interface Scan {
     void beforeFirst();

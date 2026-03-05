@@ -1,4 +1,4 @@
-package com.luka.simpledb.queryManagement.expressions.constants;
+package com.luka.simpledb.queryManagement.virtualEntities.constants;
 
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 

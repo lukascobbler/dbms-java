@@ -1,7 +1,7 @@
-package com.luka.simpledb.queryManagement.expressions;
+package com.luka.simpledb.queryManagement.virtualEntities;
 
 import com.luka.simpledb.planningManagement.Plan;
-import com.luka.simpledb.queryManagement.expressions.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.recordManagement.Schema;
 
