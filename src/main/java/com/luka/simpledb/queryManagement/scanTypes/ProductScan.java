@@ -1,7 +1,7 @@
 package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 
 public class ProductScan implements Scan {

@@ -1,7 +1,7 @@
-package com.luka.simpledb.queryManagement.virtualEntities.expressions;
+package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 
 public class PartialEvaluator {
     public static Expression evaluate(Expression expr) {

@@ -1,16 +1,18 @@
-package com.luka.simpledb.queryManagement.virtualEntities;
+package com.luka.simpledb.queryManagement.virtualEntities.term;
 
 import com.luka.simpledb.planningManagement.Plan;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.queryManagement.virtualEntities.expressions.*;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.recordManagement.Schema;
 
 public class Term {
     private final Expression lhs, rhs;
+    private final TermOperator termOperator;
 
-    public Term(Expression lhs, Expression rhs) {
+    public Term(Expression lhs, TermOperator termOperator, Expression rhs) {
         this.lhs = PartialEvaluator.evaluate(lhs);
+        this.termOperator = termOperator;
         this.rhs = PartialEvaluator.evaluate(rhs);
     }
 
@@ -18,7 +20,14 @@ public class Term {
         Constant rhsValue = rhs.evaluate(scan);
         Constant lhsValue = lhs.evaluate(scan);
 
-        return rhsValue.equals(lhsValue);
+        return switch (termOperator) {
+            case EQUALS -> lhsValue.equals(rhsValue);
+            case NOT_EQUALS -> !lhsValue.equals(rhsValue);
+            case GREATER_THAN -> lhsValue.compareTo(rhsValue) > 0;
+            case LESS_THAN -> lhsValue.compareTo(rhsValue) < 0;
+            case GREATER_OR_EQUAL -> lhsValue.compareTo(rhsValue) >= 0;
+            case LESS_OR_EQUAL -> lhsValue.compareTo(rhsValue) <= 0;
+        };
     }
 
     public boolean appliesTo(Schema schema) {
@@ -26,6 +35,10 @@ public class Term {
     }
 
     public int reductionFactor(Plan plan) {
+        if (termOperator != TermOperator.EQUALS) {
+            return 2;
+        }
+
         return switch (lhs) {
             case FieldNameExpression(String leftFieldName) -> switch (rhs) {
                 case FieldNameExpression(String rightFieldName) ->
@@ -47,27 +60,29 @@ public class Term {
     }
 
     public Constant equatesWithConstant(String fieldName) {
-        if (lhs instanceof FieldNameExpression(String f) && f.equals(fieldName) && rhs instanceof ConstantExpression(Constant c)) {
-            return c;
-        }
-        if (rhs instanceof FieldNameExpression(String f) && f.equals(fieldName) && lhs instanceof ConstantExpression(Constant c)) {
-            return c;
-        }
-        return null;
+        if (termOperator != TermOperator.EQUALS) return null;
+
+        return switch (new Pair(lhs, rhs)) {
+            case Pair(FieldNameExpression(String f), ConstantExpression(Constant c)) when f.equals(fieldName) -> c;
+            case Pair(ConstantExpression(Constant c), FieldNameExpression(String f)) when f.equals(fieldName) -> c;
+            default -> null;
+        };
     }
 
     public String equatesWithFieldName(String fieldName) {
-        if (lhs instanceof FieldNameExpression(String f1) && f1.equals(fieldName) && rhs instanceof FieldNameExpression(String f2)) {
-            return f2;
-        }
-        if (rhs instanceof FieldNameExpression(String f1) && f1.equals(fieldName) && lhs instanceof FieldNameExpression(String f2)) {
-            return f2;
-        }
-        return null;
+        if (termOperator != TermOperator.EQUALS) return null;
+
+        return switch (new Pair(lhs, rhs)) {
+            case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f1.equals(fieldName) -> f2;
+            case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f2.equals(fieldName) -> f1;
+            default -> null;
+        };
     }
+
+    private record Pair(Expression left, Expression right) {}
 
     @Override
     public String toString() {
-        return lhs.toString() + " = " + rhs.toString();
+        return lhs.toString() + " " + termOperator.toString() + " " + rhs.toString();
     }
 }

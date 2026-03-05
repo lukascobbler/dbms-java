@@ -1,4 +1,4 @@
-package com.luka.simpledb.queryManagement.virtualEntities.expressions;
+package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
 public enum ArithmeticOperator {
     ADD("+"), SUB("-"), MUL("*"), DIV("/");

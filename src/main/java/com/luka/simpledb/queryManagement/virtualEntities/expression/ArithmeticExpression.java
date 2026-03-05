@@ -1,8 +1,8 @@
-package com.luka.simpledb.queryManagement.virtualEntities.expressions;
+package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
 import com.luka.simpledb.queryManagement.exceptions.NonNumericArithmeticCalculationException;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.*;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
 import com.luka.simpledb.recordManagement.Schema;
 
 public record ArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) implements Expression {

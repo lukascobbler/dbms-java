@@ -1,8 +1,9 @@
 package com.luka.simpledb.queryManagement.virtualEntities;
 
 import com.luka.simpledb.planningManagement.Plan;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.recordManagement.Schema;
 
 import java.util.ArrayList;

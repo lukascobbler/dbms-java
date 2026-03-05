@@ -1,7 +1,7 @@
-package com.luka.simpledb.queryManagement.virtualEntities.expressions;
+package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.recordManagement.Schema;
 
 public record FieldNameExpression(String fieldName) implements Expression {

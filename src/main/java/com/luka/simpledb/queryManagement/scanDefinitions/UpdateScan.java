@@ -1,6 +1,6 @@
 package com.luka.simpledb.queryManagement.scanDefinitions;
 
-import com.luka.simpledb.queryManagement.virtualEntities.constants.Constant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.recordManagement.RecordId;
 
 public interface UpdateScan extends Scan {
