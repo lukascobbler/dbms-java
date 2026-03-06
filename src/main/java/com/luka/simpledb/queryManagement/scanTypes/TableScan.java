@@ -19,7 +19,7 @@ import static java.sql.Types.*;
 /// table. It has the power to go through every sequentially and get / set
 /// data along the way. It is used with `AutoCloseable` to allow seamless
 /// releasing of managed resources, like unpinning the pins on buffers.
-public class TableScan implements UpdateScan {
+public class TableScan extends UpdateScan {
     private final Transaction transaction;
     private final Layout layout;
     private final String filename;
@@ -92,35 +92,23 @@ public class TableScan implements UpdateScan {
     }
 
     /// @return The integer for the current record, with the provided field name.
-    public int getInt(String fieldName) {
-        try {
-            return recordPage.getInt(currentRecord, fieldName);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public int internalGetInt(String fieldName) {
+        return recordPage.getInt(currentRecord, fieldName);
     }
 
     /// @return The string for the current record, with the provided field name.
-    public String getString(String fieldName) {
-        try {
-            return recordPage.getString(currentRecord, fieldName);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public String internalGetString(String fieldName) {
+        return recordPage.getString(currentRecord, fieldName);
     }
 
     /// @return The boolean for the current record, with the provided field name.
-    public boolean getBoolean(String fieldName) {
-        try {
-            return recordPage.getBoolean(currentRecord, fieldName);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public boolean internalGetBoolean(String fieldName) {
+        return recordPage.getBoolean(currentRecord, fieldName);
     }
 
     /// @return Whether the field is currently null.
     public boolean isNull(String fieldName) {
-        return recordPage.isNull(currentRecord, fieldName);
+        return recordPage.isNull(currentRecord, fieldName); // todo expose null api?
     }
 
     /// Generic value getter. All representable states in the database
@@ -132,7 +120,7 @@ public class TableScan implements UpdateScan {
     /// that the database implements.
     /// @throws DatabaseTypeNotImplementedException if the system does not implement
     /// the type of the field name.
-    public Constant getValue(String fieldName) {
+    public Constant internalGetValue(String fieldName) {
         if (isNull(fieldName)) {
             return new NullConstant();
         }
@@ -150,32 +138,20 @@ public class TableScan implements UpdateScan {
     }
 
     /// Sets the integer field with the provided integer value.
-    public void setInt(String fieldName, int value) {
-        try {
-            recordPage.setInt(currentRecord, fieldName, value);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public void internalSetInt(String fieldName, int value) {
+        recordPage.setInt(currentRecord, fieldName, value);
     }
 
     /// Sets the string field with the provided string value.
     ///
     /// @throws FieldLengthExceededException – if the length of the passed values exceeds the maximum length defined by the schema for that field.
-    public void setString(String fieldName, String value) {
-        try {
-            recordPage.setString(currentRecord, fieldName, value);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public void internalSetString(String fieldName, String value) {
+        recordPage.setString(currentRecord, fieldName, value);
     }
 
     /// Sets the integer field with the provided integer value.
-    public void setBoolean(String fieldName, boolean value) {
-        try {
-            recordPage.setBoolean(currentRecord, fieldName, value);
-        } catch (FieldNotFoundException e) {
-            throw new FieldNotFoundInScanException();
-        }
+    public void internalSetBoolean(String fieldName, boolean value) {
+        recordPage.setBoolean(currentRecord, fieldName, value);
     }
 
     /// Sets the field to the null value.
@@ -196,7 +172,7 @@ public class TableScan implements UpdateScan {
     ///
     /// @throws DatabaseTypeNotImplementedException if the system does not implement
     /// the type of the field name.
-    public void setValue(String fieldName, Constant value) {
+    public void internalSetValue(String fieldName, Constant value) {
         if (value instanceof NullConstant) {
             setNull(fieldName);
             return;

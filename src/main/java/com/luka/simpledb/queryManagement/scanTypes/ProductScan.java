@@ -1,108 +1,86 @@
 package com.luka.simpledb.queryManagement.scanTypes;
 
-import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.scanDefinitions.BinaryScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 
-public class ProductScan implements Scan {
-    private final Scan scan1, scan2;
-
+public class ProductScan extends BinaryScan {
     public ProductScan(Scan scan1, Scan scan2) {
-        this.scan1 = scan1;
-        this.scan2 = scan2;
-        scan1.beforeFirst();
+        super(scan1, scan2);
     }
 
     @Override
     public void beforeFirst() {
-        scan1.beforeFirst();
-        scan1.next();
-        scan2.beforeFirst();
+        childScan1.beforeFirst();
+        childScan1.next();
+        childScan2.beforeFirst();
     }
 
     @Override
     public void afterLast() {
-        scan2.afterLast();
-        scan2.previous();
-        scan1.afterLast();
+        childScan2.afterLast();
+        childScan2.previous();
+        childScan1.afterLast();
     }
 
     @Override
     public boolean next() {
-        if (scan2.next()) {
+        if (childScan2.next()) {
             return true;
         } else {
-            scan2.beforeFirst();
-            return scan2.next() && scan1.next();
+            childScan2.beforeFirst();
+            return childScan2.next() && childScan1.next();
         }
     }
 
     @Override
     public boolean previous() {
-        if (scan2.previous()) {
+        if (childScan2.previous()) {
             return true;
         } else {
-            scan2.afterLast();
-            return scan2.previous() && scan1.previous();
+            childScan2.afterLast();
+            return childScan2.previous() && childScan1.previous();
         }
     }
 
     @Override
-    public int getInt(String fieldName) {
-        if (scan1.hasField(fieldName)) {
-            return scan1.getInt(fieldName);
-        }
-        if (scan2.hasField(fieldName)) {
-            return scan2.getInt(fieldName);
+    public int internalGetInt(String fieldName) {
+        if (childScan1.hasField(fieldName)) {
+            return childScan1.getInt(fieldName);
         }
 
-        throw new FieldNotFoundInScanException();
+        return childScan2.getInt(fieldName);
     }
 
     @Override
-    public String getString(String fieldName) {
-        if (scan1.hasField(fieldName)) {
-            return scan1.getString(fieldName);
-        }
-        if (scan2.hasField(fieldName)) {
-            return scan2.getString(fieldName);
+    public String internalGetString(String fieldName) {
+        if (childScan1.hasField(fieldName)) {
+            return childScan1.getString(fieldName);
         }
 
-        throw new FieldNotFoundInScanException();
+        return childScan2.getString(fieldName);
     }
 
     @Override
-    public boolean getBoolean(String fieldName) {
-        if (scan1.hasField(fieldName)) {
-            return scan1.getBoolean(fieldName);
-        }
-        if (scan2.hasField(fieldName)) {
-            return scan2.getBoolean(fieldName);
+    public boolean internalGetBoolean(String fieldName) {
+        if (childScan1.hasField(fieldName)) {
+            return childScan1.getBoolean(fieldName);
         }
 
-        throw new FieldNotFoundInScanException();
+        return childScan2.getBoolean(fieldName);
     }
 
     @Override
-    public Constant getValue(String fieldName) {
-        if (scan1.hasField(fieldName)) {
-            return scan1.getValue(fieldName);
-        }
-        if (scan2.hasField(fieldName)) {
-            return scan2.getValue(fieldName);
+    public Constant internalGetValue(String fieldName) {
+        if (childScan1.hasField(fieldName)) {
+            return childScan1.getValue(fieldName);
         }
 
-        throw new FieldNotFoundInScanException();
+        return childScan2.getValue(fieldName);
     }
 
     @Override
     public boolean hasField(String fieldName) {
-        return scan1.hasField(fieldName) || scan1.hasField(fieldName);
-    }
-
-    @Override
-    public void close() throws Exception {
-        scan1.close();
-        scan2.close();
+        return childScan1.hasField(fieldName) || childScan1.hasField(fieldName);
     }
 }
