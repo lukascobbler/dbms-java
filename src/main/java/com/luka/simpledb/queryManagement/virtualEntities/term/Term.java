@@ -3,6 +3,7 @@ package com.luka.simpledb.queryManagement.virtualEntities.term;
 import com.luka.simpledb.planningManagement.Plan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.recordManagement.Schema;
 
@@ -19,6 +20,10 @@ public class Term {
     public boolean isSatisfied(Scan scan) {
         Constant rhsValue = rhs.evaluate(scan);
         Constant lhsValue = lhs.evaluate(scan);
+
+        if (lhsValue instanceof NullConstant || rhsValue instanceof NullConstant) {
+            return false;
+        }
 
         return switch (termOperator) {
             case EQUALS -> lhsValue.equals(rhsValue);
@@ -49,8 +54,10 @@ public class Term {
                         plan.distinctValues(leftFieldName);
             };
             case ConstantExpression(Constant leftConstant) -> switch (rhs) {
-                case FieldNameExpression(String rightFieldName) ->
-                        plan.distinctValues(rightFieldName);
+                case FieldNameExpression(String rightFieldName) -> {
+                    if (leftConstant instanceof NullConstant) yield Integer.MAX_VALUE;
+                    yield plan.distinctValues(rightFieldName);
+                }
                 case ConstantExpression(Constant rightConstant) ->
                         leftConstant.equals(rightConstant) ? 1 : Integer.MAX_VALUE;
                 default -> Integer.MAX_VALUE;

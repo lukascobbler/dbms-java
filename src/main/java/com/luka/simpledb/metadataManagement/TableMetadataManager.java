@@ -70,7 +70,7 @@ public class TableMetadataManager {
             tableCatalogScan.insert();
             tableCatalogScan.setInt("tableid", tableIdNum);
             tableCatalogScan.setString("tablename", tableName);
-            tableCatalogScan.setInt("slotsize", layout.getSlotSize());
+            tableCatalogScan.setInt("slotsize", layout.recordLength());
         }
 
         TableScan fieldCatalogScan = new TableScan(transaction, "fieldcatalog", fieldCatalogLayout);

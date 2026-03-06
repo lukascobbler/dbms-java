@@ -19,7 +19,7 @@ public class RecordManagementTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testRecordInsertionSuccessful() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_records1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -77,7 +77,7 @@ public class RecordManagementTests {
 
     @Test
     public void testRecordNullValues() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_records2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();

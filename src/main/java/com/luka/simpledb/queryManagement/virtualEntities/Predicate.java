@@ -29,9 +29,14 @@ public class Predicate {
     }
 
     public int reductionFactor(Plan plan) {
-        return terms.stream()
-                .mapToInt(term -> term.reductionFactor(plan))
-                .reduce(1, (a, b) -> a * b);
+        double totalFactor = 1.0;
+        for (Term term : terms) {
+            totalFactor *= term.reductionFactor(plan);
+            if (totalFactor > Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
+        }
+        return (int) totalFactor;
     }
 
     public Predicate selectSubPredicate(Schema schema) {

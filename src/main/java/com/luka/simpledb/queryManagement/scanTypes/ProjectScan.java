@@ -22,8 +22,18 @@ public class ProjectScan implements Scan {
     }
 
     @Override
+    public void afterLast() {
+        scan.afterLast();
+    }
+
+    @Override
     public boolean next() {
         return scan.next();
+    }
+
+    @Override
+    public boolean previous() {
+        return scan.previous();
     }
 
     @Override
@@ -65,5 +75,10 @@ public class ProjectScan implements Scan {
     @Override
     public boolean hasField(String fieldName) {
         return fieldList.contains(fieldName);
+    }
+
+    @Override
+    public void close() throws Exception {
+        scan.close();
     }
 }

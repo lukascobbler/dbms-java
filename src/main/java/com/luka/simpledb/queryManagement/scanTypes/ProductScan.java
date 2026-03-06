@@ -21,12 +21,29 @@ public class ProductScan implements Scan {
     }
 
     @Override
+    public void afterLast() {
+        scan2.afterLast();
+        scan2.previous();
+        scan1.afterLast();
+    }
+
+    @Override
     public boolean next() {
         if (scan2.next()) {
             return true;
         } else {
             scan2.beforeFirst();
             return scan2.next() && scan1.next();
+        }
+    }
+
+    @Override
+    public boolean previous() {
+        if (scan2.previous()) {
+            return true;
+        } else {
+            scan2.afterLast();
+            return scan2.previous() && scan1.previous();
         }
     }
 
@@ -81,5 +98,11 @@ public class ProductScan implements Scan {
     @Override
     public boolean hasField(String fieldName) {
         return scan1.hasField(fieldName) || scan1.hasField(fieldName);
+    }
+
+    @Override
+    public void close() throws Exception {
+        scan1.close();
+        scan2.close();
     }
 }

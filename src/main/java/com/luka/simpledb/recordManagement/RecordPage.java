@@ -3,6 +3,7 @@ package com.luka.simpledb.recordManagement;
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
+import com.luka.simpledb.recordManagement.exceptions.FieldIncorrectTypeException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLengthExceededException;
 import com.luka.simpledb.transactionManagement.Transaction;
 
@@ -48,7 +49,12 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return An integer in the field described by its name, in some slot.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this get method.
     public int getInt(int slot, String fieldName) {
+        if (layout.getSchema().type(fieldName) != INTEGER) {
+            throw new FieldIncorrectTypeException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getInt(blockId, fieldPosition);
     }
@@ -57,7 +63,12 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return A string in the field described by its name, in some slot.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this get method.
     public String getString(int slot, String fieldName) {
+        if (layout.getSchema().type(fieldName) != VARCHAR) {
+            throw new FieldIncorrectTypeException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getString(blockId, fieldPosition);
     }
@@ -66,7 +77,12 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return A boolean in the field described by its name, in some slot.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this get method.
     public boolean getBoolean(int slot, String fieldName) {
+        if (layout.getSchema().type(fieldName) != BOOLEAN) {
+            throw new FieldIncorrectTypeException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getBoolean(blockId, fieldPosition);
     }
@@ -92,7 +108,12 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets an integer in some slot, in some field with some value.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this set method.
     public void setInt(int slot, String fieldName, int value) {
+        if (layout.getSchema().type(fieldName) != INTEGER) {
+            throw new FieldIncorrectTypeException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.setInt(blockId, fieldPosition, value, true);
         setNonNull(slot, fieldName);
@@ -105,7 +126,12 @@ public class RecordPage {
     ///
     /// @throws FieldLengthExceededException if the length of the passed values exceeds
     /// the maximum length defined by the schema for that field.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this set method.
     public void setString(int slot, String fieldName, String value) {
+        if (layout.getSchema().type(fieldName) != VARCHAR) {
+            throw new FieldIncorrectTypeException();
+        }
         if (value.length() > layout.getSchema().length(fieldName)) {
             throw new FieldLengthExceededException();
         }
@@ -118,7 +144,12 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets a boolean in some slot, in some field with some value.
+    /// @throws FieldIncorrectTypeException if the field name defined in the schema
+    /// isn't of the type of this set method.
     public void setBoolean(int slot, String fieldName, boolean value) {
+        if (layout.getSchema().type(fieldName) != BOOLEAN) {
+            throw new FieldIncorrectTypeException();
+        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.setBoolean(blockId, fieldPosition, value, true);
         setNonNull(slot, fieldName);
@@ -136,7 +167,7 @@ public class RecordPage {
     public void format() {
         int slot = 0;
 
-        while(isValidSlot(slot)) {
+        while (isValidSlot(slot)) {
             transaction.setInt(blockId, offset(slot), EMPTY, false);
             Schema schema = layout.getSchema();
             for (String fieldName : schema.getFields()) {
@@ -157,6 +188,11 @@ public class RecordPage {
         return searchAfter(slot, USED);
     }
 
+    /// @return The first next used slot before `slot`.
+    public int nextBefore(int slot) {
+        return searchBefore(slot, USED);
+    }
+
     /// Marks the first empty slot after `slot` as used.
     ///
     /// @return The first empty slot after `slot`. `-1` if no empty slot was found.
@@ -168,6 +204,11 @@ public class RecordPage {
         return newSlot;
     }
 
+    /// @return The number of records in this page.
+    public int numRecords() {
+        return transaction.blockSize() / layout.recordLength();
+    }
+
     /// @return The first slot number after `slot` that is of the flag `flag`.
     private int searchAfter(int slot, int flag) {
         slot++;
@@ -176,6 +217,19 @@ public class RecordPage {
                 return slot;
             }
             slot++;
+        }
+
+        return -1;
+    }
+
+    /// @return The first slot number before `slot` that is of the flag `flag`.
+    private int searchBefore(int slot, int flag) {
+        slot--;
+        while (slot >= 0) {
+            if (getSlotFlag(slot) == flag) {
+                return slot;
+            }
+            slot--;
         }
 
         return -1;
@@ -225,7 +279,7 @@ public class RecordPage {
 
     /// @return The offset of `slot`.
     private int offset(int slot) {
-        return slot * layout.getSlotSize();
+        return slot * layout.recordLength();
     }
 
     /// @return The block identification of this record page.

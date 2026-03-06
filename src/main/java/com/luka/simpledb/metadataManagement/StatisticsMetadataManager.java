@@ -70,8 +70,10 @@ public class StatisticsMetadataManager {
 
     /// Does a full table scan, incrementing the number of records and
     /// getting the latest block number for every record. Calculates the
-    /// approximated number of unique values per field. Synchronized
-    /// because threads no two threads should be calculating stats for the
+    /// approximated number of unique values per field. Null values are skipped,
+    /// thus the tables containing them will not have ideal plans, but
+    /// they will underestimate instead of overestimate which is generally better.
+    /// Synchronized because threads no two threads should be calculating stats for the
     /// same table at the same time.
     ///
     /// @return Calculated statistics for the given table.
@@ -89,6 +91,9 @@ public class StatisticsMetadataManager {
                 numBlocks = tableScan.getRecordId().blockNum() + 1;
 
                 for (String fieldName : tableSchema.getFields()) {
+                    if (tableScan.isNull(fieldName)) {
+                        continue;
+                    }
                     switch (tableSchema.type(fieldName)) {
                         case INTEGER -> uniqueFieldsInfo.addValue(fieldName, tableScan.getInt(fieldName));
                         case VARCHAR -> uniqueFieldsInfo.addValue(fieldName, tableScan.getString(fieldName));

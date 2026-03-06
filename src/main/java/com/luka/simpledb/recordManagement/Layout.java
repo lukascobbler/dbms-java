@@ -18,11 +18,11 @@ public class Layout {
     private final Schema schema;
     private final Map<String, Integer> offsets;
     private final Map<String, Integer> fieldPositions;
-    private final int slotSize;
+    private final int recordSize;
 
     /// A `Layout` can be instantiated from a schema (when a table is created).
     ///
-    /// @throws RecordTooLongException if the slot size is greater than the block size of the system.
+    /// @throws RecordTooLongException if the record size is greater than the block size of the system.
     public Layout(Schema schema, int blockSize) {
         this.schema = schema;
         offsets = new HashMap<>();
@@ -37,19 +37,19 @@ public class Layout {
             position += lengthInBytes(fieldName);
             i += 1;
         }
-        slotSize = position;
+        recordSize = position;
 
-        if (slotSize > blockSize) {
+        if (recordSize > blockSize) {
             throw new RecordTooLongException();
         }
     }
 
     /// A `Layout` can be instantiated from a schema, previously calculated offsets and
-    /// previously calculated slot size.
-    public Layout(Schema schema, Map<String, Integer> offsets, int slotSize) {
+    /// previously calculated record size.
+    public Layout(Schema schema, Map<String, Integer> offsets, int recordSize) {
         this.schema = schema;
         this.offsets = offsets;
-        this.slotSize = slotSize;
+        this.recordSize = recordSize;
 
         this.fieldPositions = new HashMap<>();
 
@@ -80,9 +80,9 @@ public class Layout {
         return schema;
     }
 
-    /// @return The slot size for this layout.
-    public int getSlotSize() {
-        return slotSize;
+    /// @return The record size for this layout.
+    public int recordLength() {
+        return recordSize;
     }
 
     /// @return The offset of the field i.e. where the field starts.

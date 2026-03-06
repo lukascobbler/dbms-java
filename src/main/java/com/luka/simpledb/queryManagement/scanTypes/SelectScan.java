@@ -23,8 +23,24 @@ public class SelectScan implements UpdateScan {
     }
 
     @Override
+    public void afterLast() {
+        scan.afterLast();
+    }
+
+    @Override
     public boolean next() {
         while (scan.next()) {
+            if (predicate.isSatisfied(scan)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean previous() {
+        while (scan.previous()) {
             if (predicate.isSatisfied(scan)) {
                 return true;
             }
@@ -160,5 +176,10 @@ public class SelectScan implements UpdateScan {
         } catch (ClassCastException e) {
             throw new ScanCantBeUpdateScanException();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        scan.close();
     }
 }
