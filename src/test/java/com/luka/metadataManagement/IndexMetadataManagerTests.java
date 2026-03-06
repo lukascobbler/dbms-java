@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 public class IndexMetadataManagerTests {
     @Test
     public void testDuplicateIndex() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table4");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -37,7 +37,7 @@ public class IndexMetadataManagerTests {
 
     @Test
     public void testIndexCreationForUnknownTableOrField() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table4");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();

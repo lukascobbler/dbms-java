@@ -22,7 +22,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetInt(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -46,7 +46,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetIntRollback(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -72,7 +72,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testConcurrentGetIntSameBlockSameTime(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction3");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -103,7 +103,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedAppendBlocks(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction4");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -128,7 +128,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedUpdates(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction5");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -177,7 +177,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedMixed(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction6");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
 
@@ -235,7 +235,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testTransactionNumbersContinuingAfterRecoveryWithQuiescentCheckpointing(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction7");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
@@ -310,7 +310,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testRedoRecovery(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction8");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
@@ -353,7 +353,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testRemoveFileAddedByTransactionOneBlockLargeIfCommitNotSuccessful(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction9");
+        String tempDirectory = TestUtils.setUpTempDirectory();
         File dbDirectory = new File(tempDirectory);
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
@@ -382,7 +382,7 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testDontCreateFileDefinedInThisTransactionAfterRollback(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_transaction10");
+        String tempDirectory = TestUtils.setUpTempDirectory();
         File dbDirectory = new File(tempDirectory);
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();

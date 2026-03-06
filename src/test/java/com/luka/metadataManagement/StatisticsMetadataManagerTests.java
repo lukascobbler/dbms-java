@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class StatisticsMetadataManagerTests {
     @Test
     public void testCorrectNumberOfRecordsAndBlocks() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_statistics1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -79,7 +79,7 @@ public class StatisticsMetadataManagerTests {
 
     @Test
     public void testCorrectUniqueFieldsSmallCardinality() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_statistics2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -140,7 +140,7 @@ public class StatisticsMetadataManagerTests {
 
     @Test
     public void testCorrectUniqueFieldsBigCardinality() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_statistics3");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();

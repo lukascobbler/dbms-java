@@ -25,7 +25,7 @@ public class TableMetadataManagerTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testTableCreationAndLayoutRetrival() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -38,7 +38,7 @@ public class TableMetadataManagerTests {
         Layout layout = simpleDB.getMetadataManager().getLayout("testTable", tx);
 
         assertEquals(sch, layout.getSchema());
-        assertEquals(40, layout.getSlotSize());
+        assertEquals(40, layout.recordLength());
 
         tx.commit();
     }
@@ -46,7 +46,7 @@ public class TableMetadataManagerTests {
     // the test from the book Fig 7.5
     @Test
     public void testTableCatalog() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -82,7 +82,7 @@ public class TableMetadataManagerTests {
 
     @Test
     public void testDuplicateTableName() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table3");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction tx = simpleDB.newTransaction();
@@ -100,7 +100,7 @@ public class TableMetadataManagerTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testCreateTableInsertRecordRollback(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table4");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
@@ -137,7 +137,7 @@ public class TableMetadataManagerTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testCreateTableInsertRecordRollbackCreateTableSameName(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_table5");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;

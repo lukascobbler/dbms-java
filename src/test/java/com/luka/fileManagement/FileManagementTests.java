@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FileManagementTests {
     @Test
     public void testTruncate() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_filemanager_1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         File dbDir = new File(tempDirectory);
         FileManager mgr = new FileManager(dbDir, 1);
@@ -33,7 +33,7 @@ public class FileManagementTests {
 
     @Test
     public void testPageWriting() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_filemanager_2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         File dbDir = new File(tempDirectory);
         FileManager mgr = new FileManager(dbDir, 200);

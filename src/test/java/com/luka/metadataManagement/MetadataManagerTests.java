@@ -24,7 +24,7 @@ public class MetadataManagerTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testMetadataManagerAllTypes() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_all1");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         MetadataManager metadataManager = simpleDB.getMetadataManager();
@@ -36,7 +36,7 @@ public class MetadataManagerTests {
 
         metadataManager.createTable("TestTable1", schema, transaction);
         Layout layout = metadataManager.getLayout("TestTable1", transaction);
-        int size = layout.getSlotSize();
+        int size = layout.recordLength();
         // 4 for the slot, 4 for one integer, 9 for the string length, 3 for the
         // bytes per character, 4 for the actual length and 1 for padding to 4
         assertEquals(4 + 4 + ((9 * 3) + 4 + 1), size);
@@ -75,7 +75,7 @@ public class MetadataManagerTests {
 
     @Test
     public void testRemoveFieldReconstructTableAndIndex() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory("temp_metadata_all2");
+        String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         Transaction transaction = simpleDB.newTransaction();

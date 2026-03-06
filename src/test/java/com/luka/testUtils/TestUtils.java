@@ -14,8 +14,19 @@ public abstract class TestUtils {
     ///
     /// @return The full directory path of the temporary directory as a string.
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static String setUpTempDirectory(String testDirectoryName) throws IOException {
-        Path path = Paths.get(System.getProperty("java.io.tmpdir"), testDirectoryName);
+    public static String setUpTempDirectory() throws IOException {
+        String folderName = StackWalker.getInstance()
+                .walk(frames -> frames
+                        .skip(1)
+                        .findFirst()
+                        .map(frame -> {
+                            String fullClass = frame.getClassName();
+                            String simpleClass = fullClass.substring(fullClass.lastIndexOf('.') + 1);
+                            return simpleClass + "." + frame.getMethodName();
+                        })
+                        .orElse("anonymous_test"));
+
+        Path path = Paths.get(System.getProperty("java.io.tmpdir"), folderName);
 
         if (Files.exists(path)) {
             try (var stream = Files.walk(path)) {
