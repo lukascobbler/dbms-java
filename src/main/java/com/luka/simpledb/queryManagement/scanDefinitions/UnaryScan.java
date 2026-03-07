@@ -12,12 +12,12 @@ public abstract class UnaryScan extends Scan {
     @Override public void afterLast() { childScan.afterLast(); }
     @Override public boolean next() { return childScan.next(); }
     @Override public boolean previous() { return childScan.previous(); }
-    @Override public boolean hasField(String fld) { return childScan.hasField(fld); }
+    @Override public boolean hasField(String fieldName) { return childScan.hasField(fieldName); }
     @Override public void close() { childScan.close(); }
 
     // default getter implementations
-    @Override protected int internalGetInt(String fld) { return childScan.getInt(fld); }
-    @Override protected String internalGetString(String fld) { return childScan.getString(fld); }
-    @Override protected boolean internalGetBoolean(String fld) { return childScan.getBoolean(fld); }
-    @Override protected Constant internalGetValue(String fld) { return childScan.getValue(fld); }
+    @Override protected int internalGetInt(String fieldName) { return childScan.getInt(fieldName); }
+    @Override protected String internalGetString(String fieldName) { return childScan.getString(fieldName); }
+    @Override protected boolean internalGetBoolean(String fieldName) { return childScan.getBoolean(fieldName); }
+    @Override protected Constant internalGetValue(String fieldName) { return childScan.getValue(fieldName); }
 }

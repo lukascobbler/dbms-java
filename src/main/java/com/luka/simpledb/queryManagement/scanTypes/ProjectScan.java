@@ -1,15 +1,15 @@
 package com.luka.simpledb.queryManagement.scanTypes;
 
-import com.luka.simpledb.queryManagement.scanDefinitions.UnaryScan;
-import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.scanDefinitions.UnaryUpdateScan;
+import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 
 import java.util.Collection;
 import java.util.List;
 
-public class ProjectScan extends UnaryScan {
+public class ProjectScan extends UnaryUpdateScan {
     private final Collection<String> fieldList;
 
-    public ProjectScan(Scan scan, List<String> fieldList) {
+    public ProjectScan(UpdateScan scan, List<String> fieldList) {
         super(scan);
         this.fieldList = fieldList;
     }
