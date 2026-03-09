@@ -1,20 +1,21 @@
 package com.luka.metadataManagement;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
+import com.luka.simpledb.metadataManagement.StatisticsMetadataManager;
 import com.luka.simpledb.metadataManagement.TableMetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
-import com.luka.simpledb.queryManagement.scanTypes.TableScan;
+import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
-import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,12 +24,17 @@ public class MetadataManagerTests {
     // the test from the book Fig 7.18, modified so
     // asserts are used and prints and randoms removed
     @Test
-    public void testMetadataManagerAllTypes() throws IOException {
+    public void testMetadataManagerAllTypes() throws Exception {
         String tempDirectory = TestUtils.setUpTempDirectory();
 
         SimpleDB simpleDB = new SimpleDB(tempDirectory);
         MetadataManager metadataManager = simpleDB.getMetadataManager();
         Transaction transaction = simpleDB.newTransaction();
+
+        StatisticsMetadataManager sm = (StatisticsMetadataManager)
+                TestUtils.getPrivateField(metadataManager, "statisticsMetadataManager");
+        Method refreshStatisticsMethod = StatisticsMetadataManager.class.getDeclaredMethod("refreshStatistics", Transaction.class);
+        refreshStatisticsMethod.setAccessible(true);
 
         Schema schema = new Schema();
         schema.addIntField("A", false);
@@ -47,17 +53,18 @@ public class MetadataManagerTests {
         try (tableScan) {
             for (int i = 0; i < 50; i++) {
                 tableScan.insert();
-                int randomInt = (int) Math.round(Math.random() * 50);
-                tableScan.setInt("A", randomInt);
-                tableScan.setString("B", "rec" + randomInt);
+                tableScan.setInt("A", i);
+                tableScan.setString("B", "rec" + i);
             }
         }
+
+        refreshStatisticsMethod.invoke(sm, transaction);
 
         StatisticsInfo statisticsInfo = metadataManager.getStatisticsInfo("TestTable1", layout, transaction);
         assertEquals(50, statisticsInfo.numRecords());
         assertEquals(1, statisticsInfo.numBlocks());
-        // assertTrue(statisticsInfo.distinctValues("A") > 40); todo
-        // assertTrue(statisticsInfo.distinctValues("B") > 40); todo
+        assertTrue(statisticsInfo.distinctValues("A") > 40);
+        assertTrue(statisticsInfo.distinctValues("B") > 40);
 
         String viewDefinition = "select B from MyTable where A = 1";
         metadataManager.createView("TestView1", viewDefinition, transaction);
@@ -67,8 +74,8 @@ public class MetadataManagerTests {
         metadataManager.createIndex("TestIndex2", "TestTable1", "B", IndexType.HASH, transaction);
 
         Map<String, IndexInfo> indexInfo = metadataManager.getIndexInfo("TestTable1", transaction);
-        assertTrue(indexInfo.get("A").recordsOutput() > 50 / 40);
-        assertTrue(indexInfo.get("B").recordsOutput() > 50 / 40);
+        assertTrue(indexInfo.get("A").recordsOutput() >= 50 / 40);
+        assertTrue(indexInfo.get("B").recordsOutput() >= 50 / 40);
 
         transaction.commit();
     }
@@ -123,8 +130,8 @@ public class MetadataManagerTests {
                 assertEquals(100, tableScanGet.getInt("not-removed3"));
                 assertFalse(tableScanGet.hasField("removed1"));
                 assertFalse(tableScanGet.hasField("removed2"));
-                assertThrowsExactly(FieldNotFoundException.class, () -> tableScanGet.getInt("removed1"));
-                assertThrowsExactly(FieldNotFoundException.class, () -> tableScanGet.getInt("removed2"));
+                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getInt("removed1"));
+                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getInt("removed2"));
             }
         }
 

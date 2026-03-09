@@ -1,11 +1,12 @@
-package com.luka.queryManagement;
+package com.luka.queryManagement.scanTests;
 
 import com.luka.simpledb.fileManagement.FileManager;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.fileManagement.Page;
-import com.luka.simpledb.queryManagement.scanTypes.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.simpleDB.SimpleDBSettings;
@@ -19,7 +20,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TableScanManagementTests {
+public class TableScanTests {
     // the test from the book Fig 6.18, modified so
     // asserts are used and prints and randoms removed
     @Test
@@ -309,7 +310,7 @@ public class TableScanManagementTests {
             for (int i = 0; i <= 100; i++) {
                 ts.moveToRecordId(new RecordId(0, i));
                 assertTrue(ts.isNull("nullable"));
-//                assertEquals((Integer) null, ts.getInt("nullable")); todo when null handing is done
+                assertEquals(NullConstant.INSTANCE, ts.getValue("nullable"));
             }
 
             ts.moveToRecordId(new RecordId(0, 0));

@@ -1,0 +1,114 @@
+package com.luka.queryManagement.vritualEntitiesTests;
+
+import com.luka.queryManagement.QueryTestUtils;
+import com.luka.simpledb.planningManagement.Plan;
+import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
+import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
+import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
+import com.luka.simpledb.recordManagement.Schema;
+import com.luka.testUtils.TestUtils;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class PredicateTests {
+    @Test
+    public void testPredicateLogicAndSubPredicates() throws Exception {
+        String tmpDir = TestUtils.setUpTempDirectory();
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+
+        Schema sch = testData.layouts().getFirst().getSchema();
+        Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
+        ts.next();
+
+        Predicate emptyPred = new Predicate();
+        assertTrue(emptyPred.isSatisfied(ts));
+
+        Term t1 = new Term(
+                new FieldNameExpression("t1_intField1"),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(0))
+        );
+        Term t2 = new Term(
+                new FieldNameExpression("t1_intField2"),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(1))
+        );
+        Predicate p1 = new Predicate(t1);
+        p1.conjoinWith(new Predicate(t2));
+        assertTrue(p1.isSatisfied(ts));
+
+        Term t3 = new Term(
+                new FieldNameExpression("t1_intField1"),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(99))
+        );
+        p1.conjoinWith(new Predicate(t3));
+        assertFalse(p1.isSatisfied(ts));
+
+        Predicate mixedPred = new Predicate(t1);
+        Term tExt = new Term(
+                new FieldNameExpression("otherTableField"),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(5))
+        );
+        mixedPred.conjoinWith(new Predicate(tExt));
+
+        Predicate sub = mixedPred.selectSubPredicate(sch);
+        List<Term> terms = (List<Term>) TestUtils.getPrivateField(sub, "terms");
+        assertEquals(1, terms.size());
+        assertEquals("t1_intField1",
+                terms.getFirst().equatesWithFieldName("t1_intField1") == null ? "t1_intField1" : "");
+
+        ts.close();
+    }
+
+    @Test
+    public void testJoinSubPredicate() throws Exception {
+        Schema s1 = new Schema(); s1.addIntField("f1", false);
+        Schema s2 = new Schema(); s2.addIntField("f2", false);
+
+        Term joinTerm = new Term(
+                new FieldNameExpression("f1"),
+                TermOperator.EQUALS,
+                new FieldNameExpression("f2")
+        );
+        Term selectTerm = new Term(
+                new FieldNameExpression("f1"),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(10))
+        );
+
+        Predicate p = new Predicate(joinTerm);
+        p.conjoinWith(new Predicate(selectTerm));
+
+        Predicate result = p.joinSubPredicate(s1, s2);
+        List<Term> terms = (List<Term>) TestUtils.getPrivateField(result, "terms");
+
+        assertEquals(1, terms.size());
+        assertNotNull(terms.getFirst().equatesWithFieldName("f1"));
+    }
+
+    @Test
+    public void testReductionFactorOverflow() {
+        Plan plan = f -> 1000;
+
+        Predicate p = new Predicate();
+        for (int i = 0; i < 10; i++) {
+            Term t = new Term(
+                    new FieldNameExpression("f"+i),
+                    TermOperator.EQUALS,
+                    new ConstantExpression(new IntConstant(i))
+            );
+            p.conjoinWith(new Predicate(t));
+        }
+
+        assertEquals(Integer.MAX_VALUE, p.reductionFactor(plan));
+    }
+}
