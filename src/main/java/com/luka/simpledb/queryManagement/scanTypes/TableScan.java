@@ -15,10 +15,11 @@ import com.luka.simpledb.transactionManagement.Transaction;
 
 import static java.sql.Types.*;
 
-/// A table scan is a temporary object that is used for accessing one
-/// table. It has the power to go through every sequentially and get / set
-/// data along the way. It is used with `AutoCloseable` to allow seamless
-/// releasing of managed resources, like unpinning the pins on buffers.
+/// A table scan is a special type of update scan because it has
+/// no child scans, and is always at the bottom of the scan evaluation
+/// tree. It gets the data stored on the disk, rather than operating
+/// on intermediate results. It does not extend the default scan
+/// implementations because it is completely standalone.
 public class TableScan extends UpdateScan {
     private final Transaction transaction;
     private final Layout layout;
@@ -38,18 +39,20 @@ public class TableScan extends UpdateScan {
         }
     }
 
-    /// Manually unpin the buffers.
+    /// Actual resource release, i.e. unpinning the buffers of record
+    /// pages. Function is idempotent so calling it multiple times is
+    /// okay.
     @Override
     public void close() {
         if (recordPage != null) transaction.unpin(recordPage.getBlockId());
     }
 
-    /// Move the scan to before the first record.
+    /// Move the scan to before the first record in the first block.
     public void beforeFirst() {
         moveToBlock(0);
     }
 
-    /// Move the scan after the last record.
+    /// Move the scan after the last record in the last block.
     public void afterLast() {
         moveToBlock(transaction.lengthInBlocks(filename) - 1);
         currentRecord = recordPage.numRecords();
@@ -144,7 +147,8 @@ public class TableScan extends UpdateScan {
 
     /// Sets the string field with the provided string value.
     ///
-    /// @throws FieldLengthExceededException – if the length of the passed values exceeds the maximum length defined by the schema for that field.
+    /// @throws FieldLengthExceededException – if the length of the passed values
+    /// exceeds the maximum length defined by the schema for that field.
     public void internalSetString(String fieldName, String value) {
         recordPage.setString(currentRecord, fieldName, value);
     }

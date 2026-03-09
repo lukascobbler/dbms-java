@@ -3,6 +3,11 @@ package com.luka.simpledb.queryManagement.scanDefinitions;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.recordManagement.RecordId;
 
+/// A scan class that defines default functionality for all scans
+/// that can update records and build on top of **one** child scan,
+/// which are the scans that operate on one table and do not add column
+/// information. All scans that operate on one table and can modify
+/// data should extend this class and redefine only needed behaviors.
 public abstract class UnaryUpdateScan extends UpdateScan {
     protected final UpdateScan childScan;
 

@@ -2,6 +2,10 @@ package com.luka.simpledb.queryManagement.scanDefinitions;
 
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
+/// A scan class that defines default functionality for all scans
+/// that build on top of **one** child scan, which are the scans
+/// that operate on one table. All scans that operate on one table
+/// should extend this class and redefine only needed behaviors.
 public abstract class UnaryScan extends Scan {
     protected final Scan childScan;
 

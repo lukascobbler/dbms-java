@@ -10,24 +10,40 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/// A predicate is the topmost structure that binds all terms,
+/// which hold all expressions. It defines logical operators between
+/// terms. A predicate object holds a list of terms that implicitly have an
+/// `AND` between them.
 public class Predicate {
     private final List<Term> terms = new ArrayList<>();
 
+    /// Initializes a predicate with no terms, that is equivalent
+    /// to a `TRUE` value that satisfies everyting.
     public Predicate() {}
 
+    /// Initializes a predicate with one term.
     public Predicate(Term term) {
         terms.add(term);
     }
 
+    /// Adds all terms of some predicate to this one.
     public void conjoinWith(Predicate predicate) {
         terms.addAll(predicate.terms);
     }
 
+    /// A predicate satisfies some scan if all terms that it holds
+    /// satisfy that scan.
+    ///
+    /// @return Whether a predicate satisfies some scan.
     public boolean isSatisfied(Scan scan) {
         return terms.stream()
                 .allMatch(t -> t.isSatisfied(scan));
     }
 
+    /// A reduction factor of a predicate is the multiplication
+    /// of reduction factors of all terms that it holds.
+    ///
+    /// @return The total reduction factor of all predicates.
     public int reductionFactor(Plan plan) {
         double totalFactor = 1.0;
         for (Term term : terms) {
@@ -39,6 +55,7 @@ public class Predicate {
         return (int) totalFactor;
     }
 
+    // todo add docs once table planner is complete
     public Predicate selectSubPredicate(Schema schema) {
         Predicate result = new Predicate();
 
@@ -55,6 +72,7 @@ public class Predicate {
         return result;
     }
 
+    // todo add docs once table planner is complete
     public Predicate joinSubPredicate(Schema schema1, Schema schema2) {
         Predicate result = new Predicate();
         Schema newSchema = new Schema();
@@ -74,6 +92,12 @@ public class Predicate {
         return result;
     }
 
+    /// Checks for "Field = Constant" or "Constant = Field" cases
+    /// and if that is true, returns the constant. Does this check
+    /// for all terms, and returns the first found constant.
+    ///
+    /// @return The constant that some field equates to for any term.
+    /// `null` in any other case.
     public Constant equatesWithConstant(String fieldName) {
         for (Term term : terms) {
             Constant c = term.equatesWithConstant(fieldName);
@@ -85,6 +109,12 @@ public class Predicate {
         return null;
     }
 
+    /// Checks for "Field1 = Field2" or "Field2 = Field1" cases
+    /// and if that is true, returns the right field. Does this check
+    /// for all terms, and returns the first found field name.
+    ///
+    /// @return The right field for two field equality comparisons for any term.
+    /// `null` in any other case.
     public String equatesWithFieldName(String fieldName) {
         for (Term term : terms) {
             String s = term.equatesWithFieldName(fieldName);

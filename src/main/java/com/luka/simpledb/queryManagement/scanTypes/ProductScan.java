@@ -1,13 +1,27 @@
 package com.luka.simpledb.queryManagement.scanTypes;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.BinaryScan;
+import com.luka.simpledb.queryManagement.scanDefinitions.DiffSchemaJoinContextScan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
+/// A product scan represents the "cross product" relational algebra operator.
+/// It is a binary table read-only scan. The user specifies two child scans
+/// that will have a cross product as a result of this scan.
 public class ProductScan extends BinaryScan {
-    public ProductScan(Scan scan1, Scan scan2) {
-        super(scan1, scan2);
+    private final DiffSchemaJoinContextScan diffSchemaJoinContextScan;
+
+    /// A product scan requires two child scans to create a product on.
+    /// The first scan is the outer scan, while the second scan is
+    /// the inner scan.
+    public ProductScan(Scan childScan1, Scan childScan2) {
+        super(childScan1, childScan2);
+        diffSchemaJoinContextScan = new DiffSchemaJoinContextScan(childScan1, childScan2);
     }
 
+    /// A product scan is positioned before the first "combined" record
+    /// if the outer scan is positioned at the first record, and if the
+    /// inner scan is positioned before the first record.
     @Override
     public void beforeFirst() {
         childScan1.beforeFirst();
@@ -16,6 +30,9 @@ public class ProductScan extends BinaryScan {
         }
     }
 
+    /// A product scan is positioned after the last "combined" record
+    /// if the outer scan is positioned at the last record, and if the
+    /// inner scan is positioned after the last record.
     @Override
     public void afterLast() {
         childScan1.afterLast();
@@ -24,6 +41,11 @@ public class ProductScan extends BinaryScan {
         }
     }
 
+    /// A product scan for every record of the outer scan, goes over
+    /// all records in the inner scan and produces the "combined" record.
+    ///
+    /// @return True if there are more "combined" records, false if both
+    /// the outer and inner scans are exhausted.
     @Override
     public boolean next() {
         if (childScan2.next()) {
@@ -38,6 +60,11 @@ public class ProductScan extends BinaryScan {
         return false;
     }
 
+    /// A product scan for every record of the outer scan, goes over
+    /// all records in the inner scan and produces the "combined" record.
+    ///
+    /// @return True if there are more "combined" records, false if both
+    /// the outer and inner scans are at the start.
     @Override
     public boolean previous() {
         if (childScan2.previous()) {
@@ -50,5 +77,35 @@ public class ProductScan extends BinaryScan {
         }
 
         return false;
+    }
+
+    /// @return True if either scan has the field.
+    @Override
+    public boolean hasField(String fieldName) {
+        return diffSchemaJoinContextScan.hasField(fieldName);
+    }
+
+    /// @return The integer value from the scan that has that field.
+    @Override
+    protected int internalGetInt(String fieldName) {
+        return diffSchemaJoinContextScan.getInt(fieldName);
+    }
+
+    /// @return The string value from the scan that has that field.
+    @Override
+    protected String internalGetString(String fieldName) {
+        return diffSchemaJoinContextScan.getString(fieldName);
+    }
+
+    /// @return The boolean value from the scan that has that field.
+    @Override
+    protected boolean internalGetBoolean(String fieldName) {
+        return diffSchemaJoinContextScan.getBoolean(fieldName);
+    }
+
+    /// @return The constant from the scan that has that field.
+    @Override
+    protected Constant internalGetValue(String fieldName) {
+        return diffSchemaJoinContextScan.getValue(fieldName);
     }
 }
