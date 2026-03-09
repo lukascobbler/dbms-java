@@ -1,4 +1,4 @@
-package com.luka.simpledb.queryManagement.scanTypes;
+package com.luka.simpledb.queryManagement.scanTypes.update;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.UnaryUpdateScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;

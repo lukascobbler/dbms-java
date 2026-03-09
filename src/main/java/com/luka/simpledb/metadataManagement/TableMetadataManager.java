@@ -2,7 +2,7 @@ package com.luka.simpledb.metadataManagement;
 
 import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
-import com.luka.simpledb.queryManagement.scanTypes.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;

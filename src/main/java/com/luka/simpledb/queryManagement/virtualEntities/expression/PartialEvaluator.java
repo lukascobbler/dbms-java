@@ -26,7 +26,8 @@ public class PartialEvaluator {
     /// Performs checks if both expressions are constant, does the
     /// arithmetic operation and returns the constant expression.
     /// Also, it checks for simple operations like multiplying by 1,
-    /// multiplying by zero, adding zero and in that case the calculation
+    /// multiplying by zero, subtracting value from itself,
+    /// adding zero and in that case the calculation
     /// isn't even done, the result is just returned.
     ///
     /// @return The folded arithmetic expression.
@@ -53,6 +54,13 @@ public class PartialEvaluator {
         if (op == ArithmeticOperator.ADD) {
             if (isConstant(left, 0)) return right;
             if (isConstant(right, 0)) return left;
+        }
+
+        if (op == ArithmeticOperator.SUB) {
+            if (isConstant(right, 0)) return left;
+            if (left.equals(right)) {
+                return new ConstantExpression(new IntConstant(0));
+            }
         }
 
         return new ArithmeticExpression(left, op, right);

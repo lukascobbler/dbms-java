@@ -1,4 +1,4 @@
-package com.luka.simpledb.queryManagement.scanTypes;
+package com.luka.simpledb.queryManagement.scanTypes.update;
 
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
@@ -125,7 +125,7 @@ public class TableScan extends UpdateScan {
     /// the type of the field name.
     public Constant internalGetValue(String fieldName) {
         if (isNull(fieldName)) {
-            return new NullConstant();
+            return NullConstant.INSTANCE;
         }
         switch (layout.getSchema().type(fieldName)) {
             case INTEGER -> { return new IntConstant(getInt(fieldName)); }

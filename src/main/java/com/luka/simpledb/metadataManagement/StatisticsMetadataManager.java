@@ -2,7 +2,7 @@ package com.luka.simpledb.metadataManagement;
 
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.UniqueFieldsInfo;
-import com.luka.simpledb.queryManagement.scanTypes.TableScan;
+import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;

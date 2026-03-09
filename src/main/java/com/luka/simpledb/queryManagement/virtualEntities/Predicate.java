@@ -26,6 +26,11 @@ public class Predicate {
         terms.add(term);
     }
 
+    /// Initialize a predicate with multiple terms.
+    public Predicate(Term... terms) {
+        this.terms.addAll(List.of(terms));
+    }
+
     /// Adds all terms of some predicate to this one.
     public void conjoinWith(Predicate predicate) {
         terms.addAll(predicate.terms);

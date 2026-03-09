@@ -1,6 +1,7 @@
-package com.luka.simpledb.queryManagement.scanTypes;
+package com.luka.simpledb.queryManagement.scanTypes.update;
 
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.exceptions.FieldRenameException;
 import com.luka.simpledb.queryManagement.scanDefinitions.UnaryUpdateScan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
@@ -18,8 +19,20 @@ public class RenameScan extends UnaryUpdateScan {
     /// A rename scan requires the old and the new field name and a
     /// child scan that must also be able to update data because
     /// a rename scan can.
+    ///
+    /// @throws FieldRenameException if `oldFieldName` is equal to `newFieldName` or
+    /// if any of them are empty.
     public RenameScan(UpdateScan updateScan, String oldFieldName, String newFieldName) {
         super(updateScan);
+
+        if (oldFieldName.isEmpty() || newFieldName.isEmpty()) {
+            throw new FieldRenameException();
+        }
+
+        if (oldFieldName.equals(newFieldName)) {
+            throw new FieldRenameException();
+        }
+
         this.oldFieldName = oldFieldName;
         this.newFieldName = newFieldName;
     }

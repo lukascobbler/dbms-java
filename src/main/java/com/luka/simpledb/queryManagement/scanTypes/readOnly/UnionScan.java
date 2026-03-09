@@ -1,4 +1,4 @@
-package com.luka.simpledb.queryManagement.scanTypes;
+package com.luka.simpledb.queryManagement.scanTypes.readOnly;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.BinaryScan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
