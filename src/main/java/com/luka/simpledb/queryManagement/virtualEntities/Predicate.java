@@ -139,7 +139,7 @@ public class Predicate {
         }
         StringBuilder result = new StringBuilder(iter.next().toString());
         while (iter.hasNext()) {
-            result.append(" and ").append(iter.next().toString());
+            result.append(" AND ").append(iter.next().toString());
         }
 
         return result.toString();
