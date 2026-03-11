@@ -22,6 +22,14 @@ public record ConstantExpression(Constant constant) implements Expression {
         return true;
     }
 
+    /// A constant expression is always constant.
+    ///
+    /// @return True.
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
     @Override
     public String toString() {
         return constant.toString();

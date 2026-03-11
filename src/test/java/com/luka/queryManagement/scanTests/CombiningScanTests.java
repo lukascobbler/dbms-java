@@ -46,7 +46,7 @@ public class CombiningScanTests {
         );
         Predicate joinPred = new Predicate(joinTerm);
 
-        Expression bonusExpr = new ArithmeticExpression(
+        Expression bonusExpr = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.MUL,
                 new ConstantExpression(new IntConstant(10))
@@ -174,7 +174,7 @@ public class CombiningScanTests {
         );
         Predicate joinPred = new Predicate(joinTerm);
 
-        Expression plusTen = new ArithmeticExpression(
+        Expression plusTen = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.ADD,
                 new ConstantExpression(new IntConstant(1000))

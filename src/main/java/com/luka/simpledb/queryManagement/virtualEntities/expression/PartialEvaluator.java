@@ -17,8 +17,10 @@ public class PartialEvaluator {
     /// @return The evaluated arithmetic expression.
     public static Expression evaluate(Expression expr) {
         return switch (expr) {
-            case ArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
-                    fold(evaluate(left), op, evaluate(right));
+            case BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
+                    foldBinary(evaluate(left), op, evaluate(right));
+            case UnaryArithmeticExpression(ArithmeticOperator op, Expression operand) ->
+                    foldUnary(op, evaluate(operand));
             default -> expr;
         };
     }
@@ -30,8 +32,8 @@ public class PartialEvaluator {
     /// adding zero and in that case the calculation
     /// isn't even done, the result is just returned.
     ///
-    /// @return The folded arithmetic expression.
-    private static Expression fold(Expression left, ArithmeticOperator op, Expression right) {
+    /// @return The folded binary arithmetic expression.
+    private static Expression foldBinary(Expression left, ArithmeticOperator op, Expression right) {
         if (left instanceof ConstantExpression(Constant lVal) &&
                 right instanceof ConstantExpression(Constant rVal)) {
 
@@ -44,30 +46,72 @@ public class PartialEvaluator {
             return new ConstantExpression(new IntConstant(result));
         }
 
+        if (op == ArithmeticOperator.ADD && right instanceof
+                UnaryArithmeticExpression(var rOp, var rInner) && rOp == ArithmeticOperator.SUB) {
+            return foldBinary(left, ArithmeticOperator.SUB, rInner);
+        }
+
+        if (op == ArithmeticOperator.SUB && right instanceof
+                UnaryArithmeticExpression(var rOp, var rInner) && rOp == ArithmeticOperator.SUB) {
+            return foldBinary(left, ArithmeticOperator.ADD, rInner);
+        }
+
         if (op == ArithmeticOperator.MUL) {
-            if (isConstant(left, 1)) return right;
-            if (isConstant(right, 1)) return left;
-            if (isConstant(left, 0) || isConstant(right, 0))
+            if (isExactConstant(left, 1)) return right;
+            if (isExactConstant(right, 1)) return left;
+            if (isExactConstant(left, 0) || isExactConstant(right, 0))
                 return new ConstantExpression(new IntConstant(0));
+            if (isExactConstant(right, -1)) return foldUnary(ArithmeticOperator.SUB, left);
         }
 
         if (op == ArithmeticOperator.ADD) {
-            if (isConstant(left, 0)) return right;
-            if (isConstant(right, 0)) return left;
+            if (left instanceof UnaryArithmeticExpression(var lOp, var lInner) && lOp == ArithmeticOperator.SUB) {
+                if (lInner.equals(right)) {
+                    return new ConstantExpression(new IntConstant(0));
+                }
+            }
+
+            if (isExactConstant(left, 0)) return right;
+            if (isExactConstant(right, 0)) return left;
         }
 
         if (op == ArithmeticOperator.SUB) {
-            if (isConstant(right, 0)) return left;
+            if (isExactConstant(right, 0)) return left;
             if (left.equals(right)) {
                 return new ConstantExpression(new IntConstant(0));
             }
         }
 
-        return new ArithmeticExpression(left, op, right);
+        return new BinaryArithmeticExpression(left, op, right);
+    }
+
+    /// Performs the obvious unary arithmetic operations
+    /// like double negation, removing the + unary operation
+    /// and constant folding.
+    ///
+    /// @return The folded unary arithmetic expression.
+    private static Expression foldUnary(ArithmeticOperator op, Expression operand) {
+        if (operand instanceof ConstantExpression(Constant c)) {
+            return new ConstantExpression(new IntConstant(
+                    op == ArithmeticOperator.SUB ? -c.asInt() : c.asInt()
+            ));
+        }
+
+        if (op == ArithmeticOperator.ADD) {
+            return operand;
+        }
+
+        if (op == ArithmeticOperator.SUB && operand instanceof UnaryArithmeticExpression(var innerOp, Expression innerOperand)) {
+            if (innerOp == ArithmeticOperator.SUB) {
+                return innerOperand;
+            }
+        }
+
+        return new UnaryArithmeticExpression(op, operand);
     }
 
     /// @return Whether the expression is exactly `val`.
-    private static boolean isConstant(Expression e, int val) {
+    private static boolean isExactConstant(Expression e, int val) {
         return e instanceof ConstantExpression(Constant c) && c.asInt() == val;
     }
 }

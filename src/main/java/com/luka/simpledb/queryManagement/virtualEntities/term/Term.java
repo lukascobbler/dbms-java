@@ -76,21 +76,20 @@ public class Term {
         }
 
         return switch (lhs) {
-            case FieldNameExpression(String leftFieldName) -> switch (rhs) {
-                case FieldNameExpression(String rightFieldName) ->
-                        Math.max(plan.distinctValues(leftFieldName), plan.distinctValues(rightFieldName));
-                case ConstantExpression(Constant constant) ->
-                        plan.distinctValues(leftFieldName);
-                case ArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
-                        plan.distinctValues(leftFieldName);
+            case Expression leftExpr when getUniqueField(leftExpr) instanceof String leftField -> switch (rhs) {
+                case Expression rightExpr when getUniqueField(rightExpr) instanceof String rightField ->
+                        Math.max(plan.distinctValues(leftField), plan.distinctValues(rightField));
+                case Expression r when r.isConstant() ->
+                        plan.distinctValues(leftField);
+                default -> Integer.MAX_VALUE;
             };
-            case ConstantExpression(Constant leftConstant) -> switch (rhs) {
-                case FieldNameExpression(String rightFieldName) -> {
-                    if (leftConstant instanceof NullConstant) yield Integer.MAX_VALUE;
-                    yield plan.distinctValues(rightFieldName);
+            case Expression leftExpr when leftExpr.isConstant() -> switch (rhs) {
+                case Expression rightExpr when getUniqueField(rightExpr) instanceof String rField -> {
+                    if (leftExpr.evaluate(null) instanceof NullConstant) yield Integer.MAX_VALUE;
+                    yield plan.distinctValues(rField);
                 }
-                case ConstantExpression(Constant rightConstant) ->
-                        leftConstant.equals(rightConstant) ? 1 : Integer.MAX_VALUE;
+                case Expression r when r.isConstant() ->
+                        leftExpr.evaluate(null).equals(r.evaluate(null)) ? 1 : Integer.MAX_VALUE;
                 default -> Integer.MAX_VALUE;
             };
             default -> Integer.MAX_VALUE;
@@ -124,6 +123,27 @@ public class Term {
             case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f1.equals(fieldName) -> f2;
             case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f2.equals(fieldName) -> f1;
             default -> null;
+        };
+    }
+
+    /// Extracts the unique field from a given expression for the
+    /// distinct value count.
+    ///
+    /// @return The extracted field's name if there is one field,
+    /// null if there is none or more than one.
+    private String getUniqueField(Expression expr) {
+        return switch (expr) {
+            case FieldNameExpression(String name) -> name;
+            case UnaryArithmeticExpression(var op, Expression operand) -> getUniqueField(operand);
+            case BinaryArithmeticExpression(Expression left, var op, Expression right) -> {
+                String leftField = getUniqueField(left);
+                String rightField = getUniqueField(right);
+
+                if (leftField != null && rightField != null) yield null;
+
+                yield (leftField != null) ? leftField : rightField;
+            }
+            case ConstantExpression c -> null;
         };
     }
 

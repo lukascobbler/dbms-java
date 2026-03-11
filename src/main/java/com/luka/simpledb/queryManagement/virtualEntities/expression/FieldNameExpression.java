@@ -20,6 +20,14 @@ public record FieldNameExpression(String fieldName) implements Expression {
         return schema.hasField(fieldName);
     }
 
+    /// A field name expression is never constant.
+    ///
+    /// @return False.
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
     @Override
     public String toString() {
         return fieldName;

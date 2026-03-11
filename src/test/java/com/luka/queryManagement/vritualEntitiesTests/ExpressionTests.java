@@ -78,7 +78,7 @@ public class ExpressionTests {
 
         Expression eInt1 = new ConstantExpression(new IntConstant(1));
         Expression eInt2 = new ConstantExpression(new IntConstant(2));
-        Expression ar1 = new ArithmeticExpression(eInt1, ArithmeticOperator.ADD, eInt2);
+        Expression ar1 = new BinaryArithmeticExpression(eInt1, ArithmeticOperator.ADD, eInt2);
 
         Scan ts1 = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
 
@@ -96,7 +96,7 @@ public class ExpressionTests {
 
         Expression eInt1 = new ConstantExpression(new IntConstant(500));
         Expression eInt2 = new FieldNameExpression("t1_intField2");
-        Expression ar1 = new ArithmeticExpression(eInt1, ArithmeticOperator.ADD, eInt2);
+        Expression ar1 = new BinaryArithmeticExpression(eInt1, ArithmeticOperator.ADD, eInt2);
 
         Scan ts1 = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
 
@@ -115,23 +115,26 @@ public class ExpressionTests {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
 
-        // ((f1 * 10) + (f2 - 5)) / 2
-        Expression complexExpr = new ArithmeticExpression(
-                new ArithmeticExpression(
-                        new ArithmeticExpression(
+        // ((f1 * 10) + (f2 - 5)) / -2
+        Expression complexExpr = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
+                        new BinaryArithmeticExpression(
                                 new FieldNameExpression("t1_intField1"),
                                 ArithmeticOperator.MUL,
                                 new ConstantExpression(new IntConstant(10))
                         ),
                         ArithmeticOperator.ADD,
-                        new ArithmeticExpression(
+                        new BinaryArithmeticExpression(
                                 new FieldNameExpression("t1_intField2"),
                                 ArithmeticOperator.SUB,
                                 new ConstantExpression(new IntConstant(5))
                         )
                 ),
                 ArithmeticOperator.DIV,
-                new ConstantExpression(new IntConstant(2))
+                new UnaryArithmeticExpression(
+                        ArithmeticOperator.SUB,
+                        new ConstantExpression(new IntConstant(2))
+                )
         );
 
         Scan ts1 = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -139,7 +142,7 @@ public class ExpressionTests {
         try (ts1) {
             int i = 0;
             while (ts1.next()) {
-                int expected = ((i * 10) + ((i + 1) - 5)) / 2;
+                int expected = ((i * 10) + ((i + 1) - 5)) / -2;
                 Constant result = complexExpr.evaluate(ts1);
                 assertEquals(expected, result.asInt());
                 i++;
@@ -161,23 +164,23 @@ public class ExpressionTests {
 
         Expression const10 = new ConstantExpression(new IntConstant(10));
         Expression const5 = new ConstantExpression(new IntConstant(5));
-        Expression innerAdd = new ArithmeticExpression(const10, ArithmeticOperator.ADD, const5);
+        Expression innerAdd = new BinaryArithmeticExpression(const10, ArithmeticOperator.ADD, const5);
 
-        Expression leftWithField = new ArithmeticExpression(f1, ArithmeticOperator.ADD, innerAdd);
+        Expression leftWithField = new BinaryArithmeticExpression(f1, ArithmeticOperator.ADD, innerAdd);
 
         Expression const20 = new ConstantExpression(new IntConstant(20));
         Expression const10_2 = new ConstantExpression(new IntConstant(10));
-        Expression innerDiv = new ArithmeticExpression(const20, ArithmeticOperator.DIV, const10_2);
+        Expression innerDiv = new BinaryArithmeticExpression(const20, ArithmeticOperator.DIV, const10_2);
 
-        Expression branch1 = new ArithmeticExpression(leftWithField, ArithmeticOperator.MUL, innerDiv);
+        Expression branch1 = new BinaryArithmeticExpression(leftWithField, ArithmeticOperator.MUL, innerDiv);
 
-        Expression branch2 = new ArithmeticExpression(
+        Expression branch2 = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.ADD,
                 new ConstantExpression(new IntConstant(15))
         );
 
-        Expression totalExpr = new ArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
+        Expression totalExpr = new BinaryArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
 
         Expression foldedExpr = PartialEvaluator.evaluate(totalExpr);
 
@@ -203,34 +206,40 @@ public class ExpressionTests {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
 
-        // Target: ((t1_intField1 + (10 + 5)) * (20 / 20)) - (t1_intField1 + 15)
+        // Target: (-((t1_intField1 + (10 + 5)) * (20 / 20))) - (-(t1_intField1 + 15))
         // 1. (10 + 5) -> 15
         // 2. (20 / 10) -> 1
-        // 3. ((t1_intField1 + 15) * 1) - (t1_intField1 + 15)
-        // 4. ((t1_intField1 + 15) - (t1_intField1 + 15)
+        // 3. (-((t1_intField1 + 15) * 1)) - (-(t1_intField1 + 15))
+        // 4. (-(t1_intField1 + 15)) - (-(t1_intField1 + 15))
         // 5. 0
 
         Expression f1 = new FieldNameExpression("t1_intField1");
 
         Expression const10 = new ConstantExpression(new IntConstant(10));
         Expression const5 = new ConstantExpression(new IntConstant(5));
-        Expression innerAdd = new ArithmeticExpression(const10, ArithmeticOperator.ADD, const5);
+        Expression innerAdd = new BinaryArithmeticExpression(const10, ArithmeticOperator.ADD, const5);
 
-        Expression leftWithField = new ArithmeticExpression(f1, ArithmeticOperator.ADD, innerAdd);
+        Expression leftWithField = new BinaryArithmeticExpression(f1, ArithmeticOperator.ADD, innerAdd);
 
         Expression const20 = new ConstantExpression(new IntConstant(20));
         Expression const10_2 = new ConstantExpression(new IntConstant(20));
-        Expression innerDiv = new ArithmeticExpression(const20, ArithmeticOperator.DIV, const10_2);
+        Expression innerDiv = new BinaryArithmeticExpression(const20, ArithmeticOperator.DIV, const10_2);
 
-        Expression branch1 = new ArithmeticExpression(leftWithField, ArithmeticOperator.MUL, innerDiv);
-
-        Expression branch2 = new ArithmeticExpression(
-                new FieldNameExpression("t1_intField1"),
-                ArithmeticOperator.ADD,
-                new ConstantExpression(new IntConstant(15))
+        Expression branch1 = new UnaryArithmeticExpression(
+                ArithmeticOperator.SUB,
+                new BinaryArithmeticExpression(leftWithField, ArithmeticOperator.MUL, innerDiv)
         );
 
-        Expression totalExpr = new ArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
+        Expression branch2 = new UnaryArithmeticExpression(
+                ArithmeticOperator.SUB,
+                new BinaryArithmeticExpression(
+                        new FieldNameExpression("t1_intField1"),
+                        ArithmeticOperator.ADD,
+                        new ConstantExpression(new IntConstant(15))
+                )
+        );
+
+        Expression totalExpr = new BinaryArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
 
         Expression foldedExpr = PartialEvaluator.evaluate(totalExpr);
 
@@ -252,6 +261,112 @@ public class ExpressionTests {
     }
 
     @Test
+    public void testUnaryFolding() {
+        Expression field = new FieldNameExpression("val");
+        Expression const5 = new ConstantExpression(new IntConstant(5));
+
+        Expression unaryMinusConst = new UnaryArithmeticExpression(ArithmeticOperator.SUB, const5);
+        Expression foldedConst = PartialEvaluator.evaluate(unaryMinusConst);
+        assertEquals("-5", foldedConst.toString());
+        assertInstanceOf(ConstantExpression.class, foldedConst);
+
+        Expression unaryPlusField = new UnaryArithmeticExpression(ArithmeticOperator.ADD, field);
+        Expression foldedPlus = PartialEvaluator.evaluate(unaryPlusField);
+        assertEquals("val", foldedPlus.toString());
+        assertInstanceOf(FieldNameExpression.class, foldedPlus);
+
+        Expression doubleNegation = new UnaryArithmeticExpression(ArithmeticOperator.SUB,
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, field));
+        Expression foldedDoubleNeg = PartialEvaluator.evaluate(doubleNegation);
+        assertEquals("val", foldedDoubleNeg.toString());
+
+        Expression tripleNegation = new UnaryArithmeticExpression(ArithmeticOperator.SUB, doubleNegation);
+        Expression foldedTripleNeg = PartialEvaluator.evaluate(tripleNegation);
+        assertEquals("-(val)", foldedTripleNeg.toString());
+    }
+
+    @Test
+    public void testAdditiveInverseFolding() {
+        Expression x = new FieldNameExpression("x");
+
+        Expression xPlusNegX = new BinaryArithmeticExpression(
+                x,
+                ArithmeticOperator.ADD,
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, x)
+        );
+        assertEquals("0", PartialEvaluator.evaluate(xPlusNegX).toString());
+
+        Expression negXPlusX = new BinaryArithmeticExpression(
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, x),
+                ArithmeticOperator.ADD,
+                x
+        );
+        assertEquals("0", PartialEvaluator.evaluate(negXPlusX).toString());
+
+        Expression complex = new BinaryArithmeticExpression(x,
+                ArithmeticOperator.ADD,
+                new ConstantExpression(new IntConstant(5))
+        );
+        Expression complexInverse = new BinaryArithmeticExpression(
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, complex),
+                ArithmeticOperator.ADD, complex);
+        assertEquals("0", PartialEvaluator.evaluate(complexInverse).toString());
+    }
+
+    @Test
+    public void testUnaryBinaryInteraction() {
+        Expression x = new FieldNameExpression("x");
+        Expression y = new FieldNameExpression("y");
+
+        Expression addNeg = new BinaryArithmeticExpression(x, ArithmeticOperator.ADD,
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, y));
+        Expression foldedAddNeg = PartialEvaluator.evaluate(addNeg);
+        assertEquals("(x - y)", foldedAddNeg.toString());
+
+        Expression subNeg = new BinaryArithmeticExpression(x, ArithmeticOperator.SUB,
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, y));
+        Expression foldedSubNeg = PartialEvaluator.evaluate(subNeg);
+        assertEquals("(x + y)", foldedSubNeg.toString());
+
+        Expression mulNegOne = new BinaryArithmeticExpression(x, ArithmeticOperator.MUL,
+                new ConstantExpression(new IntConstant(-1)));
+        Expression foldedMulNegOne = PartialEvaluator.evaluate(mulNegOne);
+        assertEquals("-(x)", foldedMulNegOne.toString());
+    }
+
+    @Test
+    public void testNoFolding1() {
+        Expression fieldX = new FieldNameExpression("x");
+        Expression fieldY = new FieldNameExpression("y");
+
+        Expression diffFields = new BinaryArithmeticExpression(fieldX, ArithmeticOperator.SUB, fieldY);
+        Expression foldedDiff = PartialEvaluator.evaluate(diffFields);
+        assertEquals("(x - y)", foldedDiff.toString());
+        assertFalse(foldedDiff instanceof ConstantExpression);
+
+        Expression unaryField = new UnaryArithmeticExpression(ArithmeticOperator.SUB, fieldX);
+        Expression foldedUnary = PartialEvaluator.evaluate(unaryField);
+        assertEquals("-(x)", foldedUnary.toString());
+        assertInstanceOf(UnaryArithmeticExpression.class, foldedUnary);
+    }
+
+    @Test
+    public void testNoFolding2() {
+        Expression x = new FieldNameExpression("x");
+        Expression y = new FieldNameExpression("y");
+
+        Expression negXPlusY = new BinaryArithmeticExpression(
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, x),
+                ArithmeticOperator.ADD,
+                y
+        );
+        Expression result = PartialEvaluator.evaluate(negXPlusY);
+
+        assertNotEquals("0", result.toString());
+        assertInstanceOf(BinaryArithmeticExpression.class, result);
+    }
+
+    @Test
     public void appliesToSchema() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
@@ -267,8 +382,8 @@ public class ExpressionTests {
         Expression e3 = new ConstantExpression(new IntConstant(42));
         assertTrue(e3.appliesTo(schema));
 
-        Expression complexSuccess = new ArithmeticExpression(
-                new ArithmeticExpression(
+        Expression complexSuccess = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
                         new FieldNameExpression("t1_intField1"),
                         ArithmeticOperator.ADD,
                         new FieldNameExpression("t1_intField2")
@@ -278,7 +393,7 @@ public class ExpressionTests {
         );
         assertTrue(complexSuccess.appliesTo(schema));
 
-        Expression complexFailure = new ArithmeticExpression(
+        Expression complexFailure = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.ADD,
                 new FieldNameExpression("hidden_field")

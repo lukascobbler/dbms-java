@@ -79,8 +79,8 @@ public class TermTests {
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
         ts.next();
 
-        Expression math = new ArithmeticExpression(
-                new ArithmeticExpression(
+        Expression math = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
                         new FieldNameExpression("t1_intField1"),
                         ArithmeticOperator.ADD,
                         new ConstantExpression(new IntConstant(10))
@@ -145,7 +145,7 @@ public class TermTests {
 
     @Test
     public void testTermFoldingOptimization() throws Exception {
-        Expression fivePlusFive = new ArithmeticExpression(
+        Expression fivePlusFive = new BinaryArithmeticExpression(
                 new ConstantExpression(new IntConstant(5)),
                 ArithmeticOperator.ADD,
                 new ConstantExpression(new IntConstant(5))

@@ -5,10 +5,10 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
 import com.luka.simpledb.recordManagement.Schema;
 
-/// Arithmetic expressions encapsulate logic for calculating the constant value
-/// an arithmetic AST can evaluate to. It has three components: the left sub-expression,
+/// Binary arithmetic expressions encapsulate logic for calculating the constant value
+/// a binary arithmetic AST can evaluate to. It has three components: the left sub-expression,
 /// the arithmetic operator and the right sub-expression.
-public record ArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) implements Expression {
+public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) implements Expression {
     /// Evaluates the left and right sub-expressions (can be recursive if they are also
     /// some sort of AST) and performs the arithmetic operation defined by the operator
     /// on the evaluated sub-expressions.
@@ -37,6 +37,15 @@ public record ArithmeticExpression(Expression left, ArithmeticOperator op, Expre
     @Override
     public boolean appliesTo(Schema schema) {
         return left.appliesTo(schema) && right.appliesTo(schema);
+    }
+
+    /// A binary arithmetic expression is only constant if both sub-expressions
+    /// are constant.
+    ///
+    /// @return True if both sub-expressions are constant.
+    @Override
+    public boolean isConstant() {
+        return left.isConstant() && right.isConstant();
     }
 
     @Override

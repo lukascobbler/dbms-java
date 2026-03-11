@@ -25,7 +25,7 @@ public class ExtendScanTests {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
 
-        Expression expr = new ArithmeticExpression(
+        Expression expr = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.ADD,
                 new ConstantExpression(new IntConstant(100))
@@ -55,7 +55,7 @@ public class ExtendScanTests {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
 
-        Expression expr = new ArithmeticExpression(
+        Expression expr = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
                 ArithmeticOperator.MUL,
                 new ConstantExpression(new IntConstant(2))
