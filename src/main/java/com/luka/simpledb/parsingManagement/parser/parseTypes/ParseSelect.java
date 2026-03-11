@@ -3,9 +3,9 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
-import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,10 +15,10 @@ import java.util.List;
 /// Its subgrammar is defined like this:
 ///
 /// ```
-/// <TableName>         := IdentificationToken
-/// <ParseSelect>       := SELECT <SelectList> FROM <TableList> [WHERE<ParsePredicate>]
-/// <SelectList>        := <ParseExpression> [, <SelectList>]
-/// <TableList>         := <TableName> [, <TableList>]
+/// <TableName>                 := IdentificationToken
+/// <ParseSelect>               := SELECT <SelectExpressionList> FROM <TableList> [WHERE<ParsePredicate>]
+/// <SelectExpressionList>      := <ParseExpression> [, <SelectExpressionList>]
+/// <TableList>                 := <TableName> [, <TableList>]
 /// ```
 public class ParseSelect {
     private final ParserContext ctx;
@@ -29,7 +29,7 @@ public class ParseSelect {
 
     public SelectStatement parse() {
         ctx.eat(Keyword.SELECT);
-        List<String> fields = selectList();
+        List<Expression> fields = selectExpressionList();
 
         ctx.eat(Keyword.FROM);
         Collection<String> tables = tableList();
@@ -44,12 +44,12 @@ public class ParseSelect {
         return new SelectStatement(fields, tables, predicate);
     }
 
-    private List<String> selectList() {
-        List<String> selectList = new ArrayList<>();
+    private List<Expression> selectExpressionList() {
+        List<Expression> selectList = new ArrayList<>();
 
-        // todo selection expressions
         do {
-            selectList.add(ctx.eatIdentifier());
+            Expression selectionExpression = new ParseExpression(ctx).parse();
+            selectList.add(selectionExpression);
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return selectList;

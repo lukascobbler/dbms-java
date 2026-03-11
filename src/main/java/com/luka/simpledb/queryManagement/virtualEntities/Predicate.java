@@ -18,7 +18,7 @@ public class Predicate {
     private final List<Term> terms = new ArrayList<>();
 
     /// Initializes a predicate with no terms, that is equivalent
-    /// to a `TRUE` value that satisfies everyting.
+    /// to a `TRUE` value that satisfies everything.
     public Predicate() {}
 
     /// Initializes a predicate with one term.
@@ -129,6 +129,15 @@ public class Predicate {
         }
 
         return null;
+    }
+
+    /// Folds every term in the predicate.
+    public void fold() {
+        terms.forEach(Term::foldExpressions);
+    }
+
+    public List<Term> getTerms() {
+        return terms;
     }
 
     @Override

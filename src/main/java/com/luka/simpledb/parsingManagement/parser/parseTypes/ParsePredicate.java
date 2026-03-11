@@ -41,10 +41,6 @@ public class ParsePredicate {
         Expression lhs = exprParser.parse();
         TermOperator op = parseTermOperator();
         Expression rhs = exprParser.parse();
-        // todo decide where to call PartialEvaluator
-        //  must be before code enters the scan, as to not be
-        //  executed on the VM, but must be after the parser to
-        //  correctly test the parser
         return new Term(lhs, op, rhs);
     }
 

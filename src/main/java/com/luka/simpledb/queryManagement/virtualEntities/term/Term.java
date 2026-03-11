@@ -12,15 +12,15 @@ import com.luka.simpledb.recordManagement.Schema;
 /// between two expressions. It also has logic for how much will
 /// the result of the given comparison affect the query.
 public class Term {
-    private final Expression lhs, rhs;
+    private Expression lhs, rhs;
     private final TermOperator termOperator;
 
     /// An expression comparison is done between two expressions and the
     /// operator that is between them.
     public Term(Expression lhs, TermOperator termOperator, Expression rhs) {
-        this.lhs = PartialEvaluator.evaluate(lhs);
+        this.lhs = lhs;
         this.termOperator = termOperator;
-        this.rhs = PartialEvaluator.evaluate(rhs);
+        this.rhs = rhs;
     }
 
     /// Both expressions are evaluated to their constant form
@@ -148,11 +148,29 @@ public class Term {
         };
     }
 
-    /// Helper record for easier comparisons.
-    private record Pair(Expression left, Expression right) {}
+    /// Folds the expressions contained in the term object.
+    public void foldExpressions() {
+        lhs = PartialEvaluator.evaluate(lhs);
+        rhs = PartialEvaluator.evaluate(rhs);
+    }
+
+    public TermOperator getTermOperator() {
+        return termOperator;
+    }
+
+    public Expression getLhs() {
+        return lhs;
+    }
+
+    public Expression getRhs() {
+        return rhs;
+    }
 
     @Override
     public String toString() {
         return lhs.toString() + " " + termOperator.toString() + " " + rhs.toString();
     }
+
+    /// Helper record for easier comparisons.
+    private record Pair(Expression left, Expression right) {}
 }

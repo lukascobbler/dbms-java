@@ -8,7 +8,6 @@ import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 import com.luka.simpledb.recordManagement.Schema;
 
 /// The class responsible for parsing table creation.
@@ -19,8 +18,12 @@ import com.luka.simpledb.recordManagement.Schema;
 /// <FieldName>             := IdentificationToken
 /// <ParseCreateTable>      := TABLE <TableName> (<FieldDefs>)
 /// <FieldDefinitions>      := <FieldDefinition> [, <FieldDefinitions>]
-/// <FieldDefinition>       := <FieldName> INT | VARCHAR (IntToken) | BOOLEAN [NOT NULL]
+/// <FieldDefinition>       := <FieldName> INT | VARCHAR (<Expression>) | BOOLEAN [NOT NULL]
 /// ```
+///
+/// For CREATE TABLE commands, putting expressions as VARCHAR length values is technically
+/// valid SQL, but these expressions must be constant and will be evaluated in the parser
+/// instead of in the scan.
 public class ParseCreateTable {
     private final ParserContext ctx;
 
@@ -58,18 +61,20 @@ public class ParseCreateTable {
         } else if (ctx.eatIfMatches(Keyword.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 
+            // Since VARCHAR can contain expressions as the length, they
+            // must be calculated here instead of the planner to not complicate
+            // Schema objects. The calculation fails if the user provides a
+            // non-constant non-int expression as the value. Constant expressions
+            // can be calculated without scans if they are 100% constant.
             Expression constantExpression = new ParseExpression(ctx).parse();
 
             if (!constantExpression.isConstant()) {
                 throw new ParserException("The varchar string length must be a constant expression");
             }
 
-            // todo folding here or after
-            Expression foldedExpr = PartialEvaluator.evaluate(constantExpression);
-
             int stringLength;
             try {
-                stringLength = foldedExpr.evaluate(null).asInt();
+                stringLength = constantExpression.evaluate(null).asInt();
             } catch (IncompatibleConstantTypeException e) {
                 throw new ParserException("The varchar string length must be an integer");
             }

@@ -22,6 +22,10 @@ import java.util.List;
 /// <FieldList>         := <FieldName> [, <FieldList>]
 /// <ConstantList>      := <Constant> [, <ConstantList>]
 /// ```
+///
+/// For INSERT commands, putting expressions as insert values is technically
+/// valid SQL, but these expressions must be constant and will be evaluated in
+/// the parser instead of in the scan.
 public class ParseInsert {
     private final ParserContext ctx;
 
@@ -52,16 +56,20 @@ public class ParseInsert {
         List<Constant> constantList = new ArrayList<>();
 
         do {
-            Expression constantExpression = new ParseExpression(ctx).parse();
+            // Since INSERT statements can contain expressions as new values, they
+            // must be calculated here instead of the planner to not complicate
+            // the planner. The calculation fails if the user provides a
+            // non-constant expression as the value. Constant expressions
+            // can be calculated without scans if they are 100% constant.
 
-            if (!constantExpression.isConstant()) {
+            Expression constantExpression = new ParseExpression(ctx).parse();
+            Expression foldedConstantExpression = PartialEvaluator.evaluate(constantExpression);
+
+            if (!foldedConstantExpression.isConstant()) {
                 throw new ParserException("An insert statement must have constant expressions for new values");
             }
 
-            // todo folding here or after
-            Expression foldedExpr = PartialEvaluator.evaluate(constantExpression);
-
-            constantList.add(foldedExpr.evaluate(null));
+            constantList.add(foldedConstantExpression.evaluate(null));
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return constantList;

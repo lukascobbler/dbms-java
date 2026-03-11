@@ -3,11 +3,9 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.statement.UpdateStatement;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
-import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 
 /// The class responsible for parsing row updates.
 /// Its subgrammar is defined like this:
@@ -34,15 +32,12 @@ public class ParseUpdate {
 
         Expression newValue = new ParseExpression(ctx).parse();
 
-        // todo folding here or somewhere else
-        Expression newValueFolded = PartialEvaluator.evaluate(newValue);
-
         Predicate predicate = new Predicate();
         if (ctx.eatIfMatches(Keyword.WHERE)) {
             predicate = new ParsePredicate(ctx).parse();
         }
 
-        return new UpdateStatement(tableName, fieldName, newValueFolded, predicate);
+        return new UpdateStatement(tableName, fieldName, newValue, predicate);
     }
 
     public String tableName() {
