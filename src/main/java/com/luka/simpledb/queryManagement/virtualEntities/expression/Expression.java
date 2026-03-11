@@ -8,7 +8,9 @@ import com.luka.simpledb.recordManagement.Schema;
 /// rows. This interface is an abstraction over all types of expressions that
 /// the database can evaluate, and it is needed for constructing expression ASTs
 /// whose exact structure isn't known at compile time.
-public sealed interface Expression permits BinaryArithmeticExpression, ConstantExpression, FieldNameExpression, UnaryArithmeticExpression {
+public sealed interface Expression permits
+        BinaryArithmeticExpression, ConstantExpression, FieldNameExpression,
+        UnaryArithmeticExpression, WildcardExpression {
     /// @return The constant evaluation of an expression over some scan.
     Constant evaluate(Scan scan);
     /// @return Whether this expression does apply to this schema.

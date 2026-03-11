@@ -15,11 +15,12 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 ///
 /// ```
 /// <Constant>                      := StringToken | IntToken | BooleanToken | NullKeyword
-/// <Expr>                          := <BinaryArithmeticExpression> | <UnaryArithmeticExpression> |
+/// <Expression>                    := <BinaryArithmeticExpression> | <UnaryArithmeticExpression> |
 ///                                    <PrimaryExpression>
-/// <PrimaryExpression>             := <FieldExpr> | <ConstantExpr> | "(" <Expr> ")"
-/// <BinaryArithmeticExpression>    := <Expr> ( "*" | "/" | "+" | "-" ) <Expr>
-/// <UnaryArithmeticExpression>     := ( "+" | "-" ) <Expr>
+/// <PrimaryExpression>             := <FieldExpression> | <ConstantExpression> |
+///                                    <WildcardExpression> | "(" <Expression> ")"
+/// <BinaryArithmeticExpression>    := <Expression> ( "*" | "/" | "+" | "-" ) <Expression>
+/// <UnaryArithmeticExpression>     := ( "+" | "-" ) <Expression>
 /// ```
 public class ParseExpression {
     private static final int PREFIX_PRECEDENCE = 30;
@@ -62,7 +63,7 @@ public class ParseExpression {
             case SymbolToken sym -> switch (sym) {
                 case MINUS -> new UnaryArithmeticExpression(ArithmeticOperator.SUB, parseExpression(PREFIX_PRECEDENCE));
                 case PLUS  -> new UnaryArithmeticExpression(ArithmeticOperator.ADD, parseExpression(PREFIX_PRECEDENCE));
-                case STAR  -> new FieldNameExpression("*");
+                case STAR  -> new WildcardExpression();
                 case LEFT_PAREN -> {
                     Expression inner = parseExpression(0);
                     ctx.eat(SymbolToken.RIGHT_PAREN);

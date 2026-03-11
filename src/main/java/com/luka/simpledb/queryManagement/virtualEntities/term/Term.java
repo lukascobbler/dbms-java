@@ -144,6 +144,7 @@ public class Term {
                 yield (leftField != null) ? leftField : rightField;
             }
             case ConstantExpression c -> null;
+            case WildcardExpression wildcardExpression -> null;
         };
     }
 
