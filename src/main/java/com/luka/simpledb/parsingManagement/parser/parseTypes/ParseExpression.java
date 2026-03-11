@@ -14,11 +14,12 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 /// Its subgrammar is defined like this:
 ///
 /// ```
-/// <Constant>              := StringToken | IntToken | BooleanToken
-/// <Expr>                  := <BinArithmeticExpr> | <UnArithmeticExpr> | <PrimaryExpr>
-/// <PrimaryExpr>           := <FieldExpr> | <ConstantExpr> | "(" <Expr> ")"
-/// <BinArithmeticExpr>     := <Expr> ( "*" | "/" | "+" | "-" ) <Expr>
-/// <UnArithmeticExpr>      := ( "+" | "-" ) <Expr>
+/// <Constant>                      := StringToken | IntToken | BooleanToken | NullKeyword
+/// <Expr>                          := <BinaryArithmeticExpression> | <UnaryArithmeticExpression> |
+///                                    <PrimaryExpression>
+/// <PrimaryExpression>             := <FieldExpr> | <ConstantExpr> | "(" <Expr> ")"
+/// <BinaryArithmeticExpression>    := <Expr> ( "*" | "/" | "+" | "-" ) <Expr>
+/// <UnaryArithmeticExpression>     := ( "+" | "-" ) <Expr>
 /// ```
 public class ParseExpression {
     private static final int PREFIX_PRECEDENCE = 30;
