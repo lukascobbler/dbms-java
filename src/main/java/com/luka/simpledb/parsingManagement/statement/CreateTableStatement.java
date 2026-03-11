@@ -1,10 +1,10 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.recordManagement.Schema;
 
 import static java.sql.Types.*;
 
-public record CreateTableData(String tableName, Schema schema) {
+public record CreateTableStatement(String tableName, Schema schema) implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("CREATE TABLE ");

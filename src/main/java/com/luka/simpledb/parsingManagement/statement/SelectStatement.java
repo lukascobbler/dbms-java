@@ -1,11 +1,12 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
 import java.util.Collection;
 import java.util.List;
 
-public record QueryData(List<String> fields, Collection<String> tables, Predicate predicate) {
+public record SelectStatement(List<String> fields, Collection<String> tables, Predicate predicate)
+        implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("SELECT ");

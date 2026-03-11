@@ -1,8 +1,8 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
-public record DeleteData(String tableName, Predicate predicate) {
+public record DeleteStatement(String tableName, Predicate predicate) implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("DELETE FROM ");

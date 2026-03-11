@@ -1,9 +1,10 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
-public record UpdateData(String tableName, String fieldName, Expression newValue, Predicate predicate) {
+public record UpdateStatement(String tableName, String fieldName, Expression newValue, Predicate predicate)
+        implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("UPDATE ");

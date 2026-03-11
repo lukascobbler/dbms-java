@@ -1,6 +1,6 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
-public record CreateIndexData(String indexName, String tableName, String fieldName) {
+public record CreateIndexStatement(String indexName, String tableName, String fieldName) implements Statement {
     @Override
     public String toString() {
         return "CREATE INDEX " + indexName + " ON " +

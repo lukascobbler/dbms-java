@@ -1,10 +1,10 @@
-package com.luka.simpledb.parsingManagement.data;
+package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
 import java.util.List;
 
-public record InsertData(String tableName, List<String> fields, List<Constant> values) {
+public record InsertStatement(String tableName, List<String> fields, List<Constant> values) implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("INSERT INTO ");
