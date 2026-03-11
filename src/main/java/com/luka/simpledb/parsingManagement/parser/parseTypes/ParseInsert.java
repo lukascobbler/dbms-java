@@ -12,6 +12,16 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvalu
 import java.util.ArrayList;
 import java.util.List;
 
+/// The class responsible for parsing row insertion.
+/// Its subgrammar is defined like this:
+///
+/// ```
+/// <TableName>         := IdentificationToken
+/// <FieldName>         := IdentificationToken
+/// <ParseInsert>       := INTO <TableName> (<FieldList>) VALUES (<ConstantList>)
+/// <FieldList>         := <FieldName> [, <FieldList>]
+/// <ConstantList>      := <Constant> [, <ConstantList>]
+/// ```
 public class ParseInsert {
     private final ParserContext ctx;
 
@@ -20,19 +30,20 @@ public class ParseInsert {
     }
 
     public InsertStatement parse() {
-        ctx.eatKeyword(Keyword.INTO);
+        ctx.eat(Keyword.INSERT);
+        ctx.eat(Keyword.INTO);
 
-        String tableName = ctx.eatIdentifier();
+        String tableName = tableName();
 
-        ctx.eatDelimiter(SymbolToken.LEFT_PAREN);
+        ctx.eat(SymbolToken.LEFT_PAREN);
         List<String> fields = fieldList();
-        ctx.eatDelimiter(SymbolToken.RIGHT_PAREN);
+        ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        ctx.eatKeyword(Keyword.VALUES);
+        ctx.eat(Keyword.VALUES);
 
-        ctx.eatDelimiter(SymbolToken.LEFT_PAREN);
+        ctx.eat(SymbolToken.LEFT_PAREN);
         List<Constant> values = constantList();
-        ctx.eatDelimiter(SymbolToken.RIGHT_PAREN);
+        ctx.eat(SymbolToken.RIGHT_PAREN);
 
         return new InsertStatement(tableName, fields, values);
     }
@@ -47,6 +58,7 @@ public class ParseInsert {
                 throw new ParserException("An insert statement must have constant expressions for new values");
             }
 
+            // todo folding here or after
             Expression foldedExpr = PartialEvaluator.evaluate(constantExpression);
 
             constantList.add(foldedExpr.evaluate(null));
@@ -59,9 +71,17 @@ public class ParseInsert {
         List<String> fieldList = new ArrayList<>();
 
         do {
-            fieldList.add(ctx.eatIdentifier());
+            fieldList.add(fieldName());
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return fieldList;
+    }
+
+    private String tableName() {
+        return ctx.eatIdentifier();
+    }
+
+    private String fieldName() {
+        return ctx.eatIdentifier();
     }
 }

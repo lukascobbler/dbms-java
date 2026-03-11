@@ -11,6 +11,13 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
 
+/// The class responsible for parsing predicates.
+/// Its subgrammar is defined like this:
+///
+/// ```
+/// <Term>              := <ParseExpression> "=" | "!=" | ">" | "<" | ">=" | "<=" | "IS" <ParseExpression>
+/// <Predicate>         := <Term> [AND<Predicate>]
+/// ```
 public class ParsePredicate {
     private final ParserContext ctx;
     private final ParseExpression exprParser;
@@ -23,7 +30,7 @@ public class ParsePredicate {
     public Predicate parse() {
         Predicate predicate = new Predicate(parseTerm());
 
-        while (ctx.eatIfMatches(new KeywordToken(Keyword.AND))) {
+        while (ctx.eatIfMatches(Keyword.AND)) {
             predicate.conjoinWith(new Predicate(parseTerm()));
         }
 

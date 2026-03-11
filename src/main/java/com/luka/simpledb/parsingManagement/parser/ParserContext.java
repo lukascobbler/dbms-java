@@ -1,6 +1,7 @@
 package com.luka.simpledb.parsingManagement.parser;
 
 import com.luka.simpledb.parsingManagement.exceptions.BadSyntaxException;
+import com.luka.simpledb.parsingManagement.exceptions.ParserException;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.Tokenizer;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
@@ -26,28 +27,20 @@ public class ParserContext {
         }
     }
 
-    public boolean eatIfMatches(Token expected) {
-        if (currentToken.equals(expected)) {
-            advance();
-            return true;
-        }
-        return false;
+    public void eat(Keyword expected) {
+        eat(new KeywordToken(expected));
     }
 
-    public void eatKeyword(Keyword expected) {
-        if (currentToken instanceof KeywordToken(Keyword kw) && kw == expected) {
-            advance();
-        } else {
-            throw new BadSyntaxException();
-        }
+    public void eat(SymbolToken expected) {
+        eat((Token) expected);
     }
 
-    public void eatDelimiter(SymbolToken expected) {
-        if (currentToken == expected) {
-            advance();
-        } else {
-            throw new BadSyntaxException();
-        }
+    public boolean eatIfMatches(Keyword expected) {
+        return eatIfMatches(new KeywordToken(expected));
+    }
+
+    public boolean eatIfMatches(SymbolToken expected) {
+        return eatIfMatches((Token) expected);
     }
 
     public String eatIdentifier() {
@@ -58,11 +51,17 @@ public class ParserContext {
         throw new BadSyntaxException();
     }
 
-    public int eatIntConstant() {
-        if (currentToken instanceof IntegerToken(int value)) {
+    private boolean eatIfMatches(Token expected) {
+        if (currentToken.equals(expected)) {
             advance();
-            return value;
+            return true;
         }
-        throw new BadSyntaxException();
+        return false;
+    }
+
+    private void eat(Token expected) {
+        if (!eatIfMatches(expected)) {
+            throw new ParserException("Syntax Error: Expected '" + expected + "' but found '" + currentToken + "'");
+        }
     }
 }

@@ -11,6 +11,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/// The class responsible for parsing data queries.
+/// Its subgrammar is defined like this:
+///
+/// ```
+/// <TableName>         := IdentificationToken
+/// <ParseSelect>       := SELECT <SelectList> FROM <TableList> [WHERE<ParsePredicate>]
+/// <SelectList>        := <ParseExpression> [, <SelectList>]
+/// <TableList>         := <TableName> [, <TableList>]
+/// ```
 public class ParseSelect {
     private final ParserContext ctx;
 
@@ -19,18 +28,18 @@ public class ParseSelect {
     }
 
     public SelectStatement parse() {
-        ctx.eatKeyword(Keyword.SELECT);
+        ctx.eat(Keyword.SELECT);
         List<String> fields = selectList();
 
-        ctx.eatKeyword(Keyword.FROM);
+        ctx.eat(Keyword.FROM);
         Collection<String> tables = tableList();
 
         Predicate predicate = new Predicate();
-        if (ctx.eatIfMatches(new KeywordToken(Keyword.WHERE))) {
+        if (ctx.eatIfMatches(Keyword.WHERE)) {
             predicate = new ParsePredicate(ctx).parse();
         }
 
-        ctx.eatDelimiter(SymbolToken.SEMICOLON);
+        ctx.eat(SymbolToken.SEMICOLON);
 
         return new SelectStatement(fields, tables, predicate);
     }
@@ -38,6 +47,7 @@ public class ParseSelect {
     private List<String> selectList() {
         List<String> selectList = new ArrayList<>();
 
+        // todo selection expressions
         do {
             selectList.add(ctx.eatIdentifier());
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
@@ -49,9 +59,13 @@ public class ParseSelect {
         Collection<String> tableList = new ArrayList<>();
 
         do {
-            tableList.add(ctx.eatIdentifier());
+            tableList.add(tableName());
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return tableList;
+    }
+
+    private String tableName() {
+        return ctx.eatIdentifier();
     }
 }

@@ -10,6 +10,16 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 
+/// The class responsible for parsing expressions using "Pratt Parsing".
+/// Its subgrammar is defined like this:
+///
+/// ```
+/// <Constant>              := StringToken | IntToken | BooleanToken
+/// <Expr>                  := <BinArithmeticExpr> | <UnArithmeticExpr> | <PrimaryExpr>
+/// <PrimaryExpr>           := <FieldExpr> | <ConstantExpr> | "(" <Expr> ")"
+/// <BinArithmeticExpr>     := <Expr> ( "*" | "/" | "+" | "-" ) <Expr>
+/// <UnArithmeticExpr>      := ( "+" | "-" ) <Expr>
+/// ```
 public class ParseExpression {
     private static final int PREFIX_PRECEDENCE = 30;
     private final ParserContext ctx;
@@ -19,10 +29,10 @@ public class ParseExpression {
     }
 
     public Expression parse() {
-        return parse(0);
+        return parseExpression(0);
     }
 
-    private Expression parse(int precedence) {
+    private Expression parseExpression(int precedence) {
         Expression left = parsePrefix();
 
         while (precedence < getPrecedence(ctx.current())) {
@@ -49,12 +59,12 @@ public class ParseExpression {
                 default -> throw new ParserException("Unexpected keyword in expression: " + kw);
             };
             case SymbolToken sym -> switch (sym) {
-                case MINUS -> new UnaryArithmeticExpression(ArithmeticOperator.SUB, parse(PREFIX_PRECEDENCE));
-                case PLUS  -> new UnaryArithmeticExpression(ArithmeticOperator.ADD, parse(PREFIX_PRECEDENCE));
+                case MINUS -> new UnaryArithmeticExpression(ArithmeticOperator.SUB, parseExpression(PREFIX_PRECEDENCE));
+                case PLUS  -> new UnaryArithmeticExpression(ArithmeticOperator.ADD, parseExpression(PREFIX_PRECEDENCE));
                 case STAR  -> new FieldNameExpression("*");
                 case LEFT_PAREN -> {
-                    Expression inner = parse(0);
-                    ctx.eatDelimiter(SymbolToken.RIGHT_PAREN);
+                    Expression inner = parseExpression(0);
+                    ctx.eat(SymbolToken.RIGHT_PAREN);
                     yield inner;
                 }
                 default -> throw new ParserException("Unexpected symbol: " + sym);
@@ -63,15 +73,9 @@ public class ParseExpression {
         };
     }
 
-    private int getPrecedence(Token token) {
-        if (token == SymbolToken.STAR || token == SymbolToken.DIVIDE) return 20;
-        if (token == SymbolToken.PLUS || token == SymbolToken.MINUS) return 10;
-        return 0;
-    }
-
     private Expression parseInfix(Expression left, Token opToken) {
         int precedence = getPrecedence(opToken);
-        Expression right = parse(precedence);
+        Expression right = parseExpression(precedence);
 
         ArithmeticOperator op = switch (opToken) {
             case SymbolToken st when st == SymbolToken.PLUS -> ArithmeticOperator.ADD;
@@ -82,5 +86,11 @@ public class ParseExpression {
         };
 
         return new BinaryArithmeticExpression(left, op, right);
+    }
+
+    private int getPrecedence(Token token) {
+        if (token == SymbolToken.STAR || token == SymbolToken.DIVIDE) return 20;
+        if (token == SymbolToken.PLUS || token == SymbolToken.MINUS) return 10;
+        return 0;
     }
 }
