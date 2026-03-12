@@ -1,37 +1,16 @@
 package com.luka.simpledb.parsingManagement.statement;
 
-import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
+import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
+import java.util.List;
 
-import java.util.Collection;
-import java.util.Map;
-
-public record SelectStatement(Map<String, Expression> selectionExpressions,
-                              Collection<String> tables, Predicate predicate) implements Statement {
+public record SelectStatement(List<SingleSelection> unionizedSelections) implements Statement {
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("SELECT ");
-        for (var expressionEntry : selectionExpressions.entrySet()) {
-            result.append(expressionEntry.getValue().toString());
+        StringBuilder result = new StringBuilder();
 
-            if (!expressionEntry.getValue().toString().equals(expressionEntry.getKey())) {
-                result.append(" AS ").append(expressionEntry.getKey());
-            }
-
-            result.append(", ");
+        for (SingleSelection singleSelection : unionizedSelections) {
+            result.append(singleSelection.toString()).append(" UNION ");
         }
-
-        result = new StringBuilder(result.substring(0, result.length() - 2));
-
-        result.append(" FROM ");
-        for (String tableName : tables)
-            result.append(tableName).append(", ");
-
-        result = new StringBuilder(result.substring(0, result.length() - 2));
-
-        String predicateString = predicate.toString();
-        if (!predicateString.isEmpty())
-            result.append(" WHERE ").append(predicateString);
 
         result.append(';');
 

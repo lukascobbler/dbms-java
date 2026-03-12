@@ -2,6 +2,7 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
+import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -28,24 +29,30 @@ public class ParseSelect {
     }
 
     public SelectStatement parse() {
-        ctx.eat(Keyword.SELECT);
-        Map<String, Expression> fields = selectExpressionMap();
+        List<SingleSelection> singleSelections = new ArrayList<>();
 
-        ctx.eat(Keyword.FROM);
-        List<JoinSpec> joinSpecs = joinSpecs();
+        do {
+            ctx.eat(Keyword.SELECT);
+            Map<String, Expression> fields = selectExpressionMap();
 
-        Predicate predicate = new Predicate();
-        if (ctx.eatIfMatches(Keyword.WHERE)) {
-            predicate = new ParsePredicate(ctx).parse();
-        }
+            ctx.eat(Keyword.FROM);
+            List<JoinSpec> joinSpecs = joinSpecs();
 
-        List<String> tables = new ArrayList<>();
-        for (JoinSpec joinSpec : joinSpecs) {
-            tables.addAll(joinSpec.tables);
-            predicate.conjoinWith(joinSpec.joinPredicate);
-        }
+            Predicate predicate = new Predicate();
+            if (ctx.eatIfMatches(Keyword.WHERE)) {
+                predicate = new ParsePredicate(ctx).parse();
+            }
 
-        return new SelectStatement(fields, tables, predicate);
+            List<String> tables = new ArrayList<>();
+            for (JoinSpec joinSpec : joinSpecs) {
+                tables.addAll(joinSpec.tables);
+                predicate.conjoinWith(joinSpec.joinPredicate);
+            }
+
+            singleSelections.add(new SingleSelection(fields, tables, predicate));
+        } while (ctx.eatIfMatches(Keyword.UNION));
+
+        return new SelectStatement(singleSelections);
     }
 
     private Map<String, Expression> selectExpressionMap() {

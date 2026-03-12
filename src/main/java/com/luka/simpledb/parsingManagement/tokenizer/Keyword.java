@@ -7,7 +7,7 @@ public enum Keyword {
     SELECT, FROM, WHERE, AND, INSERT, INTO, VALUES,
     DELETE, UPDATE, SET, CREATE, TABLE, VARCHAR,
     INT, VIEW, AS, INDEX, ON, NULL, TRUE, FALSE,
-    IS, NOT, BOOLEAN, JOIN;
+    IS, NOT, BOOLEAN, JOIN, UNION;
 
     private static final Map<String, Keyword> LOOKUP = new HashMap<>();
 
