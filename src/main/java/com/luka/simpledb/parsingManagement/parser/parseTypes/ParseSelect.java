@@ -17,7 +17,8 @@ import java.util.*;
 /// <TableName>                 := IdentificationToken
 /// <ParseSelect>               := SELECT <SelectExpressionList> FROM <TableList> [WHERE<ParsePredicate>]
 /// <SelectExpressionMap>       := <ParseExpression> [AS <Field>] [, <SelectExpressionList>]
-/// <TableList>                 := <TableName> [, <TableList>]
+/// <JoinSpecs>                 := <TableName> [<JoinSpec>] [, <JoinSpecs>]
+/// <JoinSpec>                  := JOIN <TableName> ON <ParsePredicate>
 /// ```
 public class ParseSelect {
     private final ParserContext ctx;
@@ -31,14 +32,18 @@ public class ParseSelect {
         Map<String, Expression> fields = selectExpressionMap();
 
         ctx.eat(Keyword.FROM);
-        Collection<String> tables = tableList();
+        List<JoinSpec> joinSpecs = joinSpecs();
 
         Predicate predicate = new Predicate();
         if (ctx.eatIfMatches(Keyword.WHERE)) {
             predicate = new ParsePredicate(ctx).parse();
         }
 
-        ctx.eat(SymbolToken.SEMICOLON);
+        List<String> tables = new ArrayList<>();
+        for (JoinSpec joinSpec : joinSpecs) {
+            tables.addAll(joinSpec.tables);
+            predicate.conjoinWith(joinSpec.joinPredicate);
+        }
 
         return new SelectStatement(fields, tables, predicate);
     }
@@ -64,14 +69,29 @@ public class ParseSelect {
         return selectMap;
     }
 
-    private Collection<String> tableList() {
-        Collection<String> tableList = new ArrayList<>();
+    private List<JoinSpec> joinSpecs() {
+        List<JoinSpec> joinSpecList = new ArrayList<>();
 
         do {
-            tableList.add(tableName());
+            joinSpecList.add(joinSpec());
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
-        return tableList;
+        return joinSpecList;
+    }
+
+    private JoinSpec joinSpec() {
+        Predicate joinPredicate = new Predicate();
+
+        List<String> tables = new ArrayList<>();
+        tables.add(tableName());
+
+        if (ctx.eatIfMatches(Keyword.JOIN)) {
+            tables.add(tableName());
+            ctx.eat(Keyword.ON);
+            joinPredicate.conjoinWith(new ParsePredicate(ctx).parse());
+        }
+
+        return new JoinSpec(tables, joinPredicate);
     }
 
     private String tableName() {
@@ -81,4 +101,6 @@ public class ParseSelect {
     private String newFieldName() {
         return ctx.eatIdentifier();
     }
+
+    private record JoinSpec(List<String> tables, Predicate joinPredicate) { }
 }

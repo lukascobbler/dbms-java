@@ -6,9 +6,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.recordManagement.Schema;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /// A predicate is the topmost structure that binds all terms,
 /// which hold all expressions. It defines logical operators between
@@ -152,5 +150,25 @@ public class Predicate {
         }
 
         return result.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Predicate predicate = (Predicate) o;
+
+        if (terms.size() != predicate.terms.size()) return false;
+
+        return new HashSet<>(terms).equals(new HashSet<>(predicate.terms));
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 0;
+        for (Term t : terms) {
+            h += (t != null ? t.hashCode() : 0);
+        }
+        return h;
     }
 }

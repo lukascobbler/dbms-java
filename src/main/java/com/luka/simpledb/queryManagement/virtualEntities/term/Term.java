@@ -8,6 +8,8 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.recordManagement.Schema;
 
+import java.util.Objects;
+
 /// The term class represents the logic for comparison operators
 /// between two expressions. It also has logic for how much will
 /// the result of the given comparison affect the query.
@@ -171,6 +173,18 @@ public class Term {
         return lhs.toString() + " " + termOperator.toString() + " " + rhs.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Term term = (Term) o;
+        return Objects.equals(lhs, term.lhs) && Objects.equals(rhs, term.rhs) && termOperator == term.termOperator;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lhs, termOperator, rhs);
+    }
+
     /// Helper record for easier comparisons.
-    private record Pair(Expression left, Expression right) {}
+    private record Pair(Expression left, Expression right) { }
 }
