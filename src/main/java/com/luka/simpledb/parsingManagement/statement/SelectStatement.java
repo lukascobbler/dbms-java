@@ -12,6 +12,7 @@ public record SelectStatement(List<SingleSelection> unionizedSelections) impleme
             result.append(singleSelection.toString()).append(" UNION ");
         }
 
+        result = new StringBuilder(result.substring(0, result.length() - 7));
         result.append(';');
 
         return result.toString();

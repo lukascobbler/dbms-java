@@ -1,22 +1,19 @@
 package com.luka.simpledb.parsingManagement.statement.select;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
-public record SingleSelection(Map<String, Expression> selectionExpressions,
+public record SingleSelection(List<ProjectionFieldInfo> projectionFields,
                               Collection<String> tables, Predicate predicate) {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("SELECT ");
-        for (var expressionEntry : selectionExpressions.entrySet()) {
-            result.append(expressionEntry.getValue().toString());
-
-            if (!expressionEntry.getValue().toString().equals(expressionEntry.getKey())) {
-                result.append(" AS ").append(expressionEntry.getKey());
-            }
+        for (var projectionField : projectionFields) {
+            result.append(projectionField.toString());
 
             result.append(", ");
         }
@@ -34,5 +31,35 @@ public record SingleSelection(Map<String, Expression> selectionExpressions,
             result.append(" WHERE ").append(predicateString);
 
         return result.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SingleSelection that = (SingleSelection) o;
+
+        if (!Objects.equals(predicate, that.predicate)) return false;
+
+        if (tables.size() != that.tables.size()) return false;
+        if (!new HashSet<>(tables).equals(new HashSet<>(that.tables))) return false;
+
+        if (projectionFields.size() != that.projectionFields.size()) return false;
+        return new HashSet<>(projectionFields).equals(new HashSet<>(that.projectionFields));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (predicate != null ? predicate.hashCode() : 0);
+
+        for (String table : tables) {
+            result += (table != null ? table.hashCode() : 0);
+        }
+
+        for (ProjectionFieldInfo field : projectionFields) {
+            result += (field != null ? field.hashCode() : 0);
+        }
+
+        return result;
     }
 }

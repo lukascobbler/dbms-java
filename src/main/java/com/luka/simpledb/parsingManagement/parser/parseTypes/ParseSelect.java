@@ -2,6 +2,7 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
+import com.luka.simpledb.parsingManagement.statement.select.ProjectionFieldInfo;
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
@@ -16,8 +17,9 @@ import java.util.*;
 /// ```
 /// <Field>                     := IdentificationToken
 /// <TableName>                 := IdentificationToken
-/// <ParseSelect>               := SELECT <SelectExpressionList> FROM <TableList> [WHERE<ParsePredicate>]
-/// <SelectExpressionMap>       := <ParseExpression> [AS <Field>] [, <SelectExpressionList>]
+/// <ParseSelect>               := <ParseSingleSelection> [UNION <ParseSingleSelection>]
+/// <ParseSingleSelection>      := SELECT <ProjectedFields> FROM <JoinSpecs> [WHERE<ParsePredicate>]
+/// <ProjectedFields>           := <ParseExpression> [AS <Field>] [, <ProjectedFields>]
 /// <JoinSpecs>                 := <TableName> [<JoinSpec>] [, <JoinSpecs>]
 /// <JoinSpec>                  := JOIN <TableName> ON <ParsePredicate>
 /// ```
@@ -33,7 +35,7 @@ public class ParseSelect {
 
         do {
             ctx.eat(Keyword.SELECT);
-            Map<String, Expression> fields = selectExpressionMap();
+            List<ProjectionFieldInfo> fields = projectedFields();
 
             ctx.eat(Keyword.FROM);
             List<JoinSpec> joinSpecs = joinSpecs();
@@ -55,25 +57,27 @@ public class ParseSelect {
         return new SelectStatement(singleSelections);
     }
 
-    private Map<String, Expression> selectExpressionMap() {
-        Map<String, Expression> selectMap = new HashMap<>();
+    private List<ProjectionFieldInfo> projectedFields() {
+        List<ProjectionFieldInfo> projectList = new ArrayList<>();
 
         // todo predicates instead of expressions here
+        // todo what happens with "*" fields
+        // todo what happens with duplicate field names (handle in JDBC? with field number accesses)
         do {
             String newFieldName;
 
-            Expression selectionExpression = new ParseExpression(ctx).parse();
+            Expression projectionExpression = new ParseExpression(ctx).parse();
 
             if (ctx.eatIfMatches(Keyword.AS)) {
                 newFieldName = ctx.eatIdentifier();
             } else {
-                newFieldName = selectionExpression.toString();
+                newFieldName = projectionExpression.toString();
             }
 
-            selectMap.put(newFieldName, selectionExpression);
+            projectList.add(new ProjectionFieldInfo(newFieldName, projectionExpression));
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
-        return selectMap;
+        return projectList;
     }
 
     private List<JoinSpec> joinSpecs() {
