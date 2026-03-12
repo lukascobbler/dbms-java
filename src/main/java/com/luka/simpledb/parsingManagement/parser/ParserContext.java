@@ -1,6 +1,5 @@
 package com.luka.simpledb.parsingManagement.parser;
 
-import com.luka.simpledb.parsingManagement.exceptions.BadSyntaxException;
 import com.luka.simpledb.parsingManagement.exceptions.ParserException;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.Tokenizer;
@@ -48,7 +47,7 @@ public class ParserContext {
             advance();
             return name;
         }
-        throw new BadSyntaxException();
+        throw new ParserException("Syntax Error: Expected identifier but found '" + currentToken + "'");
     }
 
     private boolean eatIfMatches(Token expected) {

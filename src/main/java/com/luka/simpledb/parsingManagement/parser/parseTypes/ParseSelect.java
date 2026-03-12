@@ -7,17 +7,16 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /// The class responsible for parsing data queries.
 /// Its subgrammar is defined like this:
 ///
 /// ```
+/// <Field>                     := IdentificationToken
 /// <TableName>                 := IdentificationToken
 /// <ParseSelect>               := SELECT <SelectExpressionList> FROM <TableList> [WHERE<ParsePredicate>]
-/// <SelectExpressionList>      := <ParseExpression> [, <SelectExpressionList>]
+/// <SelectExpressionMap>       := <ParseExpression> [AS <Field>] [, <SelectExpressionList>]
 /// <TableList>                 := <TableName> [, <TableList>]
 /// ```
 public class ParseSelect {
@@ -29,7 +28,7 @@ public class ParseSelect {
 
     public SelectStatement parse() {
         ctx.eat(Keyword.SELECT);
-        List<Expression> fields = selectExpressionList();
+        Map<String, Expression> fields = selectExpressionMap();
 
         ctx.eat(Keyword.FROM);
         Collection<String> tables = tableList();
@@ -44,15 +43,25 @@ public class ParseSelect {
         return new SelectStatement(fields, tables, predicate);
     }
 
-    private List<Expression> selectExpressionList() {
-        List<Expression> selectList = new ArrayList<>();
+    private Map<String, Expression> selectExpressionMap() {
+        Map<String, Expression> selectMap = new HashMap<>();
 
+        // todo predicates instead of expressions here
         do {
+            String newFieldName;
+
             Expression selectionExpression = new ParseExpression(ctx).parse();
-            selectList.add(selectionExpression);
+
+            if (ctx.eatIfMatches(Keyword.AS)) {
+                newFieldName = ctx.eatIdentifier();
+            } else {
+                newFieldName = selectionExpression.toString();
+            }
+
+            selectMap.put(newFieldName, selectionExpression);
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
-        return selectList;
+        return selectMap;
     }
 
     private Collection<String> tableList() {
@@ -66,6 +75,10 @@ public class ParseSelect {
     }
 
     private String tableName() {
+        return ctx.eatIdentifier();
+    }
+
+    private String newFieldName() {
         return ctx.eatIdentifier();
     }
 }

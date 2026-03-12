@@ -2,7 +2,6 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
 import com.luka.simpledb.parsingManagement.exceptions.ParserException;
 import com.luka.simpledb.parsingManagement.statement.CreateTableStatement;
-import com.luka.simpledb.parsingManagement.exceptions.BadSyntaxException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
@@ -84,7 +83,7 @@ public class ParseCreateTable {
         } else if (ctx.eatIfMatches(Keyword.BOOLEAN)) {
             schema.addBooleanField(fieldName, isNullable());
         } else {
-            throw new BadSyntaxException();
+            throw new ParserException("DB type not recognized");
         }
 
         return schema;

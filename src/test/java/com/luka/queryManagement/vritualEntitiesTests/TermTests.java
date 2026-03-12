@@ -157,6 +157,8 @@ public class TermTests {
                 new ConstantExpression(new IntConstant(10))
         );
 
+        t.foldExpressions();
+
         Expression lhs = (Expression) TestUtils.getPrivateField(t, "lhs");
 
         assertEquals(new ConstantExpression(new IntConstant(10)), lhs);
