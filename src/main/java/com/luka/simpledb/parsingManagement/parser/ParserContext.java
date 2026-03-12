@@ -42,6 +42,11 @@ public class ParserContext {
         return eatIfMatches((Token) expected);
     }
 
+    /// Checks if the current token is an identifier, and if it is,
+    /// returns it.
+    ///
+    /// @return The identifier.
+    /// @throws ParserException if the current token isn't an identifier.
     public String eatIdentifier() {
         if (currentToken instanceof IdentifierToken(String name)) {
             advance();

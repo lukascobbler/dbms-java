@@ -18,7 +18,7 @@ import java.util.List;
 /// ```
 /// <TableName>         := IdentificationToken
 /// <FieldName>         := IdentificationToken
-/// <ParseInsert>       := INTO <TableName> (<FieldList>) VALUES (<ConstantList>)
+/// <ParseInsert>       := INSERT INTO <TableName> (<FieldList>) VALUES (<ConstantList>)
 /// <FieldList>         := <FieldName> [, <FieldList>]
 /// <ConstantList>      := <Constant> [, <ConstantList>]
 /// ```

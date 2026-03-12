@@ -1,9 +1,11 @@
 package com.luka.simpledb.parsingManagement.statement;
 
+import com.luka.simpledb.parsingManagement.statement.update.NewFieldExpressionAssignment;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
-public record UpdateStatement(String tableName, String fieldName, Expression newValue, Predicate predicate)
+import java.util.List;
+
+public record UpdateStatement(String tableName, List<NewFieldExpressionAssignment> newValues, Predicate predicate)
         implements Statement {
     @Override
     public String toString() {
@@ -11,8 +13,11 @@ public record UpdateStatement(String tableName, String fieldName, Expression new
         result.append(tableName);
         result.append(" SET ");
 
-        result.append(fieldName).append(" = ");
-        result.append(newValue.toString());
+        for (var newValue: newValues) {
+            result.append(newValue.toString()).append(", ");
+        }
+
+        result = new StringBuilder(result.substring(0, result.length() - 2));
 
         String predicateString = predicate.toString();
         if (!predicateString.isEmpty())

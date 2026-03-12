@@ -3,7 +3,6 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 import com.luka.simpledb.parsingManagement.statement.DeleteStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
-import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
 /// The class responsible for parsing row deletion.

@@ -8,7 +8,7 @@ public record InsertStatement(String tableName, List<String> fields, List<Consta
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("INSERT INTO ");
-        result.append(tableName);
+        result.append(tableName).append(" ");
 
         result.append('(');
         for (String fieldName : fields)

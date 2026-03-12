@@ -87,7 +87,7 @@ public class Tokenizer implements Iterator<Token> {
             return new KeywordToken(keyword);
         }
 
-        return new IdentifierToken(text);
+        return new IdentifierToken(text.toLowerCase());
     }
 
     private Token buildString(char startingQuote) {

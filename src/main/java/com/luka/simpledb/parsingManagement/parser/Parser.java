@@ -14,7 +14,6 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 ///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex>
 ///```
 ///
-/// todo update grammar on every modification of it
 /// Each syntactic category is defined within its own class, for maintainability
 /// and readability of the code. The main syntactic category (and the main entry point)
 /// is the `<Parse>` category which references all other categories.

@@ -10,7 +10,7 @@ import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 ///
 /// ```
 /// <ViewName>              := IdentificationToken
-/// <ParseCreateView>       := <ViewName> AS <ParseSelect>
+/// <ParseCreateView>       := VIEW <ViewName> AS <ParseSelect>
 /// ```
 public class ParseCreateView {
     private final ParserContext ctx;
@@ -20,6 +20,7 @@ public class ParseCreateView {
     }
 
     public CreateViewStatement parse() {
+        ctx.eat(Keyword.VIEW);
         String viewName = viewName();
         ctx.eat(Keyword.AS);
         SelectStatement selectStatement = new ParseSelect(ctx).parse();

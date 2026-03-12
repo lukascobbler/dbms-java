@@ -17,7 +17,7 @@ public enum Keyword {
         }
     }
 
-    /// Returns the token from the string.
+    /// @return The token from the string. Case-insensitive.
     public static Keyword fromString(String text) {
         return LOOKUP.get(text.toUpperCase());
     }

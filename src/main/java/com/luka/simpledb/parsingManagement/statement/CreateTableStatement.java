@@ -21,7 +21,7 @@ public record CreateTableStatement(String tableName, Schema schema) implements S
                 case BOOLEAN -> result.append(fieldName).append(" BOOLEAN");
             }
 
-            if (schema.isNullable(fieldName)) {
+            if (!schema.isNullable(fieldName)) {
                 result.append(" NOT NULL");
             }
 
@@ -30,7 +30,7 @@ public record CreateTableStatement(String tableName, Schema schema) implements S
 
         result = new StringBuilder(result.substring(0, result.length() - 2));
 
-        result.append(tableName).append(");");
+        result.append(");");
 
         return result.toString();
     }

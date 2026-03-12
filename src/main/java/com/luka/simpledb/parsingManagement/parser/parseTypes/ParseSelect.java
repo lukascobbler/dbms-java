@@ -69,7 +69,7 @@ public class ParseSelect {
             Expression projectionExpression = new ParseExpression(ctx).parse();
 
             if (ctx.eatIfMatches(Keyword.AS)) {
-                newFieldName = ctx.eatIdentifier();
+                newFieldName = fieldName();
             } else {
                 newFieldName = projectionExpression.toString();
             }
@@ -109,7 +109,7 @@ public class ParseSelect {
         return ctx.eatIdentifier();
     }
 
-    private String newFieldName() {
+    private String fieldName() {
         return ctx.eatIdentifier();
     }
 
