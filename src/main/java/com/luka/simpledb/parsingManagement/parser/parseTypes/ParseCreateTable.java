@@ -1,9 +1,9 @@
 package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.CreateTableStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
+import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
@@ -26,12 +26,18 @@ import com.luka.simpledb.recordManagement.Schema;
 public class ParseCreateTable {
     private final ParserContext ctx;
 
+    /// Every syntactic category requires the parse context to
+    /// be initialized.
     public ParseCreateTable(ParserContext ctx) {
         this.ctx = ctx;
     }
 
+    /// Parses the table creation statement according to the sub-grammar
+    /// defined in the class documentation.
+    ///
+    /// @return Parsed data required for table creation.
     public CreateTableStatement parse() {
-        ctx.eat(Keyword.TABLE);
+        ctx.eat(KeywordToken.TABLE);
         String tableName = tableName();
 
         ctx.eat(SymbolToken.LEFT_PAREN);
@@ -41,6 +47,7 @@ public class ParseCreateTable {
         return new CreateTableStatement(tableName, schema);
     }
 
+    /// @return Parsed field definitions as a schema.
     private Schema fieldDefinitions() {
         Schema schema = fieldDefinition();
 
@@ -51,13 +58,17 @@ public class ParseCreateTable {
         return schema;
     }
 
+    /// @return Parsed one field definition wrapped in a schema object for
+    /// easier addition of schemas.
+    /// @throws ParsingException if the VARCHAR length isn't a constant or if it
+    /// isn't an integer; if the DB type isn't recognized.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
         Schema schema = new Schema();
 
-        if (ctx.eatIfMatches(Keyword.INT)) {
+        if (ctx.eatIfMatches(KeywordToken.INT)) {
             schema.addIntField(fieldName, isNullable());
-        } else if (ctx.eatIfMatches(Keyword.VARCHAR)) {
+        } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 
             // Since VARCHAR can contain expressions as the length, they
@@ -68,41 +79,46 @@ public class ParseCreateTable {
             Expression constantExpression = new ParseExpression(ctx).parse();
 
             if (!constantExpression.isConstant()) {
-                throw new ParserException("The varchar string length must be a constant expression");
+                throw new ParsingException("The varchar string length must be a constant expression");
             }
 
             int stringLength;
             try {
                 stringLength = constantExpression.evaluate(null).asInt();
             } catch (IncompatibleConstantTypeException e) {
-                throw new ParserException("The varchar string length must be an integer");
+                throw new ParsingException("The varchar string length must be an integer");
             }
 
             ctx.eat(SymbolToken.RIGHT_PAREN);
             schema.addStringField(fieldName, stringLength, isNullable());
-        } else if (ctx.eatIfMatches(Keyword.BOOLEAN)) {
+        } else if (ctx.eatIfMatches(KeywordToken.BOOLEAN)) {
             schema.addBooleanField(fieldName, isNullable());
         } else {
-            throw new ParserException("DB type not recognized");
+            throw new ParsingException("DB type not recognized");
         }
 
         return schema;
     }
 
+    /// @return Whether a field is nullable, i.e. containing "NOT" + "NULL"
+    /// keywords one after the other.
+    /// @throws ParsingException if "NOT" is not followed by "NULL".
     private boolean isNullable() {
-        if (ctx.eatIfMatches(Keyword.NOT)) {
-            if (ctx.eatIfMatches(Keyword.NULL)) {
+        if (ctx.eatIfMatches(KeywordToken.NOT)) {
+            if (ctx.eatIfMatches(KeywordToken.NULL)) {
                 return false;
             }
-            throw new ParserException("\"NOT\" not followed by \"NULL\" in a create table constraint");
+            throw new ParsingException("\"NOT\" not followed by \"NULL\" in a create table constraint");
         }
         return true;
     }
 
+    /// @return The table name identifier string.
     private String tableName() {
         return ctx.eatIdentifier();
     }
 
+    /// @return The field name identifier string.
     private String fieldName() {
         return ctx.eatIdentifier();
     }

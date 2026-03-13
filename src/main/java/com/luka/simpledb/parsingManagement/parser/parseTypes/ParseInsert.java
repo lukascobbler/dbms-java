@@ -1,9 +1,9 @@
 package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.InsertStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
+import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
@@ -29,13 +29,19 @@ import java.util.List;
 public class ParseInsert {
     private final ParserContext ctx;
 
+    /// Every syntactic category requires the parse context to
+    /// be initialized.
     public ParseInsert(ParserContext ctx) {
         this.ctx = ctx;
     }
 
+    /// Parses the insert statement according to the sub-grammar
+    /// defined in the class documentation.
+    ///
+    /// @return Parsed data required for data insertion.
     public InsertStatement parse() {
-        ctx.eat(Keyword.INSERT);
-        ctx.eat(Keyword.INTO);
+        ctx.eat(KeywordToken.INSERT);
+        ctx.eat(KeywordToken.INTO);
 
         String tableName = tableName();
 
@@ -43,7 +49,7 @@ public class ParseInsert {
         List<String> fields = fieldList();
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        ctx.eat(Keyword.VALUES);
+        ctx.eat(KeywordToken.VALUES);
 
         ctx.eat(SymbolToken.LEFT_PAREN);
         List<Constant> values = constantList();
@@ -52,6 +58,11 @@ public class ParseInsert {
         return new InsertStatement(tableName, fields, values);
     }
 
+    /// Parses a list of expressions and evaluates them to constants.
+    ///
+    /// @return A list of constants for the newly inserted row's values.
+    /// @throws ParsingException if an insert statement has non-constant
+    /// expressions as field values.
     private List<Constant> constantList() {
         List<Constant> constantList = new ArrayList<>();
 
@@ -66,7 +77,7 @@ public class ParseInsert {
             Expression foldedConstantExpression = PartialEvaluator.evaluate(constantExpression);
 
             if (!foldedConstantExpression.isConstant()) {
-                throw new ParserException("An insert statement must have constant expressions for new values");
+                throw new ParsingException("An insert statement must have constant expressions for new values");
             }
 
             constantList.add(foldedConstantExpression.evaluate(null));
@@ -75,6 +86,7 @@ public class ParseInsert {
         return constantList;
     }
 
+    /// @return The list of field names separated by commas as identifiers.
     private List<String> fieldList() {
         List<String> fieldList = new ArrayList<>();
 
@@ -85,10 +97,12 @@ public class ParseInsert {
         return fieldList;
     }
 
+    /// @return The table name identifier string.
     private String tableName() {
         return ctx.eatIdentifier();
     }
 
+    /// @return The field name identifier string.
     private String fieldName() {
         return ctx.eatIdentifier();
     }

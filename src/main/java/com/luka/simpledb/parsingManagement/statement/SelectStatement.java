@@ -3,6 +3,9 @@ package com.luka.simpledb.parsingManagement.statement;
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
 import java.util.List;
 
+/// Represents the parsed data of `SELECT` queries.
+/// `SELECT` queries need consist of smaller select
+/// queries that are joined by the `UNION` keyword.
 public record SelectStatement(List<SingleSelection> unionizedSelections) implements Statement {
     @Override
     public String toString() {

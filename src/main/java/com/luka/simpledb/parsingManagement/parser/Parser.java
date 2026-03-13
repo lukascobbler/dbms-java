@@ -1,9 +1,8 @@
 package com.luka.simpledb.parsingManagement.parser;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.*;
 import com.luka.simpledb.parsingManagement.statement.Statement;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 
 /// The parsing system's grammar, which corresponds to the operations that
@@ -12,7 +11,7 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 /// ```
 /// <Parse>     := <ParseSelect> | <ParseInsert> | <ParseUpdate> | <ParseDelete> |
 ///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex>
-///```
+/// ```
 ///
 /// Each syntactic category is defined within its own class, for maintainability
 /// and readability of the code. The main syntactic category (and the main entry point)
@@ -26,33 +25,33 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 public class Parser {
     private final ParserContext ctx;
 
+    /// The topmost parser needs the query to initialize the context.
     public Parser(String query) {
         ctx = new ParserContext(query);
     }
 
+    /// The main entry point of query parsing. Initializes every
+    /// sub syntactic category per the appropriate keyword.
+    ///
+    /// @return A parsed statement which can be of different types.
+    /// @throws ParsingException if a syntactic error was made during parsing.
     public Statement parse() {
         Statement statement = switch (ctx.current()) {
-            case KeywordToken(Keyword keyword) -> switch (keyword) {
-                case SELECT -> new ParseSelect(ctx).parse();
-                case INSERT -> new ParseInsert(ctx).parse();
-                case UPDATE -> new ParseUpdate(ctx).parse();
-                case DELETE -> new ParseDelete(ctx).parse();
-                case CREATE -> {
-                    ctx.advance();
-                    yield switch (ctx.current()) {
-                        case KeywordToken(Keyword subKeyword) -> switch (subKeyword) {
-                            case TABLE -> new ParseCreateTable(ctx).parse();
-                            case VIEW  -> new ParseCreateView(ctx).parse();
-                            case INDEX -> new ParseCreateIndex(ctx).parse();
-                            default -> throw new ParserException("Invalid CREATE target: " + subKeyword);
-                        };
-                        default -> throw new ParserException("Expected target after CREATE");
-                    };
-                }
-                default -> throw new ParserException("Unexpected start of statement: " + keyword);
-            };
-            case EofToken() -> throw new ParserException("Unexpected end of input");
-            default -> throw new ParserException("Expected keyword, found: " + ctx.current());
+            case KeywordToken.SELECT -> new ParseSelect(ctx).parse();
+            case KeywordToken.INSERT -> new ParseInsert(ctx).parse();
+            case KeywordToken.UPDATE -> new ParseUpdate(ctx).parse();
+            case KeywordToken.DELETE -> new ParseDelete(ctx).parse();
+            case KeywordToken.CREATE -> {
+                ctx.advance();
+                yield switch (ctx.current()) {
+                    case KeywordToken.TABLE -> new ParseCreateTable(ctx).parse();
+                    case KeywordToken.VIEW  -> new ParseCreateView(ctx).parse();
+                    case KeywordToken.INDEX -> new ParseCreateIndex(ctx).parse();
+                    default -> throw new ParsingException("Invalid CREATE target: " + ctx.current());
+                };
+            }
+            case EofToken() -> throw new ParsingException("Unexpected end of input");
+            default -> throw new ParsingException("Expected keyword, found: " + ctx.current());
         };
 
         ctx.eat(SymbolToken.SEMICOLON);

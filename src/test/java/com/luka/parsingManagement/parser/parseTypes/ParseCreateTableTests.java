@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseCreateTable;
 import com.luka.simpledb.parsingManagement.statement.CreateTableStatement;
@@ -110,46 +110,46 @@ public class ParseCreateTableTests {
 
     @Test
     public void parseVarcharWithNonIntegerFail() {
-        assertThrows(ParserException.class, () -> parse("TABLE t (name VARCHAR('ten'))"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t (name VARCHAR('ten'))"));
     }
 
     @Test
     public void parseVarcharWithNonConstantFail() {
-        assertThrows(ParserException.class, () -> parse("TABLE t (name VARCHAR(id))"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t (name VARCHAR(id))"));
     }
 
     @Test
     public void parseFailIncompleteNotNull() {
-        assertThrows(ParserException.class, () -> parse("TABLE t (id INT NOT)"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t (id INT NOT)"));
     }
 
     @Test
     public void parseFailInvalidType() {
-        assertThrows(ParserException.class, () -> parse("TABLE t (id DOUBLE)"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t (id DOUBLE)"));
     }
 
     @Test
     public void parseFailMissingParens() {
-        assertThrows(ParserException.class, () -> parse("TABLE t id INT, name VARCHAR(10)"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t id INT, name VARCHAR(10)"));
     }
 
     @Test
     public void parseFailDanglingComma() {
-        assertThrows(ParserException.class, () -> parse("TABLE t (id INT, )"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t (id INT, )"));
     }
 
     @Test
     public void parseFailMissingTableName() {
-        assertThrows(ParserException.class, () -> parse("TABLE (id INT)"));
+        assertThrows(ParsingException.class, () -> parse("TABLE (id INT)"));
     }
 
     @Test
     public void parseFailEmptyFields() {
-        assertThrows(ParserException.class, () -> parse("TABLE t7 ()"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t7 ()"));
     }
 
     @Test
     public void parseFailUnclosedParenthesis() {
-        assertThrows(ParserException.class, () -> parse("TABLE t11 (id INT"));
+        assertThrows(ParsingException.class, () -> parse("TABLE t11 (id INT"));
     }
 }

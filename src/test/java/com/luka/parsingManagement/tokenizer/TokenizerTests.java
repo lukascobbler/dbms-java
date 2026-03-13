@@ -1,7 +1,6 @@
 package com.luka.parsingManagement.tokenizer;
 
 import com.luka.simpledb.parsingManagement.exceptions.TokenizationException;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.Tokenizer;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 import org.junit.jupiter.api.Test;
@@ -43,21 +42,20 @@ public class TokenizerTests {
 
     @Test
     public void testSingleCharacterSymbols() {
-        String query = "= + - / , . ( ) ; *";
+        String query = "= + - / , ( ) ; *";
         List<Token> tokens = tokenizeAll(query);
 
-        assertEquals(11, tokens.size());
+        assertEquals(10, tokens.size());
         assertEquals(SymbolToken.EQUAL, tokens.getFirst());
         assertEquals(SymbolToken.PLUS, tokens.get(1));
         assertEquals(SymbolToken.MINUS, tokens.get(2));
         assertEquals(SymbolToken.DIVIDE, tokens.get(3));
         assertEquals(SymbolToken.COMMA, tokens.get(4));
-        assertEquals(SymbolToken.DOT, tokens.get(5));
-        assertEquals(SymbolToken.LEFT_PAREN, tokens.get(6));
-        assertEquals(SymbolToken.RIGHT_PAREN, tokens.get(7));
-        assertEquals(SymbolToken.SEMICOLON, tokens.get(8));
-        assertEquals(SymbolToken.STAR, tokens.get(9));
-        assertInstanceOf(EofToken.class, tokens.get(10));
+        assertEquals(SymbolToken.LEFT_PAREN, tokens.get(5));
+        assertEquals(SymbolToken.RIGHT_PAREN, tokens.get(6));
+        assertEquals(SymbolToken.SEMICOLON, tokens.get(7));
+        assertEquals(SymbolToken.STAR, tokens.get(8));
+        assertInstanceOf(EofToken.class, tokens.get(9));
     }
 
     @Test
@@ -119,9 +117,9 @@ public class TokenizerTests {
         List<Token> tokens = tokenizeAll(query);
 
         assertEquals(4, tokens.size());
-        assertEquals(new KeywordToken(Keyword.SELECT), tokens.getFirst());
-        assertEquals(new KeywordToken(Keyword.FROM), tokens.get(1));
-        assertEquals(new KeywordToken(Keyword.WHERE), tokens.get(2));
+        assertEquals(KeywordToken.SELECT, tokens.getFirst());
+        assertEquals(KeywordToken.FROM, tokens.get(1));
+        assertEquals(KeywordToken.WHERE, tokens.get(2));
     }
 
     @Test
@@ -161,17 +159,17 @@ public class TokenizerTests {
         List<Token> tokens = tokenizeAll(query);
 
         Token[] expected = {
-                new KeywordToken(Keyword.SELECT),
+                KeywordToken.SELECT,
                 new IdentifierToken("id"),
                 SymbolToken.COMMA,
                 new IdentifierToken("name"),
-                new KeywordToken(Keyword.FROM),
+                KeywordToken.FROM,
                 new IdentifierToken("users"),
-                new KeywordToken(Keyword.WHERE),
+                KeywordToken.WHERE,
                 new IdentifierToken("age"),
                 SymbolToken.GREATER_THAN_OR_EQUAL,
                 new IntegerToken(18),
-                new KeywordToken(Keyword.AND),
+                KeywordToken.AND,
                 new IdentifierToken("status"),
                 SymbolToken.NOT_EQUAL,
                 new StringToken("banned"),

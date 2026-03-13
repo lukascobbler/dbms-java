@@ -7,6 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+/// A record that represents non-unionized `SELECT` queries, meaning
+/// only a single `SELECT` query. A single `SELECT` query needs a list
+/// of projection fields, a list of tables and a predicate to know which
+/// data to match.
 public record SingleSelection(List<ProjectionFieldInfo> projectionFields,
                               Collection<String> tables, Predicate predicate) {
     @Override

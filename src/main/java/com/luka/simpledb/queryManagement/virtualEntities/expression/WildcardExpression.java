@@ -34,4 +34,7 @@ public record WildcardExpression() implements Expression {
     public String toString() {
         return "*";
     }
+
+    /// Global wildcard expression instance to prevent unnecessary allocations.
+    public static final WildcardExpression INSTANCE = new WildcardExpression();
 }

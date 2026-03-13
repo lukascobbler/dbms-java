@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseSelect;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
@@ -42,7 +42,7 @@ public class ParseSelectTests {
 
     @Test
     public void parseExpressionedAsMissingNewFieldName() {
-        assertThrows(ParserException.class, () -> parse(
+        assertThrows(ParsingException.class, () -> parse(
                 "SELECT a * 5 - 14 AS , b - 3 / 7 AS f2, c AS f3, d FROM t"));
     }
 
@@ -61,13 +61,13 @@ public class ParseSelectTests {
 
     @Test
     public void parseWithJoinSpecFailNoOnKeyword() {
-        assertThrows(ParserException.class, () -> parse(
+        assertThrows(ParsingException.class, () -> parse(
                 "SELECT DName, SName FROM STUDENT JOIN DEPT MajorId = Did WHERE GradYear = 2020"));
     }
 
     @Test
     public void parseWithJoinSpecFailNoJoinPredicate() {
-        assertThrows(ParserException.class, () -> parse(
+        assertThrows(ParsingException.class, () -> parse(
                 "SELECT DName, SName FROM STUDENT JOIN DEPT ON WHERE GradYear = 2020"));
     }
 
@@ -80,17 +80,17 @@ public class ParseSelectTests {
 
     @Test
     public void parseUnionsFailMissingSecondSelect() {
-        assertThrows(ParserException.class, () -> parse("SELECT a, b FROM c UNION"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION"));
     }
 
     @Test
     public void parseUnionsFailIncompleteSecondSelect() {
-        assertThrows(ParserException.class, () -> parse("SELECT a, b FROM c UNION SELECT a FROM"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION SELECT a FROM"));
     }
 
     @Test
     public void parseUnionsFailMissingFirstSelect() {
-        assertThrows(ParserException.class, () -> parse("UNION SELECT a, b FROM c"));
+        assertThrows(ParsingException.class, () -> parse("UNION SELECT a, b FROM c"));
     }
 
     @Test
@@ -123,37 +123,37 @@ public class ParseSelectTests {
 
     @Test
     public void parseFailMissingFromKeyword() {
-        assertThrows(ParserException.class, () -> parse("SELECT a, b c, d"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, b c, d"));
     }
 
     @Test
     public void parseFailMissingSelectKeyword() {
-        assertThrows(ParserException.class, () -> parse("a, b FROM c"));
+        assertThrows(ParsingException.class, () -> parse("a, b FROM c"));
     }
 
     @Test
     public void parseFailDanglingCommaInSelect() {
-        assertThrows(ParserException.class, () -> parse("SELECT a, FROM b"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, FROM b"));
     }
 
     @Test
     public void parseFailDanglingCommaInFrom() {
         // "SELECT a FROM b, "
-        assertThrows(ParserException.class, () -> parse("SELECT a FROM b, "));
+        assertThrows(ParsingException.class, () -> parse("SELECT a FROM b, "));
     }
 
     @Test
     public void parseFailEmptyWhereClause() {
-        assertThrows(ParserException.class, () -> parse("SELECT a FROM b WHERE"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a FROM b WHERE"));
     }
 
     @Test
     public void parseFailDoubleUnionKeywords() {
-        assertThrows(ParserException.class, () -> parse("SELECT a FROM b UNION UNION SELECT c FROM d"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a FROM b UNION UNION SELECT c FROM d"));
     }
 
     @Test
     public void parseFailAsKeywordWithoutExpression() {
-        assertThrows(ParserException.class, () -> parse("SELECT AS f1 FROM b"));
+        assertThrows(ParsingException.class, () -> parse("SELECT AS f1 FROM b"));
     }
 }

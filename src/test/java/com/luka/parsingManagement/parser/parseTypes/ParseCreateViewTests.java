@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseCreateView;
 import com.luka.simpledb.parsingManagement.statement.CreateViewStatement;
@@ -49,26 +49,26 @@ public class ParseCreateViewTests {
 
     @Test
     public void parseFailMissingAsKeyword() {
-        assertThrows(ParserException.class, () -> parse("VIEW my_view SELECT * FROM t"));
+        assertThrows(ParsingException.class, () -> parse("VIEW my_view SELECT * FROM t"));
     }
 
     @Test
     public void parseFailMissingViewName() {
-        assertThrows(ParserException.class, () -> parse("VIEW AS SELECT * FROM t"));
+        assertThrows(ParsingException.class, () -> parse("VIEW AS SELECT * FROM t"));
     }
 
     @Test
     public void parseFailMissingSelectStatement() {
-        assertThrows(ParserException.class, () -> parse("VIEW my_view AS"));
+        assertThrows(ParsingException.class, () -> parse("VIEW my_view AS"));
     }
 
     @Test
     public void parseFailWithBrokenSelect() {
-        assertThrows(ParserException.class, () -> parse("VIEW my_view AS SELECT FROM table"));
+        assertThrows(ParsingException.class, () -> parse("VIEW my_view AS SELECT FROM table"));
     }
 
     @Test
     public void parseFailWithDanglingUnion() {
-        assertThrows(ParserException.class, () -> parse("my_view AS SELECT a FROM b UNION"));
+        assertThrows(ParsingException.class, () -> parse("my_view AS SELECT a FROM b UNION"));
     }
 }

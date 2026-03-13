@@ -4,7 +4,7 @@ import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.statement.select.ProjectionFieldInfo;
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
+import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
@@ -26,22 +26,28 @@ import java.util.*;
 public class ParseSelect {
     private final ParserContext ctx;
 
+    /// Every syntactic category requires the parse context to
+    /// be initialized.
     public ParseSelect(ParserContext ctx) {
         this.ctx = ctx;
     }
 
+    /// Parses the query select statement according to the sub-grammar
+    /// defined in the class documentation.
+    ///
+    /// @return Parsed data required for data querying.
     public SelectStatement parse() {
         List<SingleSelection> singleSelections = new ArrayList<>();
 
         do {
-            ctx.eat(Keyword.SELECT);
+            ctx.eat(KeywordToken.SELECT);
             List<ProjectionFieldInfo> fields = projectedFields();
 
-            ctx.eat(Keyword.FROM);
+            ctx.eat(KeywordToken.FROM);
             List<JoinSpec> joinSpecs = joinSpecs();
 
             Predicate predicate = new Predicate();
-            if (ctx.eatIfMatches(Keyword.WHERE)) {
+            if (ctx.eatIfMatches(KeywordToken.WHERE)) {
                 predicate = new ParsePredicate(ctx).parse();
             }
 
@@ -52,23 +58,26 @@ public class ParseSelect {
             }
 
             singleSelections.add(new SingleSelection(fields, tables, predicate));
-        } while (ctx.eatIfMatches(Keyword.UNION));
+        } while (ctx.eatIfMatches(KeywordToken.UNION));
 
         return new SelectStatement(singleSelections);
     }
 
+    /// Parses a list of projection fields which can be expressions, fields,
+    /// constants or any of the above. Optional renaming with `AS`.
+    ///
+    /// @return The list of all projection fields.
     private List<ProjectionFieldInfo> projectedFields() {
         List<ProjectionFieldInfo> projectList = new ArrayList<>();
 
         // todo predicates instead of expressions here
-        // todo what happens with "*" fields
         // todo what happens with duplicate field names (handle in JDBC? with field number accesses)
         do {
             String newFieldName;
 
             Expression projectionExpression = new ParseExpression(ctx).parse();
 
-            if (ctx.eatIfMatches(Keyword.AS)) {
+            if (ctx.eatIfMatches(KeywordToken.AS)) {
                 newFieldName = fieldName();
             } else {
                 newFieldName = projectionExpression.toString();
@@ -80,6 +89,9 @@ public class ParseSelect {
         return projectList;
     }
 
+    /// Parses all join operations and table names.
+    ///
+    /// @return The list of table names and join predicates.
     private List<JoinSpec> joinSpecs() {
         List<JoinSpec> joinSpecList = new ArrayList<>();
 
@@ -90,28 +102,35 @@ public class ParseSelect {
         return joinSpecList;
     }
 
+    /// Parses one join operation with one or two tables and
+    /// one predicate.
+    ///
+    /// @return The parsed join operation result.
     private JoinSpec joinSpec() {
         Predicate joinPredicate = new Predicate();
 
         List<String> tables = new ArrayList<>();
         tables.add(tableName());
 
-        if (ctx.eatIfMatches(Keyword.JOIN)) {
+        if (ctx.eatIfMatches(KeywordToken.JOIN)) {
             tables.add(tableName());
-            ctx.eat(Keyword.ON);
+            ctx.eat(KeywordToken.ON);
             joinPredicate.conjoinWith(new ParsePredicate(ctx).parse());
         }
 
         return new JoinSpec(tables, joinPredicate);
     }
 
+    /// @return The table name identifier string.
     private String tableName() {
         return ctx.eatIdentifier();
     }
 
+    /// @return The field name identifier string.
     private String fieldName() {
         return ctx.eatIdentifier();
     }
 
+    /// Helper record to handle table join -> where predicate conversion.
     private record JoinSpec(List<String> tables, Predicate joinPredicate) { }
 }

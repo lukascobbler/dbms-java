@@ -5,6 +5,10 @@ import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
 import java.util.List;
 
+/// Represents the parsed data of `UPDATE` queries.
+/// `UPDATE` queries need the table they are updating,
+/// a list of field assignments to new values and a
+/// predicate to decide which data to update.
 public record UpdateStatement(String tableName, List<NewFieldExpressionAssignment> newValues, Predicate predicate)
         implements Statement {
     @Override

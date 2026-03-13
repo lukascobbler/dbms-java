@@ -4,6 +4,9 @@ import com.luka.simpledb.recordManagement.Schema;
 
 import static java.sql.Types.*;
 
+/// Represents the parsed data of `CREATE TABLE` queries.
+/// `CREATE TABLE` queries need the new table name, and
+/// a schema of that new table.
 public record CreateTableStatement(String tableName, Schema schema) implements Statement {
     @Override
     public String toString() {

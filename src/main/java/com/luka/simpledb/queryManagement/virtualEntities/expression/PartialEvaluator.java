@@ -42,6 +42,7 @@ public class PartialEvaluator {
                 case SUB -> lVal.asInt() - rVal.asInt();
                 case MUL -> lVal.asInt() * rVal.asInt();
                 case DIV -> lVal.asInt() / rVal.asInt();
+                case POWER -> (int) Math.pow(lVal.asInt(), rVal.asInt());
             };
             return new ConstantExpression(new IntConstant(result));
         }

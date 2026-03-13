@@ -2,6 +2,9 @@ package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
+/// Represents the parsed data of `DELETE` queries.
+/// `DELETE` queries need the table they are deleting from,
+/// and a predicate to decide which data to delete.
 public record DeleteStatement(String tableName, Predicate predicate) implements Statement {
     @Override
     public String toString() {

@@ -1,8 +1,7 @@
 package com.luka.parsingManagement.parser;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 import org.junit.jupiter.api.Test;
 
@@ -12,14 +11,14 @@ public class ParserContextTests {
     @Test
     public void testInitializationLoadsFirstToken() {
         ParserContext ctx = new ParserContext("SELECT");
-        assertEquals(new KeywordToken(Keyword.SELECT), ctx.current());
+        assertEquals(KeywordToken.SELECT , ctx.current());
     }
 
     @Test
     public void testAdvanceMovesToNextToken() {
         ParserContext ctx = new ParserContext("SELECT id");
 
-        assertEquals(new KeywordToken(Keyword.SELECT), ctx.current());
+        assertEquals(KeywordToken.SELECT, ctx.current());
         ctx.advance();
         assertEquals(new IdentifierToken("id"), ctx.current());
     }
@@ -41,7 +40,7 @@ public class ParserContextTests {
     public void testEatKeywordSuccess() {
         ParserContext ctx = new ParserContext("FROM table_name");
 
-        ctx.eat(Keyword.FROM);
+        ctx.eat(KeywordToken.FROM);
         assertEquals(new IdentifierToken("table_name"), ctx.current());
     }
 
@@ -49,7 +48,7 @@ public class ParserContextTests {
     public void testEatKeywordFailure() {
         ParserContext ctx = new ParserContext("SELECT id");
 
-        ParserException ex = assertThrows(ParserException.class, () -> ctx.eat(Keyword.FROM));
+        ParsingException ex = assertThrows(ParsingException.class, () -> ctx.eat(KeywordToken.FROM));
         assertTrue(ex.getMessage().contains("Expected"));
     }
 
@@ -65,7 +64,7 @@ public class ParserContextTests {
     public void testEatSymbolFailure() {
         ParserContext ctx = new ParserContext("+ 5");
 
-        ParserException ex = assertThrows(ParserException.class, () -> ctx.eat(SymbolToken.EQUAL));
+        ParsingException ex = assertThrows(ParsingException.class, () -> ctx.eat(SymbolToken.EQUAL));
         assertTrue(ex.getMessage().contains("Expected"));
     }
 
@@ -73,7 +72,7 @@ public class ParserContextTests {
     public void testEatIfMatchesKeywordSuccess() {
         ParserContext ctx = new ParserContext("WHERE id = 1");
 
-        boolean matched = ctx.eatIfMatches(Keyword.WHERE);
+        boolean matched = ctx.eatIfMatches(KeywordToken.WHERE);
 
         assertTrue(matched);
         assertEquals(new IdentifierToken("id"), ctx.current());
@@ -83,7 +82,7 @@ public class ParserContextTests {
     public void testEatIfMatchesKeywordFailure() {
         ParserContext ctx = new ParserContext("id = 1");
 
-        boolean matched = ctx.eatIfMatches(Keyword.WHERE);
+        boolean matched = ctx.eatIfMatches(KeywordToken.WHERE);
 
         assertFalse(matched);
         assertEquals(new IdentifierToken("id"), ctx.current());
@@ -117,15 +116,15 @@ public class ParserContextTests {
     public void testEatIdentifierFailure() {
         ParserContext ctx = new ParserContext("SELECT");
 
-        assertThrows(ParserException.class, ctx::eatIdentifier);
+        assertThrows(ParsingException.class, ctx::eatIdentifier);
     }
 
     @Test
     public void testMiniParseSequence() {
         ParserContext ctx = new ParserContext("INSERT INTO t1 ( col1 )");
 
-        ctx.eat(Keyword.INSERT);
-        ctx.eat(Keyword.INTO);
+        ctx.eat(KeywordToken.INSERT);
+        ctx.eat(KeywordToken.INTO);
 
         String tableName = ctx.eatIdentifier();
         assertEquals("t1", tableName);

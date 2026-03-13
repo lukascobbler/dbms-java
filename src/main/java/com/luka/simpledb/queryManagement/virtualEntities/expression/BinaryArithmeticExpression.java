@@ -26,6 +26,7 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
             case SUB -> lVal.asInt() - rVal.asInt();
             case MUL -> lVal.asInt() * rVal.asInt();
             case DIV -> lVal.asInt() / rVal.asInt();
+            case POWER -> (int) Math.pow(lVal.asInt(), rVal.asInt());
         };
 
         return new IntConstant(result);

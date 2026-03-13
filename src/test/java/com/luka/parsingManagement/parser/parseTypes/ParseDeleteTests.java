@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseDelete;
 import com.luka.simpledb.parsingManagement.statement.DeleteStatement;
@@ -41,21 +41,21 @@ public class ParseDeleteTests {
 
     @Test
     public void parseFailMissingDeleteKeyword() {
-        assertThrows(ParserException.class, () -> parse("FROM employees WHERE id = 1"));
+        assertThrows(ParsingException.class, () -> parse("FROM employees WHERE id = 1"));
     }
 
     @Test
     public void parseFailMissingFromKeyword() {
-        assertThrows(ParserException.class, () -> parse("DELETE employees WHERE id = 1"));
+        assertThrows(ParsingException.class, () -> parse("DELETE employees WHERE id = 1"));
     }
 
     @Test
     public void parseFailMissingTableName() {
-        assertThrows(ParserException.class, () -> parse("DELETE FROM WHERE id = 1"));
+        assertThrows(ParsingException.class, () -> parse("DELETE FROM WHERE id = 1"));
     }
 
     @Test
     public void parseFailEmptyWhereClause() {
-        assertThrows(ParserException.class, () -> parse("DELETE FROM employees WHERE"));
+        assertThrows(ParsingException.class, () -> parse("DELETE FROM employees WHERE"));
     }
 }

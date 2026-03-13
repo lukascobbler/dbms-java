@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseInsert;
 import com.luka.simpledb.parsingManagement.statement.InsertStatement;
@@ -58,57 +58,57 @@ public class ParseInsertTests {
     public void parseFailNonConstantExpression() {
         String query = "INSERT INTO users (id, age) VALUES (1, age + 1)";
 
-        ParserException exception = assertThrows(ParserException.class, () -> parse(query));
+        ParsingException exception = assertThrows(ParsingException.class, () -> parse(query));
         assertTrue(exception.getMessage().contains("constant expressions"));
     }
 
     @Test
     public void parseFailMissingInsertKeyword() {
-        assertThrows(ParserException.class, () -> parse("INTO users (id) VALUES (1)"));
+        assertThrows(ParsingException.class, () -> parse("INTO users (id) VALUES (1)"));
     }
 
     @Test
     public void parseFailMissingIntoKeyword() {
-        assertThrows(ParserException.class, () -> parse("INSERT users (id) VALUES (1)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT users (id) VALUES (1)"));
     }
 
     @Test
     public void parseFailMissingValuesKeyword() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id) (1)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id) (1)"));
     }
 
     @Test
     public void parseFailMissingTableIdentifier() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO (id) VALUES (1)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO (id) VALUES (1)"));
     }
 
     @Test
     public void parseFailMissingLeftParenForFields() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users id, name) VALUES (1, 'Alice')"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users id, name) VALUES (1, 'Alice')"));
     }
 
     @Test
     public void parseFailMissingRightParenForFields() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id, name VALUES (1, 'Alice')"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id, name VALUES (1, 'Alice')"));
     }
 
     @Test
     public void parseFailMissingLeftParenForValues() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id) VALUES 1)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id) VALUES 1)"));
     }
 
     @Test
     public void parseFailMissingRightParenForValues() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id) VALUES (1"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id) VALUES (1"));
     }
 
     @Test
     public void parseFailDanglingCommaInFields() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id,) VALUES (1)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id,) VALUES (1)"));
     }
 
     @Test
     public void parseFailDanglingCommaInValues() {
-        assertThrows(ParserException.class, () -> parse("INSERT INTO users (id) VALUES (1,)"));
+        assertThrows(ParsingException.class, () -> parse("INSERT INTO users (id) VALUES (1,)"));
     }
 }

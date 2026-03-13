@@ -1,8 +1,10 @@
 package com.luka.simpledb.parsingManagement.tokenizer.token;
 
-import com.luka.simpledb.parsingManagement.tokenizer.Keyword;
-
-public record KeywordToken(Keyword keyword) implements Token {
-    @Override
-    public String toString() { return keyword.name().toUpperCase(); }
+/// Group of tokens that describe different keywords supported by the
+/// database.
+public enum KeywordToken implements Token {
+    SELECT, FROM, WHERE, AND, INSERT, INTO, VALUES,
+    DELETE, UPDATE, SET, CREATE, TABLE, VARCHAR,
+    INT, VIEW, AS, INDEX, ON, NULL, TRUE, FALSE,
+    IS, NOT, BOOLEAN, JOIN, UNION
 }

@@ -19,20 +19,6 @@ package com.luka.simpledb.planningManagement;
 //  UPDATE, SELECT, DELETE
 //  running predicates is part of scanning and is in the select scan
 
-// project scan je uvek skroz gore, bez njega je samo ako select * i on zna samo za imena polja, ukljucujuci
-// i imena virtuelnih polja
-
-// extend scan se zove za svaki selection expression i on im daje default ime sem ako se ne iskoristi AS
-
-// select scan samo filtrira
-
-// JDBC ce imati vracanje seme pa cemo moci da znamo ime svega pa i extendovanih promenjivih, ali bi trebalo
-// da ima i vracanje po broju argumenta
-
-// za sve treba da se koristi getValue
-
-//
-
 public interface Plan {
     int distinctValues(String name);
 }

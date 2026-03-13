@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseExpression;
 import com.luka.simpledb.queryManagement.exceptions.WildcardExpressionEvaluationException;
@@ -242,32 +242,32 @@ public class ParseExpressionTests {
 
     @Test
     public void testEmptyExpressionThrowsException() {
-        assertThrows(ParserException.class, () -> parse(""));
+        assertThrows(ParsingException.class, () -> parse(""));
     }
 
     @Test
     public void testDanglingOperatorThrowsException() {
-        assertThrows(ParserException.class, () -> parse("a +"));
+        assertThrows(ParsingException.class, () -> parse("a +"));
     }
 
     @Test
     public void testMissingRightParenthesisThrowsException() {
-        assertThrows(ParserException.class, () -> parse("(a + b"));
+        assertThrows(ParsingException.class, () -> parse("(a + b"));
     }
 
     @Test
     public void testUnexpectedDelimiterInPrefixThrowsException() {
-        assertThrows(ParserException.class, () -> parse("/ 5"));
+        assertThrows(ParsingException.class, () -> parse("/ 5"));
     }
 
     @Test
     public void testUnexpectedKeywordThrowsException() {
-        assertThrows(ParserException.class, () -> parse("SELECT"));
+        assertThrows(ParsingException.class, () -> parse("SELECT"));
     }
 
     @Test
     public void testConsecutiveBinaryOperatorsThrowsException() {
-        assertThrows(ParserException.class, () -> parse("a + / b"));
+        assertThrows(ParsingException.class, () -> parse("a + / b"));
     }
 
     @Test
@@ -354,5 +354,27 @@ public class ParseExpressionTests {
 
         assertInstanceOf(WildcardExpression.class, leftParen.right());
         assertThrows(WildcardExpressionEvaluationException.class, () -> leftParen.evaluate(null));
+    }
+
+    @Test
+    public void testRightAssociativity1() {
+        Expression expr = parse("2^2^3");
+
+        BinaryArithmeticExpression root = assertInstanceOf(BinaryArithmeticExpression.class, expr);
+        assertEquals(ArithmeticOperator.POWER, root.op());
+
+        ConstantExpression leftBase = assertInstanceOf(ConstantExpression.class, root.left());
+        assertEquals(2, leftBase.evaluate(null).asInt());
+
+        BinaryArithmeticExpression rightNested = assertInstanceOf(BinaryArithmeticExpression.class, root.right());
+        assertEquals(ArithmeticOperator.POWER, rightNested.op());
+
+        assertEquals(256, expr.evaluate(null).asInt());
+    }
+
+    @Test
+    public void testRightAssociativity2() {
+        Expression expr = parse("2 * (2^2)^(9 - 4 / 2)");
+        assertEquals(32768, expr.evaluate(null).asInt());
     }
 }

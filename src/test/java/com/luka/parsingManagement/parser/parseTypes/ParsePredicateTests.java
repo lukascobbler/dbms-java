@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser.parseTypes;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParsePredicate;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -125,27 +125,27 @@ public class ParsePredicateTests {
 
     @Test
     public void testMissingRightHandSideThrowsException() {
-        assertThrows(ParserException.class, () -> parse("a ="));
+        assertThrows(ParsingException.class, () -> parse("a ="));
     }
 
     @Test
     public void testMissingOperatorThrowsException() {
-        assertThrows(ParserException.class, () -> parse("a 5"));
+        assertThrows(ParsingException.class, () -> parse("a 5"));
     }
 
     @Test
     public void testDanglingAndThrowsException() {
-        assertThrows(ParserException.class, () -> parse("a = 1 AND"));
+        assertThrows(ParsingException.class, () -> parse("a = 1 AND"));
     }
 
     @Test
     public void testInvalidComparisonOperator() {
-        assertThrows(ParserException.class, () -> parse("a + 5"));
+        assertThrows(ParsingException.class, () -> parse("a + 5"));
     }
 
     @Test
     public void testPredicateWithOnlyWildcardFails() {
-        assertThrows(ParserException.class, () -> parse("*"));
+        assertThrows(ParsingException.class, () -> parse("*"));
     }
 
     @Test

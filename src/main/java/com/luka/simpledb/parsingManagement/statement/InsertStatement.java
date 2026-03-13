@@ -4,6 +4,10 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
 import java.util.List;
 
+/// Represents the parsed data of `INSERT` queries.
+/// `INSERT` queries need the table they are inserting into,
+/// a list of fields, and a list of constant values that these
+/// fields should be set to in the new row.
 public record InsertStatement(String tableName, List<String> fields, List<Constant> values) implements Statement {
     @Override
     public String toString() {

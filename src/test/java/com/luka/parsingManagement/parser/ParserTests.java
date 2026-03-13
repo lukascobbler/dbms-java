@@ -1,6 +1,6 @@
 package com.luka.parsingManagement.parser;
 
-import com.luka.simpledb.parsingManagement.exceptions.ParserException;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.Parser;
 import com.luka.simpledb.parsingManagement.statement.Statement;
 import org.junit.jupiter.api.Test;
@@ -107,7 +107,7 @@ public class ParserTests {
         String query = "SELECT id FROM users";
         Parser parser = new Parser(query);
 
-        Exception exception = assertThrows(ParserException.class, parser::parse);
+        Exception exception = assertThrows(ParsingException.class, parser::parse);
         assertTrue(exception.getMessage().toLowerCase().contains("expected"));
     }
 
@@ -116,7 +116,7 @@ public class ParserTests {
         String query = "UPDATE users SET ";
         Parser parser = new Parser(query);
 
-        assertThrows(ParserException.class, parser::parse);
+        assertThrows(ParsingException.class, parser::parse);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class ParserTests {
         String query = "CREATE TABLE invalid_table (name VARCHAR(dynamic_field));";
         Parser parser = new Parser(query);
 
-        ParserException exception = assertThrows(ParserException.class, parser::parse);
+        ParsingException exception = assertThrows(ParsingException.class, parser::parse);
         assertTrue(exception.getMessage().contains("constant expression"));
     }
 
@@ -133,7 +133,7 @@ public class ParserTests {
         String query = "INSERT INTO users (id) VALUES (some_column);";
         Parser parser = new Parser(query);
 
-        ParserException exception = assertThrows(ParserException.class, parser::parse);
+        ParsingException exception = assertThrows(ParsingException.class, parser::parse);
         assertTrue(exception.getMessage().contains("constant expression"));
     }
 
@@ -142,7 +142,7 @@ public class ParserTests {
         String query = "CREATE DATABASE mydb;";
         Parser parser = new Parser(query);
 
-        ParserException exception = assertThrows(ParserException.class, parser::parse);
-        assertTrue(exception.getMessage().contains("Expected target after CREATE"));
+        ParsingException exception = assertThrows(ParsingException.class, parser::parse);
+        assertTrue(exception.getMessage().contains("Invalid CREATE target"));
     }
 }
