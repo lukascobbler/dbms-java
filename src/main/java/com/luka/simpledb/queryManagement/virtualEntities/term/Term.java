@@ -1,6 +1,6 @@
 package com.luka.simpledb.queryManagement.virtualEntities.term;
 
-import com.luka.simpledb.planningManagement.Plan;
+import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.exceptions.TermOperatorNotSupportedException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
@@ -72,10 +72,12 @@ public class Term {
     /// meaning a small number of rows will pass the term comparison.
     ///
     /// @return The calculated reduction factor for this term.
-    public int reductionFactor(Plan plan) {
+    public <T extends Scan> int reductionFactor(Plan<T> plan) {
         if (termOperator != TermOperator.EQUALS && termOperator != TermOperator.IS) {
             return 2;
         }
+
+        // todo check reduction factor
 
         return switch (lhs) {
             case Expression leftExpr when getUniqueField(leftExpr) instanceof String leftField -> switch (rhs) {

@@ -5,7 +5,7 @@ import com.luka.simpledb.bufferManagement.BufferManager;
 import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.logManagement.LogManager;
-import com.luka.simpledb.simpleDB.SimpleDBSettings;
+import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 import com.luka.testUtils.TestUtils;

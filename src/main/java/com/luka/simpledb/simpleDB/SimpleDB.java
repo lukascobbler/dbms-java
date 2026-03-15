@@ -4,6 +4,8 @@ import com.luka.simpledb.bufferManagement.BufferManager;
 import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.logManagement.LogManager;
 import com.luka.simpledb.metadataManagement.MetadataManager;
+import com.luka.simpledb.planningManagement.planner.Planner;
+import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 
@@ -17,6 +19,7 @@ public class SimpleDB {
     private final BufferManager bufferManager;
     private final LockTable lockTable;
     private final MetadataManager metadataManager;
+    private final Planner planner;
     private final SimpleDBSettings settings;
 
     /// Initializes the whole system, given the directory name.
@@ -52,6 +55,12 @@ public class SimpleDB {
         }
 
         metadataManager = new MetadataManager(transaction, fileManager);
+
+        planner = new Planner(
+                settings.getQueryPlanner(metadataManager),
+                settings.getUpdatePlanner(metadataManager)
+        );
+
         transaction.commit();
     }
 
@@ -65,5 +74,10 @@ public class SimpleDB {
     /// @return The metadata manager that is the part of this system object.
     public MetadataManager getMetadataManager() {
         return metadataManager;
+    }
+
+    /// @return The planner that is the part of this system object.
+    public Planner getPlanner() {
+        return planner;
     }
 }

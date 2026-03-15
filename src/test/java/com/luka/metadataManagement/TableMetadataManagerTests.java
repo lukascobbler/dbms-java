@@ -8,7 +8,7 @@ import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
-import com.luka.simpledb.simpleDB.SimpleDBSettings;
+import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;

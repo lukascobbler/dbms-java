@@ -10,7 +10,7 @@ package com.luka.simpledb.parsingManagement.statement;
 public sealed interface Statement permits
         SelectStatement, UpdateStatement, DeleteStatement,
         InsertStatement, CreateTableStatement, CreateIndexStatement,
-        CreateViewStatement {
+        CreateViewStatement, ExplainStatement {
     /// Unparses a statement into its original string form. May produce
     /// some differences because of how expressions and predicate order
     /// is handled during the parsing process.

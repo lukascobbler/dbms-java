@@ -2,6 +2,9 @@ package com.luka.parsingManagement.parser;
 
 import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.Parser;
+import com.luka.simpledb.parsingManagement.statement.CreateIndexStatement;
+import com.luka.simpledb.parsingManagement.statement.ExplainStatement;
+import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.statement.Statement;
 import org.junit.jupiter.api.Test;
 
@@ -91,6 +94,29 @@ public class ParserTests {
         Statement stmt = parser.parse();
 
         assertEquals("CREATE INDEX idx_user_name ON users (name);", stmt.toString());
+    }
+
+    @Test
+    public void testExplain1() {
+        String query = "EXPLAIN CREATE INDEX idx_user_name ON users (name);";
+        Parser parser = new Parser(query);
+        Statement stmt = parser.parse();
+        ExplainStatement explainStatement = assertInstanceOf(ExplainStatement.class, stmt);
+        assertInstanceOf(CreateIndexStatement.class, explainStatement.explainingStatement());
+
+        assertEquals(query, stmt.toString());
+    }
+
+    @Test
+    public void testExplain2() {
+        String query = "EXPLAIN SELECT userid, profilebio FROM users, " +
+                "profiles WHERE userage >= 18 AND userid = profileid;";
+        Parser parser = new Parser(query);
+        Statement stmt = parser.parse();
+        ExplainStatement explainStatement = assertInstanceOf(ExplainStatement.class, stmt);
+        assertInstanceOf(SelectStatement.class, explainStatement.explainingStatement());
+
+        assertEquals(query, stmt.toString());
     }
 
     @Test

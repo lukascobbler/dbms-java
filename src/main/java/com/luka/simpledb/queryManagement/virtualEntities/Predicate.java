@@ -1,6 +1,6 @@
 package com.luka.simpledb.queryManagement.virtualEntities;
 
-import com.luka.simpledb.planningManagement.Plan;
+import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
@@ -47,7 +47,7 @@ public class Predicate {
     /// of reduction factors of all terms that it holds.
     ///
     /// @return The total reduction factor of all predicates.
-    public int reductionFactor(Plan plan) {
+    public <T extends Scan> int reductionFactor(Plan<T> plan) {
         double totalFactor = 1.0;
         for (Term term : terms) {
             totalFactor *= term.reductionFactor(plan);

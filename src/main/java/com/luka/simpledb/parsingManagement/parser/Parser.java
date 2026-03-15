@@ -2,6 +2,7 @@ package com.luka.simpledb.parsingManagement.parser;
 
 import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.*;
+import com.luka.simpledb.parsingManagement.statement.ExplainStatement;
 import com.luka.simpledb.parsingManagement.statement.Statement;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 
@@ -10,7 +11,8 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 ///
 /// ```
 /// <Parse>     := <ParseSelect> | <ParseInsert> | <ParseUpdate> | <ParseDelete> |
-///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex>
+///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex> |
+///                EXPLAIN <Parse>
 /// ```
 ///
 /// Each syntactic category is defined within its own class, for maintainability
@@ -45,16 +47,23 @@ public class Parser {
                 ctx.advance();
                 yield switch (ctx.current()) {
                     case KeywordToken.TABLE -> new ParseCreateTable(ctx).parse();
-                    case KeywordToken.VIEW  -> new ParseCreateView(ctx).parse();
+                    case KeywordToken.VIEW -> new ParseCreateView(ctx).parse();
                     case KeywordToken.INDEX -> new ParseCreateIndex(ctx).parse();
                     default -> throw new ParsingException("Invalid CREATE target: " + ctx.current());
                 };
+            }
+            case KeywordToken.EXPLAIN -> {
+                ctx.advance();
+                yield new ExplainStatement(parse());
             }
             case EofToken() -> throw new ParsingException("Unexpected end of input");
             default -> throw new ParsingException("Expected keyword, found: " + ctx.current());
         };
 
-        ctx.eat(SymbolToken.SEMICOLON);
+        if (!(statement instanceof ExplainStatement)) {
+            ctx.eat(SymbolToken.SEMICOLON);
+        }
+
         return statement;
     }
 }

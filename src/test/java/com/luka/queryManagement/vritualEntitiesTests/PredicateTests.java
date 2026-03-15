@@ -1,7 +1,7 @@
 package com.luka.queryManagement.vritualEntitiesTests;
 
 import com.luka.queryManagement.QueryTestUtils;
-import com.luka.simpledb.planningManagement.Plan;
+import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -97,7 +97,13 @@ public class PredicateTests {
 
     @Test
     public void testReductionFactorOverflow() {
-        Plan plan = f -> 1000;
+        Plan<Scan> plan = new Plan<>() {
+            @Override public Scan open() { return null; }
+            @Override public int blocksAccessed() { return 0; }
+            @Override public int recordsOutput() { return 0; }
+            @Override public int distinctValues(String fieldName) { return 1000; }
+            @Override public Schema schema() { return null; }
+        };
 
         Predicate p = new Predicate();
         for (int i = 0; i < 10; i++) {

@@ -1,7 +1,7 @@
 package com.luka.queryManagement.vritualEntitiesTests;
 
 import com.luka.queryManagement.QueryTestUtils;
-import com.luka.simpledb.planningManagement.Plan;
+import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
@@ -11,6 +11,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
+import com.luka.simpledb.recordManagement.Schema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +20,16 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TermTests {
-    Plan mockPlan = fld -> {
-        if (fld.equals("t1_intField1")) return 250;
-        if (fld.equals("t1_boolField1")) return 2;
-        return 10;
+    Plan<Scan> mockPlan = new Plan<>() {
+        @Override public Scan open() { return null; }
+        @Override public int blocksAccessed() { return 0; }
+        @Override public int recordsOutput() { return 0; }
+        @Override public int distinctValues(String fieldName) {
+            if (fieldName.equals("t1_intField1")) return 250;
+            if (fieldName.equals("t1_boolField1")) return 2;
+            return 10;
+        }
+        @Override public Schema schema() { return null; }
     };
 
     @Test
