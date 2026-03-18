@@ -84,7 +84,7 @@ public class Schema {
         return fields.contains(fieldName);
     }
 
-    /// @return The type of the field described by its name.
+    /// @return The type of the field described by its name from the SQL constants.
     public int type(String fieldName) {
         return info.get(fieldName).type();
     }

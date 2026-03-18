@@ -101,6 +101,12 @@ public class ParseSelectTests {
     }
 
     @Test
+    public void parseSelectWildcardAs() {
+        String query = "SELECT * AS a FROM c";
+        assertThrows(ParsingException.class, () -> parse(query).toString());
+    }
+
+    @Test
     public void parseMultipleJoinSpecs() {
         String query = "SELECT a FROM b JOIN c ON bid = cid, d JOIN e ON did = eid";
         String expected = "SELECT a FROM b, c, d, e WHERE bid = cid AND did = eid;";

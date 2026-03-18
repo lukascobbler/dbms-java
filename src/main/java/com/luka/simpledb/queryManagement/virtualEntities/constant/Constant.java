@@ -3,6 +3,8 @@ package com.luka.simpledb.queryManagement.virtualEntities.constant;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.exceptions.NullComparisonException;
 
+import static java.sql.Types.*;
+
 /// A constant represents a generic value whose concrete type
 /// is not known until checking. It is an abstraction over all the
 /// types a database engine implements along with any special type
@@ -54,5 +56,15 @@ public sealed interface Constant extends Comparable<Constant>
     default boolean asBoolean() {
         if (this instanceof BooleanConstant(Boolean value)) return value;
         throw new IncompatibleConstantTypeException();
+    }
+
+    /// @return The SQL integer representing the type of this constant.
+    default int type() {
+        return switch (this) {
+            case BooleanConstant b -> BOOLEAN;
+            case IntConstant i -> INTEGER;
+            case NullConstant n -> NULL;
+            case StringConstant s -> VARCHAR;
+        };
     }
 }

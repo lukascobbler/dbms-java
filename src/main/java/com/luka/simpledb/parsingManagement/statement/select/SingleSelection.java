@@ -2,7 +2,6 @@ package com.luka.simpledb.parsingManagement.statement.select;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -11,8 +10,7 @@ import java.util.Objects;
 /// only a single `SELECT` query. A single `SELECT` query needs a list
 /// of projection fields, a list of tables and a predicate to know which
 /// data to match.
-public record SingleSelection(List<ProjectionFieldInfo> projectionFields,
-                              Collection<String> tables, Predicate predicate) {
+public record SingleSelection(List<ProjectionFieldInfo> projectionFields, List<TableInfo> tables, Predicate predicate) {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("SELECT ");
@@ -25,8 +23,8 @@ public record SingleSelection(List<ProjectionFieldInfo> projectionFields,
         result = new StringBuilder(result.substring(0, result.length() - 2));
 
         result.append(" FROM ");
-        for (String tableName : tables)
-            result.append(tableName).append(", ");
+        for (TableInfo tableInfo : tables)
+            result.append(tableInfo.toString()).append(", ");
 
         result = new StringBuilder(result.substring(0, result.length() - 2));
 
@@ -56,8 +54,8 @@ public record SingleSelection(List<ProjectionFieldInfo> projectionFields,
     public int hashCode() {
         int result = (predicate != null ? predicate.hashCode() : 0);
 
-        for (String table : tables) {
-            result += (table != null ? table.hashCode() : 0);
+        for (TableInfo tableInfo : tables) {
+            result += (tableInfo != null ? tableInfo.hashCode() : 0);
         }
 
         for (ProjectionFieldInfo field : projectionFields) {

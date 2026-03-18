@@ -39,7 +39,6 @@ public class ProductPlan extends Plan<Scan> {
             return childPlan1.distinctValues(fieldName);
         } else {
             return childPlan2.distinctValues(fieldName);
-            // todo check if field name exists
         }
     }
 

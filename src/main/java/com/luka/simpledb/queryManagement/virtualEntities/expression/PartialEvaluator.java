@@ -1,5 +1,6 @@
 package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
+import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 
@@ -33,6 +34,7 @@ public class PartialEvaluator {
     /// isn't even done, the result is just returned.
     ///
     /// @return The folded binary arithmetic expression.
+    /// @throws ZeroDivisionException if division by zero is done.
     private static Expression foldBinary(Expression left, ArithmeticOperator op, Expression right) {
         if (left instanceof ConstantExpression(Constant lVal) &&
                 right instanceof ConstantExpression(Constant rVal)) {
@@ -41,7 +43,12 @@ public class PartialEvaluator {
                 case ADD -> lVal.asInt() + rVal.asInt();
                 case SUB -> lVal.asInt() - rVal.asInt();
                 case MUL -> lVal.asInt() * rVal.asInt();
-                case DIV -> lVal.asInt() / rVal.asInt();
+                case DIV -> {
+                    if (rVal.asInt() == 0) {
+                        throw new ZeroDivisionException();
+                    }
+                    yield lVal.asInt() / rVal.asInt();
+                }
                 case POWER -> (int) Math.pow(lVal.asInt(), rVal.asInt());
             };
             return new ConstantExpression(new IntConstant(result));

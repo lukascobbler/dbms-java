@@ -5,6 +5,7 @@ import com.luka.simpledb.metadataManagement.exceptions.ViewDefinitionNotFoundExc
 import com.luka.simpledb.parsingManagement.parser.Parser;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.statement.select.ProjectionFieldInfo;
+import com.luka.simpledb.parsingManagement.statement.select.TableInfo;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.planningManagement.plan.planTypes.readOnly.ProductPlan;
 import com.luka.simpledb.planningManagement.plan.planTypes.readOnly.ProjectReadOnlyPlan;
@@ -17,22 +18,21 @@ import com.luka.simpledb.transactionManagement.Transaction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BasicQueryPlanner implements QueryPlanner {
-    private final MetadataManager metadataManager;
-
+public class BasicQueryPlanner extends QueryPlanner {
     public BasicQueryPlanner(MetadataManager metadataManager) {
-        this.metadataManager = metadataManager;
+        super(metadataManager);
     }
 
     @Override
-    public Plan<Scan> createPlan(SelectStatement selectStatement, Transaction transaction) {
+    protected Plan<Scan> createPlan(SelectStatement selectStatement, Transaction transaction) {
         List<Plan<Scan>> differentTablePlans = new ArrayList<>();
-        for (String tableName : selectStatement.unionizedSelections().getFirst().tables()) {// todo unions
+        for (TableInfo tableInfo : selectStatement.unionizedSelections().getFirst().tables()) {// todo unions and table names (rename scan)
+            String tableName = tableInfo.tableName();
             try {
                 String viewDefinition = metadataManager.getViewDefinition(tableName, transaction);
                 Parser parser = new Parser(viewDefinition);
                 SelectStatement viewSelectStatement = (SelectStatement) parser.parse();
-                differentTablePlans.add(createPlan(viewSelectStatement, transaction));
+                differentTablePlans.add(createValidatedPlan(viewSelectStatement, transaction));
             } catch (ViewDefinitionNotFoundException e) {
                 differentTablePlans.add(new TableReadOnlyPlan(transaction, tableName, metadataManager));
             }

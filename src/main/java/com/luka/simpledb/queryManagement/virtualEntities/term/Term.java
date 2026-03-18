@@ -77,7 +77,7 @@ public class Term {
             return 2;
         }
 
-        // todo check reduction factor
+        // todo check reduction factor and equates
 
         return switch (lhs) {
             case Expression leftExpr when getUniqueField(leftExpr) instanceof String leftField -> switch (rhs) {

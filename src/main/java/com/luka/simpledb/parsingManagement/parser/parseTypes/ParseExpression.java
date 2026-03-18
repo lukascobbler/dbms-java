@@ -16,7 +16,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 /// <ConstantExpression>            := StringConstant | IntConstant | BooleanConstant | NullConstant
 /// <Expression>                    := <BinaryArithmeticExpression> | <UnaryArithmeticExpression> |
 ///                                    <PrimaryExpression>
-/// <PrimaryExpression>             := <FieldExpression> | <ConstantExpression> |
+/// <PrimaryExpression>             := <FieldNameExpression> | <ConstantExpression> |
 ///                                    <WildcardExpression> | "(" <Expression> ")"
 /// <BinaryArithmeticExpression>    := <Expression> ( "*" | "/" | "+" | "-" | "^" ) <Expression>
 /// <UnaryArithmeticExpression>     := ( "+" | "-" ) <Expression>
@@ -71,7 +71,17 @@ public class ParseExpression {
     /// create totally new sub-expressions but are also pretty much unary operators.
     private Expression parsePrefix() {
         return switch (ctx.advance()) {
-            case IdentifierToken(String name) -> new FieldNameExpression(name);
+            case IdentifierToken(String name) -> {
+                if (ctx.eatIfMatches(SymbolToken.DOT)) {
+                    if (ctx.eatIfMatches(SymbolToken.STAR)) {
+                        yield new WildcardExpression(name);
+                    } else {
+                        yield new FieldNameExpression(ctx.eatIdentifier(), name);
+                    }
+                }
+
+                yield new FieldNameExpression(name);
+            }
             case IntegerToken(int val) -> new ConstantExpression(new IntConstant(val));
             case StringToken(String val) -> new ConstantExpression(new StringConstant(val));
             case KeywordToken.TRUE -> new ConstantExpression(new BooleanConstant(true));
@@ -80,7 +90,7 @@ public class ParseExpression {
             case SymbolToken sym -> switch (sym) {
                 case MINUS -> new UnaryArithmeticExpression(ArithmeticOperator.SUB, parseExpression(PREFIX_PRECEDENCE));
                 case PLUS  -> new UnaryArithmeticExpression(ArithmeticOperator.ADD, parseExpression(PREFIX_PRECEDENCE));
-                case STAR  -> WildcardExpression.INSTANCE;
+                case STAR  -> new WildcardExpression();
                 case LEFT_PAREN -> {
                     Expression inner = parseExpression(0);
                     ctx.eat(SymbolToken.RIGHT_PAREN);

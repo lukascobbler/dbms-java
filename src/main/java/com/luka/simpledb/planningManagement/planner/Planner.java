@@ -2,8 +2,7 @@ package com.luka.simpledb.planningManagement.planner;
 
 import com.luka.simpledb.parsingManagement.parser.Parser;
 import com.luka.simpledb.parsingManagement.statement.*;
-import com.luka.simpledb.planningManagement.exceptions.QueryPlanForNonQueryStatementException;
-import com.luka.simpledb.planningManagement.exceptions.UpdateQueryExecutionForNonUpdateQueryException;
+import com.luka.simpledb.planningManagement.exceptions.PlanValidationException;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.QueryPlanner;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.UpdatePlanner;
@@ -19,23 +18,23 @@ public class Planner {
         this.updatePlanner = updatePlanner;
     }
 
-    public Plan<Scan> createQueryPlan(String query, Transaction transaction) {
+    public Plan<Scan> createQueryPlan(String query, Transaction transaction) throws PlanValidationException {
         Parser parser = new Parser(query);
 
         Statement statement = parser.parse();
 
         switch (statement) {
             case SelectStatement selectStatement -> {
-                return queryPlanner.createPlan(selectStatement, transaction);
+                return queryPlanner.createValidatedPlan(selectStatement, transaction);
             }
             case ExplainStatement explainStatement -> { // todo statement explaining (plan printing)
                 throw new UnsupportedOperationException();
             }
-            default -> throw new QueryPlanForNonQueryStatementException();
+            default -> throw new PlanValidationException("The given statement is not a query statement");
         }
     }
 
-    public int executeUpdate(String updateQuery, Transaction transaction) {
+    public int executeUpdate(String updateQuery, Transaction transaction) throws PlanValidationException {
         Parser parser = new Parser(updateQuery);
 
         Statement statement = parser.parse();
@@ -56,7 +55,7 @@ public class Planner {
             case ExplainStatement explainStatement -> { // todo statement explaining (plan printing)
                 throw new UnsupportedOperationException();
             }
-            default -> throw new UpdateQueryExecutionForNonUpdateQueryException();
+            default -> throw new PlanValidationException("The given statement is not an update statement.");
         };
     }
 }

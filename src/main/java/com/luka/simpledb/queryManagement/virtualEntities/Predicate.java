@@ -58,7 +58,7 @@ public class Predicate {
         return (int) totalFactor;
     }
 
-    // todo add docs once table planner is complete
+    // todo add docs once heuristic table planner is complete
     public Predicate selectSubPredicate(Schema schema) {
         Predicate result = new Predicate();
 
@@ -75,7 +75,7 @@ public class Predicate {
         return result;
     }
 
-    // todo add docs once table planner is complete
+    // todo add docs once heuristic table planner is complete
     public Predicate joinSubPredicate(Schema schema1, Schema schema2) {
         Predicate result = new Predicate();
         Schema newSchema = new Schema();

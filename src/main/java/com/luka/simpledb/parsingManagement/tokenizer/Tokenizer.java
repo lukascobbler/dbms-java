@@ -62,6 +62,7 @@ public class Tokenizer implements Iterator<Token> {
             case ';' -> SymbolToken.SEMICOLON;
             case '*' -> SymbolToken.STAR;
             case '^' -> SymbolToken.CARET;
+            case '.' -> SymbolToken.DOT;
             case '!' -> eatIfMatches('=') ? SymbolToken.NOT_EQUAL : new InvalidToken("!");
             case '>' -> eatIfMatches('=') ? SymbolToken.GREATER_THAN_OR_EQUAL : SymbolToken.GREATER_THAN;
             case '<' -> eatIfMatches('=') ? SymbolToken.LESS_THAN_OR_EQUAL : SymbolToken.LESS_THAN;

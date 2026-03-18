@@ -5,6 +5,7 @@ import com.luka.simpledb.parsingManagement.statement.InsertStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
+import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
@@ -74,13 +75,17 @@ public class ParseInsert {
             // can be calculated without scans if they are 100% constant.
 
             Expression constantExpression = new ParseExpression(ctx).parse();
-            Expression foldedConstantExpression = PartialEvaluator.evaluate(constantExpression);
 
-            if (!foldedConstantExpression.isConstant()) {
-                throw new ParsingException("An insert statement must have constant expressions for new values");
+            try {
+                Expression foldedConstantExpression = PartialEvaluator.evaluate(constantExpression);
+                if (!foldedConstantExpression.isConstant()) {
+                    throw new ParsingException("An insert statement must have constant expressions for new values");
+                }
+
+                constantList.add(foldedConstantExpression.evaluate(null));
+            } catch (ZeroDivisionException e) {
+                throw new ParsingException("Constant zero division");
             }
-
-            constantList.add(foldedConstantExpression.evaluate(null));
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return constantList;

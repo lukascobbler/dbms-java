@@ -1,9 +1,9 @@
 package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
 import com.luka.simpledb.queryManagement.exceptions.NonNumericArithmeticCalculationException;
+import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
-import com.luka.simpledb.recordManagement.Schema;
 
 /// Binary arithmetic expressions encapsulate logic for calculating the constant value
 /// a binary arithmetic AST can evaluate to. It has three components: the left sub-expression,
@@ -12,6 +12,10 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
     /// Evaluates the left and right sub-expressions (can be recursive if they are also
     /// some sort of AST) and performs the arithmetic operation defined by the operator
     /// on the evaluated sub-expressions.
+    ///
+    /// @return The evaluated value as a constant.
+    /// @throws NonNumericArithmeticCalculationException if any of the operands is not an integer.
+    /// @throws ZeroDivisionException if division by zero is done.
     @Override
     public Constant evaluate(Scan scan) {
         Constant lVal = left.evaluate(scan);
@@ -25,28 +29,16 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
             case ADD -> lVal.asInt() + rVal.asInt();
             case SUB -> lVal.asInt() - rVal.asInt();
             case MUL -> lVal.asInt() * rVal.asInt();
-            case DIV -> lVal.asInt() / rVal.asInt();
+            case DIV -> {
+                if (rVal.asInt() == 0) {
+                    throw new ZeroDivisionException();
+                }
+                yield lVal.asInt() / rVal.asInt();
+            }
             case POWER -> (int) Math.pow(lVal.asInt(), rVal.asInt());
         };
 
         return new IntConstant(result);
-    }
-
-    /// @return True if both sub-expressions apply to the given schema. Will
-    /// return false only if some of the sub-expressions in the tree contain
-    /// a field name that is not part of the given schema.
-    @Override
-    public boolean appliesTo(Schema schema) {
-        return left.appliesTo(schema) && right.appliesTo(schema);
-    }
-
-    /// A binary arithmetic expression is only constant if both sub-expressions
-    /// are constant.
-    ///
-    /// @return True if both sub-expressions are constant.
-    @Override
-    public boolean isConstant() {
-        return left.isConstant() && right.isConstant();
     }
 
     @Override

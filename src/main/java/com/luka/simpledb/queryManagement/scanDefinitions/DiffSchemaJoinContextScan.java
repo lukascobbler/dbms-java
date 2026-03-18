@@ -40,8 +40,6 @@ public class DiffSchemaJoinContextScan extends BinaryScan {
         return childScan1.hasField(fieldName) || childScan2.hasField(fieldName);
     }
 
-    // todo check that the field only exists in one of the scans and
-    //  does not exist in the other scan
     /// @return The integer value from the scan that has that field.
     @Override
     protected int internalGetInt(String fieldName) {

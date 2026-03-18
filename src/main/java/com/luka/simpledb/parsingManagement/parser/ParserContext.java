@@ -4,6 +4,8 @@ import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.tokenizer.Tokenizer;
 import com.luka.simpledb.parsingManagement.tokenizer.token.*;
 
+import java.util.Optional;
+
 /// A parser context is a wrapper around the tokenizer that
 /// redefines some behavior like advancing and defines shared
 /// operations for consuming tokens in different ways.
@@ -52,6 +54,17 @@ public class ParserContext {
             return name;
         }
         throw new ParsingException("Syntax Error: Expected identifier but found '" + currentToken + "'");
+    }
+
+    /// Checks if the current token is an identifier, and if it is,
+    /// returns it. If it is not, returns an empty value.
+    ///
+    /// @return The optional identifier.
+    public Optional<String> eatIdentifierIfMatches() {
+        if (!(currentToken instanceof IdentifierToken)) {
+            return Optional.empty();
+        }
+        return Optional.of(eatIdentifier());
     }
 
     /// Consumes the current token and advances to the next one

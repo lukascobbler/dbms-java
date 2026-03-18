@@ -1,13 +1,16 @@
 package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.statement.select.ProjectionFieldInfo;
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
+import com.luka.simpledb.parsingManagement.statement.select.TableInfo;
 import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.WildcardExpression;
 
 import java.util.*;
 
@@ -16,7 +19,7 @@ import java.util.*;
 ///
 /// ```
 /// <Field>                     := IdentificationToken
-/// <TableName>                 := IdentificationToken
+/// <TableName>                 := IdentificationToken[.IdentificationToken]
 /// <ParseSelect>               := <ParseSingleSelection> [UNION <ParseSingleSelection>]
 /// <ParseSingleSelection>      := SELECT <ProjectedFields> FROM <JoinSpecs> [WHERE<ParsePredicate>]
 /// <ProjectedFields>           := <ParseExpression> [AS <Field>] [, <ProjectedFields>]
@@ -51,7 +54,7 @@ public class ParseSelect {
                 predicate = new ParsePredicate(ctx).parse();
             }
 
-            List<String> tables = new ArrayList<>();
+            List<TableInfo> tables = new ArrayList<>();
             for (JoinSpec joinSpec : joinSpecs) {
                 tables.addAll(joinSpec.tables);
                 predicate.conjoinWith(joinSpec.joinPredicate);
@@ -78,6 +81,9 @@ public class ParseSelect {
             Expression projectionExpression = new ParseExpression(ctx).parse();
 
             if (ctx.eatIfMatches(KeywordToken.AS)) {
+                if (projectionExpression instanceof WildcardExpression) {
+                    throw new ParsingException("The wildcard operator can't be renamed");
+                }
                 newFieldName = fieldName();
             } else {
                 newFieldName = projectionExpression.toString();
@@ -109,7 +115,7 @@ public class ParseSelect {
     private JoinSpec joinSpec() {
         Predicate joinPredicate = new Predicate();
 
-        List<String> tables = new ArrayList<>();
+        List<TableInfo> tables = new ArrayList<>();
         tables.add(tableName());
 
         if (ctx.eatIfMatches(KeywordToken.JOIN)) {
@@ -121,9 +127,12 @@ public class ParseSelect {
         return new JoinSpec(tables, joinPredicate);
     }
 
-    /// @return The table name identifier string.
-    private String tableName() {
-        return ctx.eatIdentifier();
+    /// @return The table name identifier string with the optional range variable name.
+    private TableInfo tableName() {
+        String tableName = ctx.eatIdentifier();
+        Optional<String> rangeVariableName = ctx.eatIdentifierIfMatches();
+
+        return new TableInfo(tableName, rangeVariableName);
     }
 
     /// @return The field name identifier string.
@@ -132,5 +141,5 @@ public class ParseSelect {
     }
 
     /// Helper record to handle table join -> where predicate conversion.
-    private record JoinSpec(List<String> tables, Predicate joinPredicate) { }
+    private record JoinSpec(List<TableInfo> tables, Predicate joinPredicate) { }
 }

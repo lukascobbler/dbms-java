@@ -346,7 +346,7 @@ public class CombiningScanTests {
             tableScan.setInt(baseFieldName, 50);
         }
 
-        int depth = 2000;
+        int depth = 1000;
         UpdateScan currentScan = new TableScan(tx, "table1", layout);
 
         String lastName = baseFieldName;

@@ -3,9 +3,20 @@ package com.luka.simpledb.queryManagement.virtualEntities.expression;
 import com.luka.simpledb.queryManagement.exceptions.WildcardExpressionEvaluationException;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
-import com.luka.simpledb.recordManagement.Schema;
 
-public record WildcardExpression() implements Expression {
+import java.util.Optional;
+
+public record WildcardExpression(Optional<String> rangeVariableName) implements Expression {
+    /// Initialization with no range variable.
+    public WildcardExpression() {
+        this(Optional.empty());
+    }
+
+    /// Initialization with a range variable.
+    public WildcardExpression(String rangeVariableName) {
+        this(Optional.of(rangeVariableName));
+    }
+
     /// A wildcard expression can't be evaluated.
     ///
     /// @throws WildcardExpressionEvaluationException on every scan.
@@ -14,27 +25,8 @@ public record WildcardExpression() implements Expression {
         throw new WildcardExpressionEvaluationException();
     }
 
-    /// A wildcard expression applies to every schema.
-    ///
-    /// @return True.
-    @Override
-    public boolean appliesTo(Schema schema) {
-        return true;
-    }
-
-    /// A wildcard expression is never a constant.
-    ///
-    /// @return False.
-    @Override
-    public boolean isConstant() {
-        return false;
-    }
-
     @Override
     public String toString() {
-        return "*";
+        return rangeVariableName.map(s -> s + ".").orElse("") + "*";
     }
-
-    /// Global wildcard expression instance to prevent unnecessary allocations.
-    public static final WildcardExpression INSTANCE = new WildcardExpression();
 }

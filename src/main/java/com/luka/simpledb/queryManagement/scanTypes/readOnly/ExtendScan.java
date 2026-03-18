@@ -3,7 +3,6 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UnaryScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 
 /// An extend scan does not represent any specific relational algebra operator,
 /// although it can be thought of as a projection (adds a new column that is an expression)
@@ -20,7 +19,7 @@ public class ExtendScan extends UnaryScan {
     /// a child scan.
     public ExtendScan(Scan childScan, Expression expression, String newFieldName) {
         super(childScan);
-        this.expression = PartialEvaluator.evaluate(expression);
+        this.expression = expression;
         this.newFieldName = newFieldName;
     }
 
