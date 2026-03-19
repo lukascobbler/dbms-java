@@ -8,6 +8,7 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
 /// The class responsible for parsing table creation.
 /// Its subgrammar is defined like this:
@@ -61,13 +62,17 @@ public class ParseCreateTable {
     /// @return Parsed one field definition wrapped in a schema object for
     /// easier addition of schemas.
     /// @throws ParsingException if the VARCHAR length isn't a constant or if it
-    /// isn't an integer; if the DB type isn't recognized.
+    /// isn't an integer; if the DB type isn't recognized; if the schema has too many fields.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
         Schema schema = new Schema();
 
         if (ctx.eatIfMatches(KeywordToken.INT)) {
-            schema.addIntField(fieldName, isNullable());
+            try {
+                schema.addIntField(fieldName, isNullable());
+            } catch (FieldLimitException e) {
+                throw new ParsingException(String.format("The table has too many fields (MAX: %d)", Schema.MAX_FIELDS));
+            }
         } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 

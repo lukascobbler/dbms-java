@@ -40,7 +40,7 @@ public class Layout {
         recordSize = position;
 
         if (recordSize > blockSize) {
-            throw new RecordTooLongException();
+            throw new RecordTooLongException(String.valueOf(recordSize));
         }
     }
 

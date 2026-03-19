@@ -3,9 +3,9 @@ package com.luka.simpledb.simpleDB.settings;
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.QueryPlanner;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.UpdatePlanner;
-import com.luka.simpledb.planningManagement.planner.plannerTypes.BasicQueryPlanner;
+import com.luka.simpledb.planningManagement.planner.plannerTypes.query.BasicQueryPlanner;
 import com.luka.simpledb.planningManagement.planner.plannerTypes.BasicUpdatePlanner;
-import com.luka.simpledb.planningManagement.planner.plannerTypes.BetterQueryPlanner;
+import com.luka.simpledb.planningManagement.planner.plannerTypes.query.BetterQueryPlanner;
 
 /// Settings class for changing the instantiation parameters
 /// of the system, useful for tests. The defaults are pretty good

@@ -1,8 +1,8 @@
 package com.luka.simpledb.planningManagement.planner.plannerTypes;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
-import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.parsingManagement.statement.*;
+import com.luka.simpledb.parsingManagement.statement.insert.NewFieldValueInfo;
 import com.luka.simpledb.parsingManagement.statement.update.NewFieldExpressionAssignment;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.planningManagement.plan.planTypes.update.SelectPlan;
@@ -10,29 +10,22 @@ import com.luka.simpledb.planningManagement.plan.planTypes.update.TablePlan;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.UpdatePlanner;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
-import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 import com.luka.simpledb.transactionManagement.Transaction;
 
-import java.util.Iterator;
-
-public class BasicUpdatePlanner implements UpdatePlanner {
-    private final MetadataManager metadataManager;
-
+public class BasicUpdatePlanner extends UpdatePlanner {
     public BasicUpdatePlanner(MetadataManager metadataManager) {
-        this.metadataManager = metadataManager;
+        super(metadataManager);
     }
 
     @Override
-    public int executeInsert(InsertStatement insertStatement, Transaction transaction) {
+    protected int executeInsert(InsertStatement insertStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, insertStatement.tableName(), metadataManager);
 
         try (UpdateScan insertScan = plan.open()) {
             insertScan.insert();
 
-            Iterator<Constant> constantIterator = insertStatement.values().iterator();
-            for (String fieldName : insertStatement.fields()) {
-                Constant newValue = constantIterator.next();
-                insertScan.setValue(fieldName, newValue); // todo check appropriate types
+            for (NewFieldValueInfo newFieldValueInfo : insertStatement.newFieldValues()) {
+                insertScan.setValue(newFieldValueInfo.fieldName(), newFieldValueInfo.newValue());
             }
         }
 
@@ -40,15 +33,9 @@ public class BasicUpdatePlanner implements UpdatePlanner {
     }
 
     @Override
-    public int executeUpdate(UpdateStatement updateStatement, Transaction transaction) {
+    protected int executeUpdate(UpdateStatement updateStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, updateStatement.tableName(), metadataManager);
         plan = new SelectPlan(plan, updateStatement.predicate());
-
-        for (NewFieldExpressionAssignment newFieldValue : updateStatement.newValues()) {
-            // we do folding of every new expression before calculating the values in the scan
-            // to ensure as little calculation as possible on the virtual machine
-            PartialEvaluator.evaluate(newFieldValue.newValueExpression());
-        }
 
         int count = 0;
         try (UpdateScan updateScan = plan.open()) {
@@ -57,7 +44,7 @@ public class BasicUpdatePlanner implements UpdatePlanner {
 
                 for (NewFieldExpressionAssignment newFieldValue : updateStatement.newValues()) {
                     Constant computedValue = newFieldValue.newValueExpression().evaluate(updateScan);
-                    updateScan.setValue(newFieldValue.fieldName(), computedValue); // todo check appropriate types
+                    updateScan.setValue(newFieldValue.fieldName(), computedValue);
                 }
             }
         }
@@ -66,7 +53,7 @@ public class BasicUpdatePlanner implements UpdatePlanner {
     }
 
     @Override
-    public int executeDelete(DeleteStatement deleteStatement, Transaction transaction) {
+    protected int executeDelete(DeleteStatement deleteStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, deleteStatement.tableName(), metadataManager);
         plan = new SelectPlan(plan, deleteStatement.predicate());
 
@@ -82,7 +69,7 @@ public class BasicUpdatePlanner implements UpdatePlanner {
     }
 
     @Override
-    public int executeCreateTable(CreateTableStatement createTableStatement, Transaction transaction) {
+    protected int executeCreateTable(CreateTableStatement createTableStatement, Transaction transaction) {
         metadataManager.createTable(
                 createTableStatement.tableName(),
                 createTableStatement.schema(),
@@ -92,7 +79,7 @@ public class BasicUpdatePlanner implements UpdatePlanner {
     }
 
     @Override
-    public int executeCreateView(CreateViewStatement createViewStatement, Transaction transaction) {
+    protected int executeCreateView(CreateViewStatement createViewStatement, Transaction transaction) {
         metadataManager.createView(
                 createViewStatement.viewName(),
                 createViewStatement.selectStatement().toString(),
@@ -102,12 +89,12 @@ public class BasicUpdatePlanner implements UpdatePlanner {
     }
 
     @Override
-    public int executeCreateIndex(CreateIndexStatement createIndexStatement, Transaction transaction) {
+    protected int executeCreateIndex(CreateIndexStatement createIndexStatement, Transaction transaction) {
         metadataManager.createIndex(
                 createIndexStatement.indexName(),
                 createIndexStatement.tableName(),
                 createIndexStatement.fieldName(),
-                IndexType.B_TREE, // todo different index types in parsing management and here
+                createIndexStatement.type(),
                 transaction
         );
         return 0;

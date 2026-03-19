@@ -1,6 +1,6 @@
 package com.luka.simpledb.parsingManagement.statement;
 
-import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
+import com.luka.simpledb.parsingManagement.statement.insert.NewFieldValueInfo;
 
 import java.util.List;
 
@@ -8,21 +8,21 @@ import java.util.List;
 /// `INSERT` queries need the table they are inserting into,
 /// a list of fields, and a list of constant values that these
 /// fields should be set to in the new row.
-public record InsertStatement(String tableName, List<String> fields, List<Constant> values) implements Statement {
+public record InsertStatement(String tableName, List<NewFieldValueInfo> newFieldValues) implements Statement {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("INSERT INTO ");
         result.append(tableName).append(" ");
 
         result.append('(');
-        for (String fieldName : fields)
-            result.append(fieldName).append(", ");
+        for (NewFieldValueInfo field : newFieldValues)
+            result.append(field.fieldName()).append(", ");
         result = new StringBuilder(result.substring(0, result.length() - 2));
         result.append(')');
 
         result.append(" VALUES (");
-        for (Constant value : values)
-            result.append(value.toString()).append(", ");
+        for (NewFieldValueInfo field : newFieldValues)
+            result.append(field.newValue().toString()).append(", ");
         result = new StringBuilder(result.substring(0, result.length() - 2));
         result.append(')');
 

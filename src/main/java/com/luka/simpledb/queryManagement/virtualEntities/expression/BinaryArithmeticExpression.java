@@ -25,6 +25,7 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
             throw new NonNumericArithmeticCalculationException();
         }
 
+        // todo overflow exceptions
         int result = switch (op) {
             case ADD -> lVal.asInt() + rVal.asInt();
             case SUB -> lVal.asInt() - rVal.asInt();

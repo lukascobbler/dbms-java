@@ -1,4 +1,4 @@
-package com.luka.simpledb.planningManagement.planner.plannerTypes;
+package com.luka.simpledb.planningManagement.planner.plannerTypes.query;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.exceptions.ViewDefinitionNotFoundException;

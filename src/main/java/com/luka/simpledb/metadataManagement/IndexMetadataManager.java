@@ -1,5 +1,6 @@
 package com.luka.simpledb.metadataManagement;
 
+import com.luka.simpledb.metadataManagement.exceptions.IndexAlreadyExistsException;
 import com.luka.simpledb.metadataManagement.exceptions.IndexDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.IndexTableIncorrectException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
@@ -42,28 +43,36 @@ public class IndexMetadataManager {
 
     /// Creates a new index on a field in a table. Adds the index to the index catalog.
     ///
-    /// @throws IndexTableIncorrectException if either the table was not found, or the field in that table
-    /// was not found.
+    /// @throws TableNotFoundException if the table was not found.
+    /// @throws IndexTableIncorrectException if the field in the table was not found.
     /// @throws IndexDuplicateNameException if an index with the same name already exists.
+    /// @throws IndexAlreadyExistsException if an index already exists for a given fieldName on
+    /// the table.
     public void createIndex(String indexName, String tableName, String fieldName, IndexType indexType, Transaction transaction) {
-        try {
-            Layout tableLayout = tableMetadataManager.getLayout(tableName, transaction);
-            if (!tableLayout.getSchema().hasField(fieldName)) {
-                throw new IndexTableIncorrectException();
-            }
-        } catch (TableNotFoundException _e) {
+        Layout tableLayout = tableMetadataManager.getLayout(tableName, transaction);
+        if (!tableLayout.getSchema().hasField(fieldName)) {
             throw new IndexTableIncorrectException();
         }
 
         TableScan indexCatalogDuplicateScan = new TableScan(transaction, "indexcatalog", indexCatalogLayout);
 
+        boolean indexNameDuplicate = false;
+        boolean indexTableFieldDuplicate = false;
+
         try (indexCatalogDuplicateScan) {
             while (indexCatalogDuplicateScan.next()) {
                 if (indexCatalogDuplicateScan.getString("indexname").equals(indexName)) {
-                    throw new IndexDuplicateNameException();
+                    indexNameDuplicate = true;
+                }
+                if (indexCatalogDuplicateScan.getString("tablename").equals(tableName) &&
+                    indexCatalogDuplicateScan.getString("fieldname").equals(fieldName)) {
+                    indexTableFieldDuplicate = true;
                 }
             }
         }
+
+        if (indexNameDuplicate) throw new IndexDuplicateNameException();
+        if (indexTableFieldDuplicate) throw new IndexAlreadyExistsException();
 
         TableScan indexCatalogScan = new TableScan(transaction, "indexcatalog", indexCatalogLayout);
 

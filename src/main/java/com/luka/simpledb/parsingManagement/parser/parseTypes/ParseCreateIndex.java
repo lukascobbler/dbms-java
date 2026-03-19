@@ -1,5 +1,7 @@
 package com.luka.simpledb.parsingManagement.parser.parseTypes;
 
+import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
+import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.CreateIndexStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
@@ -12,7 +14,7 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 /// <IndexName>             := IdentificationToken
 /// <TableName>             := IdentificationToken
 /// <FieldName>             := IdentificationToken
-/// <ParseCreateIndex>      := INDEX <IndexName> ON <TableName> (<FieldName>)
+/// <ParseCreateIndex>      := INDEX <IndexName> ON <TableName> (<FieldName>) [TYPE BTREE | HASH]
 /// ```
 public class ParseCreateIndex {
     private final ParserContext ctx;
@@ -36,7 +38,14 @@ public class ParseCreateIndex {
         String fieldName = fieldName();
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        return new CreateIndexStatement(indexName, tableName, fieldName);
+        IndexType type = IndexType.B_TREE;
+        if (ctx.eatIfMatches(KeywordToken.TYPE)) {
+            if (ctx.eatIfMatches(KeywordToken.HASH)) type = IndexType.HASH;
+            else if (ctx.eatIfMatches(KeywordToken.BTREE)) {}
+            else throw new ParsingException("No correct index type provided");
+        }
+
+        return new CreateIndexStatement(indexName, tableName, fieldName, type);
     }
 
     /// @return The index name identifier string.

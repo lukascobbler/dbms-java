@@ -129,7 +129,7 @@ public class Predicate {
         return null;
     }
 
-    /// Folds every term in the predicate.
+    /// Folds every term in the predicate. Uses `PartialEvaluator` internally.
     public void fold() {
         terms.forEach(Term::foldExpressions);
     }

@@ -16,6 +16,7 @@ public class PartialEvaluator {
     /// it stops the folding process.
     ///
     /// @return The evaluated arithmetic expression.
+    /// @throws ZeroDivisionException if division by zero is done.
     public static Expression evaluate(Expression expr) {
         return switch (expr) {
             case BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
@@ -39,6 +40,7 @@ public class PartialEvaluator {
         if (left instanceof ConstantExpression(Constant lVal) &&
                 right instanceof ConstantExpression(Constant rVal)) {
 
+            // todo overflow exceptions
             int result = switch (op) {
                 case ADD -> lVal.asInt() + rVal.asInt();
                 case SUB -> lVal.asInt() - rVal.asInt();

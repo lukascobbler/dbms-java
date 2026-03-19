@@ -22,6 +22,10 @@ import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.*;
 
+/// Abstraction over all implementations of query planners which performs
+/// all semantic checks and prepares the planner for query execution. Any
+/// implementation of query planning only needs to extend this class and
+/// define the execution part.
 public abstract class QueryPlanner {
     protected final MetadataManager metadataManager;
 
@@ -29,6 +33,8 @@ public abstract class QueryPlanner {
     public QueryPlanner(MetadataManager metadataManager) {
         this.metadataManager = metadataManager;
     }
+
+    // Public API, representing the operations that the query planner is able to execute checked
 
     /// Validates every aspect of a query, expands wildcard operators, gives fields
     /// fully qualified names and folds constant expressions.
@@ -43,11 +49,15 @@ public abstract class QueryPlanner {
         return createPlan(checkedStatement, transaction);
     }
 
+    // Internal API, that runs actual plan creations
+
     /// Internal API that extenders of this class must implement. Does the actual
     /// plan creation and cost estimation.
     ///
     /// @return Cost-aware plan for the given query.
     protected abstract Plan<Scan> createPlan(SelectStatement selectStatement, Transaction transaction);
+
+    // Private API, for checking statements
 
     /// Checks for:
     /// - tables (and views) existing
@@ -71,7 +81,7 @@ public abstract class QueryPlanner {
             buildSchemaAndAliases(singleSelection, ctx, transaction);
 
             List<ProjectionFieldInfo> expandedProjectionFields = expandProjections(singleSelection, ctx);
-            Predicate qualifiedPredicate = validateAndQualifyPredicate(singleSelection, ctx);
+            Predicate qualifiedPredicate = validateAndQualifyPredicate(singleSelection.predicate(), ctx);
 
             List<Integer> currentTypes = getProjectionTypes(expandedProjectionFields, ctx.unifiedSchema);
             if (firstTableFieldTypes == null) {
@@ -135,7 +145,7 @@ public abstract class QueryPlanner {
     /// a nonqualified wildcard, expands it to the unified schema's fields.
     /// Checks for inappropriate usages of wildcards. Checks if any of the
     /// fields used in projection expressions is ambiguous or non-existent.
-    /// Gives a fully qualified name to every field.
+    /// Gives a fully qualified name to every fieldName.
     ///
     /// @return A list of projection fields that don't include any wildcards and
     /// are sanitized of any incorrect fields.
@@ -182,13 +192,13 @@ public abstract class QueryPlanner {
     }
 
     /// Checks if any of the fields used in the predicate is ambiguous or non-existent.
-    /// Gives a fully qualified name to every field. Checks for types
+    /// Gives a fully qualified name to every fieldName. Checks for types
     ///
-    /// @return A sanitized and field qualified predicate.
-    private Predicate validateAndQualifyPredicate(SingleSelection selection, ValidationContext ctx) {
+    /// @return A sanitized and fieldName qualified predicate.
+    private Predicate validateAndQualifyPredicate(Predicate predicate, ValidationContext ctx) {
         Predicate qualifiedPredicate = new Predicate();
 
-        for (Term term : selection.predicate().getTerms()) {
+        for (Term term : predicate.getTerms()) {
             Expression qualLhs = term.getLhs().qualify(ctx.implicitAliases);
             Expression qualRhs = term.getRhs().qualify(ctx.implicitAliases);
 
@@ -227,11 +237,11 @@ public abstract class QueryPlanner {
         final Set<String> ambiguousUnqualified = new HashSet<>();
         final Map<String, String> implicitAliases = new HashMap<>();
 
-        /// @throws PlanValidationException if a field is ambiguous or missing.
+        /// @throws PlanValidationException if a fieldName is ambiguous or missing.
         void validateFieldExists(String fieldName, String contextMessage) {
             if (!unifiedSchema.hasField(fieldName)) {
                 if (ambiguousUnqualified.contains(fieldName)) {
-                    throw new PlanValidationException("Ambiguous field in " + contextMessage + ": " + fieldName);
+                    throw new PlanValidationException("Ambiguous fieldName in " + contextMessage + ": " + fieldName);
                 }
                 throw new PlanValidationException("Field missing in " + contextMessage + ": " + fieldName);
             }
@@ -256,10 +266,7 @@ public abstract class QueryPlanner {
                             ));
                 }
 
-                foldedPredicate = new Predicate();
-                foldedPredicate.conjoinWith(singleSelection.predicate());
-
-                foldedPredicate.fold();
+                singleSelection.predicate().fold();
             } catch (ZeroDivisionException e) {
                 throw new PlanValidationException("Constant zero division");
             }
@@ -267,7 +274,7 @@ public abstract class QueryPlanner {
             expandedSingleSelections.add(new SingleSelection(
                     List.copyOf(foldedProjectionFields),
                     singleSelection.tables(),
-                    foldedPredicate
+                    singleSelection.predicate()
             ));
         }
 

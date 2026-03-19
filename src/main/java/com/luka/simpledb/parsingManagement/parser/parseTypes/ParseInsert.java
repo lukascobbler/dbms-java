@@ -3,6 +3,7 @@ package com.luka.simpledb.parsingManagement.parser.parseTypes;
 import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.InsertStatement;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
+import com.luka.simpledb.parsingManagement.statement.insert.NewFieldValueInfo;
 import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
@@ -56,7 +57,16 @@ public class ParseInsert {
         List<Constant> values = constantList();
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        return new InsertStatement(tableName, fields, values);
+        if (fields.size() != values.size()) {
+            throw new ParsingException("Field list not same size as constant list");
+        }
+
+        List<NewFieldValueInfo> newFieldValues = new ArrayList<>();
+        for (int i = 0; i < fields.size(); i++) {
+            newFieldValues.add(new NewFieldValueInfo(fields.get(i), values.get(i)));
+        }
+
+        return new InsertStatement(tableName, newFieldValues);
     }
 
     /// Parses a list of expressions and evaluates them to constants.

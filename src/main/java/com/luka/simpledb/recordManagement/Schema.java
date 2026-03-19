@@ -15,7 +15,7 @@ import static java.sql.Types.*;
 public class Schema {
     private final List<String> fields = new ArrayList<>();
     private final Map<String, FieldInfo> info = new HashMap<>();
-    private static final int MAX_FIELDS = 31;
+    public static final int MAX_FIELDS = 31;
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
     /// the length of that type.
