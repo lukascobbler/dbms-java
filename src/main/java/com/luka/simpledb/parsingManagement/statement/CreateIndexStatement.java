@@ -12,7 +12,7 @@ public record CreateIndexStatement(String indexName, String tableName, String fi
     public String toString() {
         return "CREATE INDEX " + indexName + " ON " +
                 tableName + " (" +
-                fieldName + ") TYPE" +
+                fieldName + ") TYPE " +
                 type.name() +
                 ";";
     }

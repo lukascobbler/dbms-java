@@ -1,7 +1,6 @@
 package com.luka.simpledb.recordManagement;
 
 import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
-import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,21 +10,16 @@ import java.util.Map;
 import static java.sql.Types.*;
 
 /// `Schema` objects hold information about a table's field names, lengths
-/// and types.
+/// and types. Does not limit the number of records per field.
 public class Schema {
-    private final List<String> fields = new ArrayList<>();
-    private final Map<String, FieldInfo> info = new HashMap<>();
-    public static final int MAX_FIELDS = 31;
+    protected final List<String> fields = new ArrayList<>();
+    protected final Map<String, FieldInfo> info = new HashMap<>();
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
     /// the length of that type.
     ///
-    /// @throws FieldLimitException if the maximum number of fields is reached.
     /// @throws FieldDuplicateNameException if the field already exists within this schema.
     public void addField(String fieldName, int type, int length, boolean isNullable) {
-        if (fields.size() + 1 > MAX_FIELDS) {
-            throw new FieldLimitException();
-        }
         if (fields.contains(fieldName)) {
             throw new FieldDuplicateNameException();
         }
@@ -34,33 +28,22 @@ public class Schema {
     }
 
     /// Add an integer field.
-    ///
-    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addIntField(String fieldName, boolean isNullable) {
         addField(fieldName, INTEGER, 4, isNullable);
     }
 
     /// Add a string field with the maximum length (VARCHAR type).
-    ///
-    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addStringField(String fieldName, int length, boolean isNullable) {
         addField(fieldName, VARCHAR, length, isNullable);
     }
 
     /// Add a boolean field.
-    ///
-    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void addBooleanField(String fieldName, boolean isNullable) {
         addField(fieldName, BOOLEAN, 1, isNullable);
     }
 
     /// Add a field described by its name from some other schema.
-    ///
-    /// @throws FieldLimitException if the maximum number of fields is reached.
     public void add(String fieldName, Schema otherSchema) {
-        if (fields.size() + 1 > MAX_FIELDS) {
-            throw new FieldLimitException();
-        }
         int type = otherSchema.type(fieldName);
         int length = otherSchema.length(fieldName);
         boolean isNullable = otherSchema.isNullable(fieldName);
@@ -107,6 +90,3 @@ public class Schema {
         return getFields().equals(schema.getFields()) && info.equals(schema.info);
     }
 }
-
-/// Represents everything that can describe an arbitrary field.
-record FieldInfo(int type, int length, boolean nullable) {}

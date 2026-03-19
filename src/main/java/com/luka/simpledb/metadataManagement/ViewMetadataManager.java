@@ -30,6 +30,8 @@ public class ViewMetadataManager {
     public void createView(String viewName, String viewDefinition, Transaction transaction) {
         TableScan viewTableScan = new TableScan(transaction, "viewcatalog", viewCatalogLayout);
 
+        // todo throw view too long exception
+        // todo when adding view layouts, throw record too long exception on layout creation if needed
         try (viewTableScan) {
             viewTableScan.insert();
             viewTableScan.setString("viewname", viewName);

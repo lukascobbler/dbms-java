@@ -1,7 +1,7 @@
 package com.luka.simpledb.simpleDB.settings;
 
+/// Represents the planner used for creating query plans.
 public enum QueryPlannerType {
-    BASIC,
     BETTER,
     HEURISTIC // todo implement this one
 }

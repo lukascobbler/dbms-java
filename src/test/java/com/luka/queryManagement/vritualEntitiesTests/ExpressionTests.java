@@ -1,6 +1,7 @@
 package com.luka.queryManagement.vritualEntitiesTests;
 
 import com.luka.queryManagement.QueryTestUtils;
+import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
@@ -10,6 +11,8 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
+import static java.sql.Types.INTEGER;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -336,15 +339,15 @@ public class ExpressionTests {
 
     @Test
     public void testNoFolding1() {
-        Expression fieldX = new FieldNameExpression("x");
-        Expression fieldY = new FieldNameExpression("y");
+        Expression left = new FieldNameExpression("x");
+        Expression right = new FieldNameExpression("y");
 
-        Expression diffFields = new BinaryArithmeticExpression(fieldX, ArithmeticOperator.SUB, fieldY);
+        Expression diffFields = new BinaryArithmeticExpression(left, ArithmeticOperator.SUB, right);
         Expression foldedDiff = PartialEvaluator.evaluate(diffFields);
         assertEquals("(x - y)", foldedDiff.toString());
         assertFalse(foldedDiff instanceof ConstantExpression);
 
-        Expression unaryField = new UnaryArithmeticExpression(ArithmeticOperator.SUB, fieldX);
+        Expression unaryField = new UnaryArithmeticExpression(ArithmeticOperator.SUB, left);
         Expression foldedUnary = PartialEvaluator.evaluate(unaryField);
         assertEquals("-(x)", foldedUnary.toString());
         assertInstanceOf(UnaryArithmeticExpression.class, foldedUnary);
@@ -352,18 +355,41 @@ public class ExpressionTests {
 
     @Test
     public void testNoFolding2() {
-        Expression x = new FieldNameExpression("x");
-        Expression y = new FieldNameExpression("y");
+        Expression left = new FieldNameExpression("x");
+        Expression right = new FieldNameExpression("y");
 
         Expression negXPlusY = new BinaryArithmeticExpression(
-                new UnaryArithmeticExpression(ArithmeticOperator.SUB, x),
+                new UnaryArithmeticExpression(ArithmeticOperator.SUB, left),
                 ArithmeticOperator.ADD,
-                y
+                right
         );
         Expression result = PartialEvaluator.evaluate(negXPlusY);
 
         assertNotEquals("0", result.toString());
         assertInstanceOf(BinaryArithmeticExpression.class, result);
+    }
+
+    @Test
+    public void testStringFoldingBinary() {
+        Expression left = new ConstantExpression(new StringConstant("a"));
+        Expression right = new ConstantExpression(new StringConstant("b"));
+
+        Expression xPlusY = new BinaryArithmeticExpression(left, ArithmeticOperator.ADD, right);
+
+        assertThrowsExactly(IncompatibleConstantTypeException.class, () -> PartialEvaluator.evaluate(xPlusY));
+    }
+
+    @Test
+    public void testStringFoldingUnary() {
+        Expression x = new ConstantExpression(new StringConstant("a"));
+        Expression y = new ConstantExpression(new StringConstant("b"));
+
+        Expression negX = new UnaryArithmeticExpression(
+                ArithmeticOperator.SUB,
+                x
+        );
+
+        assertThrowsExactly(IncompatibleConstantTypeException.class, () -> PartialEvaluator.evaluate(negX));
     }
 
     @Test
@@ -399,5 +425,52 @@ public class ExpressionTests {
                 new FieldNameExpression("hidden_field")
         );
         assertFalse(complexFailure.appliesTo(schema));
+    }
+
+    @Test
+    public void testComplexExpressionType() {
+        Schema schema = new Schema();
+        schema.addIntField("int", false);
+
+        Expression e = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
+                        new ConstantExpression(new IntConstant(5)),
+                        ArithmeticOperator.SUB,
+                        new FieldNameExpression("int")
+                ),
+                ArithmeticOperator.DIV,
+                new FieldNameExpression("int")
+        );
+
+        assertEquals(INTEGER, e.type(schema));
+    }
+
+    @Test
+    public void testExpressionLength() {
+        Schema schema = new Schema();
+        schema.addStringField("s1", 100, false);
+        schema.addStringField("s2", 200, false);
+
+        Expression e = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
+                        new ConstantExpression(new StringConstant("a".repeat(10000))),
+                        ArithmeticOperator.SUB,
+                        new FieldNameExpression("s1")
+                ),
+                ArithmeticOperator.DIV,
+                new FieldNameExpression("s2")
+        );
+
+        assertEquals(10000, e.length(schema));
+    }
+
+    @Test
+    public void testNullValueType() {
+        Schema schema = new Schema();
+        schema.addIntField("int", true);
+
+        Expression e = new ConstantExpression(NullConstant.INSTANCE);
+
+        assertEquals(INTEGER, e.type(schema)); // todo what is happening here, test UPDATE and INSERT statements
     }
 }

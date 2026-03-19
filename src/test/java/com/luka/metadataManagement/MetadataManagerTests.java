@@ -70,7 +70,7 @@ public class MetadataManagerTests {
         metadataManager.createView("TestView1", viewDefinition, transaction);
         assertEquals(viewDefinition, metadataManager.getViewDefinition("TestView1", transaction));
 
-        metadataManager.createIndex("TestIndex1", "TestTable1", "A", IndexType.B_TREE, transaction);
+        metadataManager.createIndex("TestIndex1", "TestTable1", "A", IndexType.BTREE, transaction);
         metadataManager.createIndex("TestIndex2", "TestTable1", "B", IndexType.HASH, transaction);
 
         Map<String, IndexInfo> indexInfo = metadataManager.getIndexInfo("TestTable1", transaction);

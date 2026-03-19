@@ -93,12 +93,12 @@ public class ParserTests {
         Parser parser = new Parser(query);
         Statement stmt = parser.parse();
 
-        assertEquals("CREATE INDEX idx_user_name ON users (name);", stmt.toString());
+        assertEquals("CREATE INDEX idx_user_name ON users (name) TYPE BTREE;", stmt.toString());
     }
 
     @Test
     public void testExplain1() {
-        String query = "EXPLAIN CREATE INDEX idx_user_name ON users (name);";
+        String query = "EXPLAIN CREATE INDEX idx_user_name ON users (name) TYPE BTREE;";
         Parser parser = new Parser(query);
         Statement stmt = parser.parse();
         ExplainStatement explainStatement = assertInstanceOf(ExplainStatement.class, stmt);

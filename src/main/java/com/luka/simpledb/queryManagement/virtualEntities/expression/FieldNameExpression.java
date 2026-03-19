@@ -29,7 +29,7 @@ public record FieldNameExpression(String fieldName, Optional<String> rangeVariab
     /// @return The constant value for the field name in the current scan position.
     @Override
     public Constant evaluate(Scan scan) {
-        return scan.getValue(fieldName);
+        return scan.getValue(qualifiedName());
     }
 
     @Override

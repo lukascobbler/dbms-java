@@ -41,17 +41,17 @@ public class Planner {
 
         return switch (statement) {
             case CreateIndexStatement createIndexStatement ->
-                updatePlanner.executeCreateIndexChecked(createIndexStatement, transaction);
+                updatePlanner.executeCreateIndexValidated(createIndexStatement, transaction);
             case CreateTableStatement createTableStatement ->
-                updatePlanner.executeCreateTableChecked(createTableStatement, transaction);
+                updatePlanner.executeCreateTableValidated(createTableStatement, transaction);
             case CreateViewStatement createViewStatement ->
-                updatePlanner.executeCreateViewChecked(createViewStatement, transaction);
+                updatePlanner.executeCreateViewValidated(createViewStatement, transaction);
             case DeleteStatement deleteStatement ->
-                updatePlanner.executeDeleteChecked(deleteStatement, transaction);
+                updatePlanner.executeDeleteValidated(deleteStatement, transaction);
             case InsertStatement insertStatement ->
-                updatePlanner.executeInsertChecked(insertStatement, transaction);
+                updatePlanner.executeInsertValidated(insertStatement, transaction);
             case UpdateStatement updateStatement ->
-                updatePlanner.executeUpdateChecked(updateStatement, transaction);
+                updatePlanner.executeUpdateValidated(updateStatement, transaction);
             case ExplainStatement explainStatement -> { // todo statement explaining (plan printing)
                 throw new UnsupportedOperationException();
             }

@@ -3,6 +3,7 @@ package com.luka.metadataManagement;
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.exceptions.IndexDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.IndexTableIncorrectException;
+import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -48,7 +49,7 @@ public class IndexMetadataManagerTests {
 
         metadataManager.createTable("tbl1", schema, tx);
 
-        assertThrowsExactly(IndexTableIncorrectException.class,
+        assertThrowsExactly(TableNotFoundException.class,
                 () ->  metadataManager.createIndex("index1", "tbl2", "field", IndexType.HASH, tx));
         assertThrowsExactly(IndexTableIncorrectException.class,
                 () ->  metadataManager.createIndex("index1", "tbl1", "field1", IndexType.HASH, tx));

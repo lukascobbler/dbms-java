@@ -38,7 +38,7 @@ public class ParseCreateIndex {
         String fieldName = fieldName();
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        IndexType type = IndexType.B_TREE;
+        IndexType type = IndexType.BTREE;
         if (ctx.eatIfMatches(KeywordToken.TYPE)) {
             if (ctx.eatIfMatches(KeywordToken.HASH)) type = IndexType.HASH;
             else if (ctx.eatIfMatches(KeywordToken.BTREE)) {}

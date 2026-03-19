@@ -4,5 +4,5 @@ package com.luka.simpledb.metadataManagement.infoClasses;
 /// in the system.
 public enum IndexType {
     HASH,
-    B_TREE
+    BTREE
 }

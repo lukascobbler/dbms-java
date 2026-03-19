@@ -38,7 +38,7 @@ public abstract class UpdatePlanner {
 
     // Public API, representing the operations that the update planner is able to execute checked
 
-    public int executeUpdateChecked(UpdateStatement updateStatement, Transaction transaction) {
+    public int executeUpdateValidated(UpdateStatement updateStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(updateStatement.tableName(), transaction);
 
         List<NewFieldExpressionAssignment> foldedNewExprs = new ArrayList<>();
@@ -86,7 +86,7 @@ public abstract class UpdatePlanner {
         return executeUpdate(foldedUpdateStatement, transaction);
     }
 
-    public int executeInsertChecked(InsertStatement insertStatement, Transaction transaction) {
+    public int executeInsertValidated(InsertStatement insertStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(insertStatement.tableName(), transaction);
 
         if (insertStatement.newFieldValues().size() != tableLayout.getSchema().getFields().size()) {
@@ -118,19 +118,19 @@ public abstract class UpdatePlanner {
         return executeInsert(insertStatement, transaction);
     }
 
-    public int executeDeleteChecked(DeleteStatement deleteStatement, Transaction transaction) {
+    public int executeDeleteValidated(DeleteStatement deleteStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(deleteStatement.tableName(), transaction);
         validateAndFoldPredicate(deleteStatement.predicate(), tableLayout.getSchema());
 
         return executeDelete(deleteStatement, transaction);
     }
 
-    public int executeCreateViewChecked(CreateViewStatement createViewStatement, Transaction transaction) {
+    public int executeCreateViewValidated(CreateViewStatement createViewStatement, Transaction transaction) {
         // todo check
         return executeCreateView(createViewStatement, transaction);
     }
 
-    public int executeCreateTableChecked(CreateTableStatement createTableStatement, Transaction transaction) {
+    public int executeCreateTableValidated(CreateTableStatement createTableStatement, Transaction transaction) {
         try {
             return executeCreateTable(createTableStatement, transaction);
         } catch (TableDuplicateNameException e) {
@@ -148,7 +148,7 @@ public abstract class UpdatePlanner {
         }
     }
 
-    public int executeCreateIndexChecked(CreateIndexStatement createIndexStatement, Transaction transaction) {
+    public int executeCreateIndexValidated(CreateIndexStatement createIndexStatement, Transaction transaction) {
         try {
             return executeCreateIndex(createIndexStatement, transaction);
         } catch (TableNotFoundException e) {

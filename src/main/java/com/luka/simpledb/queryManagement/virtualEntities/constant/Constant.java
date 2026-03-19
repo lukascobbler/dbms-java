@@ -64,7 +64,17 @@ public sealed interface Constant extends Comparable<Constant>
             case BooleanConstant b -> BOOLEAN;
             case IntConstant i -> INTEGER;
             case NullConstant n -> NULL;
-            case StringConstant s -> VARCHAR;
+            case StringConstant s -> VARCHAR; // todo combine length and type into a custom enum wrapper for safety
+        };
+    }
+
+    /// @return The length of the field.
+    default int length() {
+        return switch (this) {
+            case BooleanConstant b -> 1;
+            case IntConstant i -> 4;
+            case NullConstant n -> 0;
+            case StringConstant s -> s.asString().length();
         };
     }
 }

@@ -7,6 +7,7 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
+import com.luka.simpledb.recordManagement.PhysicalSchema;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
@@ -65,13 +66,16 @@ public class ParseCreateTable {
     /// isn't an integer; if the DB type isn't recognized; if the schema has too many fields.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
-        Schema schema = new Schema();
+        PhysicalSchema schema = new PhysicalSchema();
 
         if (ctx.eatIfMatches(KeywordToken.INT)) {
             try {
                 schema.addIntField(fieldName, isNullable());
-            } catch (FieldLimitException e) {
-                throw new ParsingException(String.format("The table has too many fields (MAX: %d)", Schema.MAX_FIELDS));
+            } catch (FieldLimitException e) { // todo add test for this
+                throw new ParsingException(String.format(
+                        "The table has too many fields (MAX: %d)",
+                        PhysicalSchema.MAX_FIELDS
+                ));
             }
         } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);

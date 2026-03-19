@@ -1,6 +1,5 @@
 package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 
-
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.planningManagement.plan.Plan;

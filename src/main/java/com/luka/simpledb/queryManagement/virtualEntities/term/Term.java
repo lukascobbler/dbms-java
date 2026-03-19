@@ -109,8 +109,10 @@ public class Term {
         if (termOperator != TermOperator.EQUALS) return null;
 
         return switch (new Pair(lhs, rhs)) {
-            case Pair(FieldNameExpression(String f), ConstantExpression(Constant c)) when f.equals(fieldName) -> c;
-            case Pair(ConstantExpression(Constant c), FieldNameExpression(String f)) when f.equals(fieldName) -> c;
+            case Pair(FieldNameExpression exp, ConstantExpression(Constant c))
+                    when exp.qualifiedName().equals(fieldName) -> c;
+            case Pair(ConstantExpression(Constant c), FieldNameExpression exp)
+                    when exp.qualifiedName().equals(fieldName) -> c;
             default -> null;
         };
     }
@@ -124,8 +126,10 @@ public class Term {
         if (termOperator != TermOperator.EQUALS) return null;
 
         return switch (new Pair(lhs, rhs)) {
-            case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f1.equals(fieldName) -> f2;
-            case Pair(FieldNameExpression(String f1), FieldNameExpression(String f2)) when f2.equals(fieldName) -> f1;
+            case Pair(FieldNameExpression exp1, FieldNameExpression exp2)
+                    when exp1.qualifiedName().equals(fieldName) -> exp2.qualifiedName();
+            case Pair(FieldNameExpression exp1, FieldNameExpression exp2)
+                    when exp2.qualifiedName().equals(fieldName) -> exp1.qualifiedName();
             default -> null;
         };
     }
@@ -137,7 +141,7 @@ public class Term {
     /// null if there is none or more than one.
     private String getUniqueField(Expression expr) {
         return switch (expr) {
-            case FieldNameExpression(String name) -> name;
+            case FieldNameExpression exp -> exp.qualifiedName();
             case UnaryArithmeticExpression(var op, Expression operand) -> getUniqueField(operand);
             case BinaryArithmeticExpression(Expression left, var op, Expression right) -> {
                 String leftField = getUniqueField(left);

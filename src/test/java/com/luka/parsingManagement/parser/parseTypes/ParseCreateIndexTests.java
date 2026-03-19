@@ -17,8 +17,8 @@ public class ParseCreateIndexTests {
 
     @Test
     public void parseSimpleCreateIndex() {
-        String query = "INDEX idx_emp_name ON employees (last_name)";
-        String expected = "CREATE INDEX idx_emp_name ON employees (last_name);";
+        String query = "INDEX idx_emp_name ON employees (last_name) TYPE HASH";
+        String expected = "CREATE INDEX idx_emp_name ON employees (last_name) TYPE HASH;";
 
         assertEquals(expected, parse(query).toString());
     }
@@ -26,6 +26,16 @@ public class ParseCreateIndexTests {
     @Test
     public void parseFailMissingIndexKeyword() {
         assertThrows(ParsingException.class, () -> parse("idx_emp_name ON employees (last_name)"));
+    }
+
+    @Test
+    public void parseFailMissingTypeKeyword() {
+        assertThrows(ParsingException.class, () -> parse("INDEX idx_emp_name ON employees (last_name) TYPE"));
+    }
+
+    @Test
+    public void parseFailInvalidType() {
+        assertThrows(ParsingException.class, () -> parse("INDEX idx_emp_name ON employees (last_name) TYPE X"));
     }
 
     @Test

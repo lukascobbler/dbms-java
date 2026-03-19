@@ -11,7 +11,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.PhysicalSchema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ public class TermTests {
             if (fieldName.equals("t1_boolField1")) return 2;
             return 10;
         }
-        @Override public Schema schema() { return null; }
+        @Override public PhysicalSchema schema() { return null; }
     };
 
     @Test

@@ -57,9 +57,28 @@ public sealed interface Expression permits
                 }
                 throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
             }
-            case UnaryArithmeticExpression u -> u.operand().type(schema);
+            case UnaryArithmeticExpression u -> {
+                int operandT = u.operand().type(schema);
+                if (operandT == INTEGER) {
+                    yield INTEGER;
+                }
+                throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
+            }
             case WildcardExpression w ->
                     throw new IncompatibleConstantTypeException("Wildcard has no single type");
+        };
+    }
+
+    /// @return The length needed for the longest operand
+    /// in the AST for a given schema.
+    default int length(Schema schema) {
+        return switch (this) {
+            case ConstantExpression c -> c.constant().length();
+            case FieldNameExpression f -> schema.length(f.qualifiedName());
+            case BinaryArithmeticExpression b -> Math.max(b.left().length(schema), b.right().length(schema));
+            case UnaryArithmeticExpression u -> u.operand().length(schema);
+            case WildcardExpression w ->
+                    throw new IncompatibleConstantTypeException("Wildcard has no length");
         };
     }
 
