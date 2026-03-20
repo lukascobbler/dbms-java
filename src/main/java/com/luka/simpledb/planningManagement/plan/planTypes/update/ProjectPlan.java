@@ -7,7 +7,7 @@ import com.luka.simpledb.recordManagement.Schema;
 
 import java.util.List;
 
-public class ProjectPlan extends Plan<UpdateScan> {
+public class ProjectPlan implements Plan<UpdateScan> {
     private final Plan<UpdateScan> childPlan;
     private final Schema schema = new Schema();
 

@@ -6,7 +6,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendScan;
 import com.luka.simpledb.recordManagement.Schema;
 
-public class ExtendReadOnlyPlan extends Plan<Scan> {
+public class ExtendReadOnlyPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan;
     private final ProjectionFieldInfo projectionFieldInfo;
     private final Schema schema = new Schema();

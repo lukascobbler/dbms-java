@@ -9,7 +9,7 @@ import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
-public class TableReadOnlyPlan extends Plan<Scan> {
+public class TableReadOnlyPlan implements Plan<Scan> {
     private final Transaction transaction;
     private final String tableName;
     private final Layout tableLayout;

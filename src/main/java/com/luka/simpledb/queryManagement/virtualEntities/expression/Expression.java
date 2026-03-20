@@ -44,7 +44,7 @@ public sealed interface Expression permits
         };
     }
 
-    /// @return The type of this expression for a given schema.
+    /// @return The type of this expression AST for a given schema.
     default int type(Schema schema) {
         return switch (this) {
             case ConstantExpression c -> c.constant().type();
@@ -70,7 +70,7 @@ public sealed interface Expression permits
     }
 
     /// @return The length needed for the longest operand
-    /// in the AST for a given schema.
+    /// in the expression AST for a given schema.
     default int length(Schema schema) {
         return switch (this) {
             case ConstantExpression c -> c.constant().length();

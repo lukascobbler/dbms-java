@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import static java.sql.Types.INTEGER;
 
+import static java.sql.Types.NULL;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ExpressionTests {
@@ -471,6 +472,6 @@ public class ExpressionTests {
 
         Expression e = new ConstantExpression(NullConstant.INSTANCE);
 
-        assertEquals(INTEGER, e.type(schema)); // todo what is happening here, test UPDATE and INSERT statements
+        assertEquals(NULL, e.type(schema));
     }
 }

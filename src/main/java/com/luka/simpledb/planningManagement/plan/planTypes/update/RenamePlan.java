@@ -5,7 +5,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.RenameScan;
 import com.luka.simpledb.recordManagement.Schema;
 
-public class RenamePlan extends Plan<UpdateScan> {
+public class RenamePlan implements Plan<UpdateScan> {
     private final Plan<UpdateScan> childPlan;
     private final String oldFieldName, newFieldName;
     private final Schema schema = new Schema();

@@ -5,7 +5,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ProductScan;
 import com.luka.simpledb.recordManagement.Schema;
 
-public class ProductPlan extends Plan<Scan> {
+public class ProductPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan1, childPlan2;
     private final Schema schema = new Schema();
 

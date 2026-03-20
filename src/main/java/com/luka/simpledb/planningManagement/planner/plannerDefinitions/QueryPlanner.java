@@ -36,10 +36,21 @@ public abstract class QueryPlanner {
 
     // Public API, representing the operations that the query planner is able to execute checked
 
-    /// Validates every aspect of a query, expands wildcard operators, gives fields
+    /// Validates every aspect of a query statement, expands wildcard operators, gives fields
     /// fully qualified names and folds constant expressions.
+    /// Checks for:
+    /// - tables (and views) existing
+    /// - expands the wildcards to their equivalent fields
+    /// - checks for wildcards usage in expressions
+    /// - checks that each actual table field name appears exactly
+    /// once across all joined tables and the predicate
+    /// - checks that each virtual field name appears exactly
+    /// once across all joined tables and the predicate
+    /// - checks types of comparing expressions in predicates
+    /// - checks for unionized selects having the same number and same typed parameters
     ///
     /// @return A valid query plan validated against the system's metadata.
+    /// @throws PlanValidationException on various failed checks.
     public Plan<Scan> createValidatedPlan(SelectStatement selectStatement, Transaction transaction)
         throws PlanValidationException {
 
@@ -59,17 +70,6 @@ public abstract class QueryPlanner {
 
     // Private API, for checking statements
 
-    /// Checks for:
-    /// - tables (and views) existing
-    /// - expands the wildcards to their equivalent fields
-    /// - checks for wildcards usage in expressions
-    /// - checks that each actual table field name appears exactly
-    /// once across all joined tables and the predicate
-    /// - checks that each virtual field name appears exactly
-    /// once across all joined tables and the predicate
-    /// - checks types of comparing expressions in predicates
-    /// - checks for unionized selects having the same number and same typed parameters
-    ///
     /// @return The expanded and checked select statement.
     /// @throws PlanValidationException on various failed query checks.
     private SelectStatement checkStatement(SelectStatement selectStatement, Transaction transaction) throws PlanValidationException {

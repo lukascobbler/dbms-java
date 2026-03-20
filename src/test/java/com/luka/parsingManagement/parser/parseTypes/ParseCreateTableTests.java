@@ -4,8 +4,6 @@ import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.parser.ParserContext;
 import com.luka.simpledb.parsingManagement.parser.parseTypes.ParseCreateTable;
 import com.luka.simpledb.parsingManagement.statement.CreateTableStatement;
-import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
-import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,11 +17,13 @@ public class ParseCreateTableTests {
     @Test
     public void parseAllTypesWithNullability() {
         String query = "TABLE users (id INT NOT NULL, active BOOLEAN, username VARCHAR(20) NOT NULL)";
+        String expected = "CREATE TABLE users (id INT NOT NULL, active BOOLEAN, username VARCHAR(20) NOT NULL);";
 
         CreateTableStatement stmt = parse(query);
         assertEquals("users", stmt.tableName());
         assertTrue(stmt.schema().hasField("id"));
         assertFalse(stmt.schema().isNullable("id"));
+        assertEquals(expected, stmt.toString());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class ParseCreateTableTests {
     @Test
     public void parseDuplicateFieldFail() {
         String query = "TABLE bad_table (col1 INT, col1 BOOLEAN)";
-        assertThrows(FieldDuplicateNameException.class, () -> parse(query));
+        assertThrows(ParsingException.class, () -> parse(query));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class ParseCreateTableTests {
         }
         String query = sb.substring(0, sb.length() - 2) + ")";
 
-        assertThrows(FieldLimitException.class, () -> parse(query));
+        assertThrows(ParsingException.class, () -> parse(query));
     }
 
     @Test

@@ -6,7 +6,7 @@ import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.recordManagement.Schema;
 
-public class SelectPlan extends Plan<UpdateScan> {
+public class SelectPlan implements Plan<UpdateScan> {
     private final Plan<UpdateScan> childPlan;
     private final Predicate predicate;
 

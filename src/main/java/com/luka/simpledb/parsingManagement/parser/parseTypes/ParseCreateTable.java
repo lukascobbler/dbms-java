@@ -9,6 +9,7 @@ import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeExce
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.recordManagement.PhysicalSchema;
 import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
 /// The class responsible for parsing table creation.
@@ -50,33 +51,41 @@ public class ParseCreateTable {
     }
 
     /// @return Parsed field definitions as a schema.
+    /// @throws ParsingException if the schema has too many fields;
+    /// if a field's name is duplicated.
     private Schema fieldDefinitions() {
-        Schema schema = fieldDefinition();
+        Schema allFieldsSchema = fieldDefinition();
 
         while (ctx.eatIfMatches(SymbolToken.COMMA)) {
-            schema.addAll(fieldDefinition());
+            Schema schemaWithNewField = fieldDefinition();
+            try {
+                allFieldsSchema.addAll(schemaWithNewField);
+            } catch (FieldLimitException e) {
+                throw new ParsingException(String.format(
+                        "The table has too many fields (MAX: %d)",
+                        PhysicalSchema.MAX_FIELDS
+                ));
+            } catch (FieldDuplicateNameException e) {
+                throw new ParsingException(String.format(
+                        "Duplicated field: '%s'",
+                        schemaWithNewField.getFields().getFirst()
+                ));
+            }
         }
 
-        return schema;
+        return allFieldsSchema;
     }
 
     /// @return Parsed one field definition wrapped in a schema object for
     /// easier addition of schemas.
     /// @throws ParsingException if the VARCHAR length isn't a constant or if it
-    /// isn't an integer; if the DB type isn't recognized; if the schema has too many fields.
+    /// isn't an integer; if the DB type isn't recognized.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
         PhysicalSchema schema = new PhysicalSchema();
 
         if (ctx.eatIfMatches(KeywordToken.INT)) {
-            try {
-                schema.addIntField(fieldName, isNullable());
-            } catch (FieldLimitException e) { // todo add test for this
-                throw new ParsingException(String.format(
-                        "The table has too many fields (MAX: %d)",
-                        PhysicalSchema.MAX_FIELDS
-                ));
-            }
+            schema.addIntField(fieldName, isNullable());
         } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 

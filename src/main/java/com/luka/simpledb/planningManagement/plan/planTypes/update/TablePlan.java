@@ -9,7 +9,7 @@ import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
-public class TablePlan extends Plan<UpdateScan> {
+public class TablePlan implements Plan<UpdateScan> {
     private final Transaction transaction;
     private final String tableName;
     private final Layout tableLayout;

@@ -2,7 +2,6 @@ package com.luka.simpledb.planningManagement.planner.plannerDefinitions;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.exceptions.*;
-import com.luka.simpledb.parsingManagement.exceptions.ParsingException;
 import com.luka.simpledb.parsingManagement.statement.*;
 import com.luka.simpledb.parsingManagement.statement.insert.NewFieldValueInfo;
 import com.luka.simpledb.parsingManagement.statement.update.NewFieldExpressionAssignment;
@@ -38,11 +37,26 @@ public abstract class UpdatePlanner {
 
     // Public API, representing the operations that the update planner is able to execute checked
 
+    /// Validates every aspect of an update statement and folds constant expressions.
+    /// Checks for:
+    /// - tables and fields existing
+    /// - nullability of fields
+    /// - types of fields
+    ///
+    /// @return The number of rows affected after the statement execution.
+    /// @throws PlanValidationException on various failed checks.
     public int executeUpdateValidated(UpdateStatement updateStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(updateStatement.tableName(), transaction);
 
         List<NewFieldExpressionAssignment> foldedNewExprs = new ArrayList<>();
         for (NewFieldExpressionAssignment newFieldValue : updateStatement.newValues()) {
+            if (!tableLayout.getSchema().hasField(newFieldValue.fieldName())) {
+                throw new PlanValidationException(String.format(
+                        "Field '%s' doesn't exist in the table",
+                        newFieldValue.fieldName()
+                ));
+            }
+
             Expression foldedExpr;
             try {
                 foldedExpr = PartialEvaluator.evaluate(newFieldValue.newValueExpression());
@@ -60,12 +74,13 @@ public abstract class UpdatePlanner {
 
             if (!tableLayout.getSchema().isNullable(newFieldValue.fieldName())
                     && foldedExpr.type(tableLayout.getSchema()) == NULL) {
-                throw new ParsingException(
+                throw new PlanValidationException(
                         String.format("Field '%s' isn't nullable", newFieldValue.fieldName())
                 );
             }
 
-            if (tableLayout.getSchema().type(newFieldValue.fieldName()) != foldedExpr.type(tableLayout.getSchema())) {
+            if (tableLayout.getSchema().type(newFieldValue.fieldName()) != foldedExpr.type(tableLayout.getSchema())
+                    && newFieldValue.newValueExpression().type(tableLayout.getSchema()) != NULL) {
                 throw new PlanValidationException(String.format(
                         "Expression '%s' has the wrong type",
                         newFieldValue.newValueExpression())
@@ -86,30 +101,39 @@ public abstract class UpdatePlanner {
         return executeUpdate(foldedUpdateStatement, transaction);
     }
 
+    /// Validates every aspect of an insert statement and folds constant expressions.
+    /// Checks for:
+    /// - tables and fields existing
+    /// - correct number of fields existing
+    /// - nullability of fields
+    /// - types of fields
+    ///
+    /// @return The number of rows affected after the statement execution.
+    /// @throws PlanValidationException on various failed checks.
     public int executeInsertValidated(InsertStatement insertStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(insertStatement.tableName(), transaction);
 
         if (insertStatement.newFieldValues().size() != tableLayout.getSchema().getFields().size()) {
-            throw new ParsingException("Incorrect number of fields in statement");
+            throw new PlanValidationException("Incorrect number of fields in statement");
         }
 
         for (NewFieldValueInfo newFieldValue : insertStatement.newFieldValues()) {
             if (!tableLayout.getSchema().hasField(newFieldValue.fieldName())) {
-                throw new ParsingException(
+                throw new PlanValidationException(
                         String.format("Field '%s' doesn't exist in the table", newFieldValue.fieldName())
                 );
             }
 
             if (!tableLayout.getSchema().isNullable(newFieldValue.fieldName())
                     && newFieldValue.newValue().type() == NULL) {
-                throw new ParsingException(
+                throw new PlanValidationException(
                         String.format("Field '%s' isn't nullable", newFieldValue.fieldName())
                 );
             }
 
             if (tableLayout.getSchema().type(newFieldValue.fieldName()) != newFieldValue.newValue().type()
                     && newFieldValue.newValue().type() != NULL) {
-                throw new ParsingException(
+                throw new PlanValidationException(
                         String.format("Field '%s' has the wrong type", newFieldValue.fieldName())
                 );
             }
@@ -118,6 +142,12 @@ public abstract class UpdatePlanner {
         return executeInsert(insertStatement, transaction);
     }
 
+    /// Validates every aspect of a delete statement and folds constant expressions.
+    /// Checks for:
+    /// - tables and fields existing
+    ///
+    /// @return The number of rows affected after the statement execution.
+    /// @throws PlanValidationException on various failed checks.
     public int executeDeleteValidated(DeleteStatement deleteStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(deleteStatement.tableName(), transaction);
         validateAndFoldPredicate(deleteStatement.predicate(), tableLayout.getSchema());
@@ -130,6 +160,13 @@ public abstract class UpdatePlanner {
         return executeCreateView(createViewStatement, transaction);
     }
 
+    /// Validates every aspect of a create table statement.
+    /// Checks for:
+    /// - table already existing
+    /// - maximum record size
+    ///
+    /// @return The number of rows affected after the statement execution.
+    /// @throws PlanValidationException on various failed checks.
     public int executeCreateTableValidated(CreateTableStatement createTableStatement, Transaction transaction) {
         try {
             return executeCreateTable(createTableStatement, transaction);
@@ -148,6 +185,14 @@ public abstract class UpdatePlanner {
         }
     }
 
+    /// Validates every aspect of a create index statement.
+    /// Checks for:
+    /// - tables and fields existing
+    /// - same name index already existing
+    /// - same field index already existing
+    ///
+    /// @return The number of rows affected after the statement execution.
+    /// @throws PlanValidationException on various failed checks.
     public int executeCreateIndexValidated(CreateIndexStatement createIndexStatement, Transaction transaction) {
         try {
             return executeCreateIndex(createIndexStatement, transaction);
@@ -177,11 +222,34 @@ public abstract class UpdatePlanner {
 
     // Internal API, that runs actual plan creations
 
+    /// Knows for sure that the update statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeUpdate(UpdateStatement updateStatement, Transaction transaction);
+
+    /// Knows for sure that the insert statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeInsert(InsertStatement insertStatement, Transaction transaction);
+
+    /// Knows for sure that the delete statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeDelete(DeleteStatement deleteStatement, Transaction transaction);
+
+    /// Knows for sure that the create view statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeCreateView(CreateViewStatement createViewStatement, Transaction transaction);
+
+    /// Knows for sure that the create table statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeCreateTable(CreateTableStatement createTableStatement, Transaction transaction);
+
+    /// Knows for sure that the create index statement is valid and executes it without any check.
+    ///
+    /// @return The number of rows affected after the statement execution.
     protected abstract int executeCreateIndex(CreateIndexStatement createIndexStatement, Transaction transaction);
 
     // Private API, for checking statements
