@@ -4,23 +4,22 @@ import com.luka.simpledb.queryManagement.scanDefinitions.UnaryScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 
-/// An extend scan does not represent any specific relational algebra operator,
-/// although it can be thought of as a projection (adds a new column that is an expression)
-/// plus a rename (renames that expression's result as a field name).
-/// It is a unary table read-only scan. The user specifies the expression
-/// and the name for it.
-public class ExtendScan extends UnaryScan {
-    private final Expression expression;
-    private final String newFieldName;
+import java.util.Map;
 
-    /// An extend scan requires the expression that will be
-    /// evaluated for every row, a name for that expression (that
-    /// will be treated as a field from this scan upwards) and
+/// An extend project scan represents the "generalized projection" relational algebra operator
+/// (removes and adds columns) plus a rename (renames that expression's result as a field name).
+/// It is a unary table read-only scan. The user specifies the list of projection expressions
+/// and the names for them.
+public class ExtendProjectScan extends UnaryScan {
+    private final Map<String, Expression> projectionFields;
+
+    /// An extend project scan requires the expressions that will be
+    /// evaluated for every row, and names for them. Each expression
+    /// will be treated as a field from this scan upwards, and
     /// a child scan.
-    public ExtendScan(Scan childScan, Expression expression, String newFieldName) {
+    public ExtendProjectScan(Scan childScan, Map<String, Expression> projectionFields) {
         super(childScan);
-        this.expression = expression;
-        this.newFieldName = newFieldName;
+        this.projectionFields = projectionFields;
     }
 
     /// This scan has a field if its super scan has a field, or
@@ -30,7 +29,7 @@ public class ExtendScan extends UnaryScan {
     /// scan or if the field equals the name of the named expression.
     @Override
     public boolean hasField(String fieldName) {
-        return fieldName.equals(newFieldName) || super.hasField(fieldName);
+        return projectionFields.containsKey(fieldName);
     }
 
     /// For the named expression, its result is calculated on the child
@@ -40,8 +39,8 @@ public class ExtendScan extends UnaryScan {
     /// @return The int for the corresponding named expression or any other field.
     @Override
     protected int internalGetInt(String fieldName) {
-        if (fieldName.equals(newFieldName)) {
-            return expression.evaluate(childScan).asInt();
+        if (projectionFields.containsKey(fieldName)) {
+            return projectionFields.get(fieldName).evaluate(childScan).asInt();
         }
 
         return super.internalGetInt(fieldName);
@@ -54,8 +53,8 @@ public class ExtendScan extends UnaryScan {
     /// @return The string for the corresponding named expression or any other field.
     @Override
     protected String internalGetString(String fieldName) {
-        if (fieldName.equals(newFieldName)) {
-            return expression.evaluate(childScan).asString();
+        if (projectionFields.containsKey(fieldName)) {
+            return projectionFields.get(fieldName).evaluate(childScan).asString();
         }
 
         return super.internalGetString(fieldName);
@@ -68,8 +67,8 @@ public class ExtendScan extends UnaryScan {
     /// @return The boolean for the corresponding named expression or any other field.
     @Override
     protected boolean internalGetBoolean(String fieldName) {
-        if (fieldName.equals(newFieldName)) {
-            return expression.evaluate(childScan).asBoolean();
+        if (projectionFields.containsKey(fieldName)) {
+            return projectionFields.get(fieldName).evaluate(childScan).asBoolean();
         }
 
         return super.internalGetBoolean(fieldName);
@@ -82,8 +81,8 @@ public class ExtendScan extends UnaryScan {
     /// @return The constant for the corresponding named expression or any other field.
     @Override
     protected Constant internalGetValue(String fieldName) {
-        if (fieldName.equals(newFieldName)) {
-            return expression.evaluate(childScan);
+        if (projectionFields.containsKey(fieldName)) {
+            return projectionFields.get(fieldName).evaluate(childScan);
         }
 
         return super.internalGetValue(fieldName);

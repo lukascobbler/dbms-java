@@ -24,7 +24,7 @@ public class SelectScanTests {
     @Test
     public void testScanningForEquality() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -55,7 +55,7 @@ public class SelectScanTests {
     @Test
     public void testScanningForInequality() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -89,7 +89,7 @@ public class SelectScanTests {
     @Test
     public void testScanningForGreaterThan() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -122,7 +122,7 @@ public class SelectScanTests {
     @Test
     public void testEmptyScanAllRowsFiltered() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -147,7 +147,7 @@ public class SelectScanTests {
     @Test
     public void testNoRowsFiltered() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -178,7 +178,7 @@ public class SelectScanTests {
     @Test
     public void testUpdateOperations() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -223,7 +223,7 @@ public class SelectScanTests {
     @Test
     public void testScanningForNullWithEqualsOperator() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),
@@ -248,7 +248,7 @@ public class SelectScanTests {
     @Test
     public void testScanningForNullWithIsOperator() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_stringField3"),

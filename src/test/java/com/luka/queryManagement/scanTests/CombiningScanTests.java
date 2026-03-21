@@ -2,10 +2,9 @@ package com.luka.queryManagement.scanTests;
 
 import com.luka.queryManagement.QueryTestUtils;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
+import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.*;
-import com.luka.simpledb.queryManagement.scanTypes.update.ProjectScan;
-import com.luka.simpledb.queryManagement.scanTypes.update.RenameScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -21,8 +20,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +28,7 @@ public class CombiningScanTests {
     @Test
     public void testComplexAntiJoinWithTransformation() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term filterInner = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -56,9 +54,11 @@ public class CombiningScanTests {
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              SelectScan innerSelect = new SelectScan(s2, innerPred);
              AntijoinScan antiJoin = new AntijoinScan(s1, innerSelect, joinPred);
-             ExtendScan extend = new ExtendScan(antiJoin, bonusExpr, "bonus_score");
-             RenameReadOnlyScan rename = new RenameReadOnlyScan(extend, "t1_intField1", "user_id");
-             ProjectReadOnlyScan finalScan = new ProjectReadOnlyScan(rename, Arrays.asList("user_id", "bonus_score"))) {
+             ExtendProjectScan extend = new ExtendProjectScan(antiJoin, Map.of(
+                     "bonus_score", bonusExpr,
+                     "t1_intField1", new FieldNameExpression("t1_intField1")
+             ));
+             RenameScan finalScan = new RenameScan(extend, Map.of("user_id", "t1_intField1"))) {
 
             finalScan.beforeFirst();
             assertTrue(finalScan.next());
@@ -72,7 +72,7 @@ public class CombiningScanTests {
     @Test
     public void testProductUnionSemiJoinPipeline() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term pairTerm1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -97,14 +97,12 @@ public class CombiningScanTests {
              UpdateScan s2a = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              ProductScan product = new ProductScan(s1a, s2a);
              SelectReadOnlyScan selectPair = new SelectReadOnlyScan(product, pairPred);
-             ProjectReadOnlyScan projectA = new ProjectReadOnlyScan(selectPair, List.of("t1_intField1"));
 
              UpdateScan s1b = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2b = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              SemijoinScan semiJoin = new SemijoinScan(s1b, s2b, semiPred);
-             ProjectReadOnlyScan projectB = new ProjectReadOnlyScan(semiJoin, List.of("t1_intField1"));
 
-             UnionScan finalUnion = new UnionScan(projectA, projectB)) {
+             UnionScan finalUnion = new UnionScan(selectPair, semiJoin)) {
 
             finalUnion.beforeFirst();
 
@@ -122,7 +120,7 @@ public class CombiningScanTests {
     @Test
     public void testFilteringByExtendedFieldInAntiJoin() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Expression constExpr = new ConstantExpression(new IntConstant(100));
 
@@ -135,7 +133,7 @@ public class CombiningScanTests {
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             ExtendScan extendedS2 = new ExtendScan(s2, constExpr, "match_key");
+             ExtendProjectScan extendedS2 = new ExtendProjectScan(s2, Map.of("match_key", constExpr));
              AntijoinScan antiJoin = new AntijoinScan(s1, extendedS2, joinPred)) {
 
             antiJoin.beforeFirst();
@@ -158,7 +156,7 @@ public class CombiningScanTests {
     @Test
     public void testDeeplyNestedUpdatePipeline() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term protTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -184,9 +182,10 @@ public class CombiningScanTests {
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              SelectScan protectedS2 = new SelectScan(s2, protPred);
              AntijoinScan targetRows = new AntijoinScan(s1, protectedS2, joinPred);
-             ExtendScan extended = new ExtendScan(targetRows, plusTen, "temp_val");
-             RenameScan renamed = new RenameScan(s1, "t1_intField1", "updatable_field");
-             ProjectScan updatable = new ProjectScan(renamed, Arrays.asList("updatable_field", "t1_intField2"))) {
+             ExtendProjectScan extended = new ExtendProjectScan(targetRows, Map.of(
+                     "temp_val", plusTen,
+                     "t1_intField1", new FieldNameExpression("t1_intField1")
+                     ))) {
 
             extended.beforeFirst();
             int updatedCount = 0;
@@ -227,11 +226,11 @@ public class CombiningScanTests {
     @Test
     public void testUnionUpdateTransparency() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan rs2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
+             RenameScan rs2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
              UnionScan union = new UnionScan(s1, rs2)) {
 
             s2.beforeFirst();
@@ -242,84 +241,6 @@ public class CombiningScanTests {
             boolean found = false;
             while (union.next()) {
                 if (union.getInt("t1_intField1") == 9999) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
-    }
-
-    @Test
-    public void testUpdatePersistenceThroughDeeplyNestedLayers() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
-
-        Term t1 = new Term(
-                new FieldNameExpression("level3_int"),
-                TermOperator.EQUALS,
-                new ConstantExpression(new IntConstant(10))
-        );
-
-        try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst())) {
-            UpdateScan layer1 = new RenameScan(tableScan, "t1_intField1", "level1_int");
-            UpdateScan layer2 = new ProjectScan(layer1, Arrays.asList("level1_int", "t1_stringField1"));
-            UpdateScan layer3 = new RenameScan(layer2, "level1_int", "level3_int");
-            UpdateScan layer4 = new SelectScan(layer3, new Predicate(t1));
-            UpdateScan layer5 = new RenameScan(layer4, "level3_int", "final_id");
-
-            layer5.beforeFirst();
-            assertTrue(layer5.next());
-
-            layer5.setInt("final_id", 999);
-            layer5.setString("t1_stringField1", "LayerUpdate");
-
-            assertEquals(999, layer5.getInt("final_id"));
-
-            tableScan.beforeFirst();
-            boolean found = false;
-            while (tableScan.next()) {
-                if (tableScan.getInt("t1_intField1") == 999) {
-                    assertEquals("LayerUpdate", tableScan.getString("t1_stringField1"));
-                    found = true;
-                }
-            }
-            assertTrue(found);
-        }
-    }
-
-    @Test
-    public void testUpdatePersistenceAndRestrictionThroughCombinedLayers() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
-
-        try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst())) {
-            UpdateScan renameLayer = new RenameScan(tableScan, "t1_intField1", "id");
-            UpdateScan renameLayer2 = new RenameScan(renameLayer, "t1_stringField1", "name");
-
-            UpdateScan projectLayer = new ProjectScan(renameLayer2, Arrays.asList("id", "name"));
-
-            Term t = new Term(
-                    new FieldNameExpression("id"),
-                    TermOperator.EQUALS,
-                    new ConstantExpression(new IntConstant(20))
-            );
-            UpdateScan finalView = new SelectScan(projectLayer, new Predicate(t));
-
-            finalView.beforeFirst();
-            assertTrue(finalView.next());
-
-            finalView.setString("name", "New Identity");
-            finalView.setInt("id", 888);
-
-            assertThrows(FieldNotFoundInScanException.class, () ->
-                    finalView.setInt("t1_intField2", 555));
-
-            tableScan.beforeFirst();
-            boolean found = false;
-            while (tableScan.next()) {
-                if (tableScan.getInt("t1_intField1") == 888) {
-                    assertEquals("New Identity", tableScan.getString("t1_stringField1"));
                     found = true;
                     break;
                 }
@@ -347,16 +268,16 @@ public class CombiningScanTests {
         }
 
         int depth = 1000;
-        UpdateScan currentScan = new TableScan(tx, "table1", layout);
+        Scan currentScan = new TableScan(tx, "table1", layout);
 
         String lastName = baseFieldName;
         for (int i = 1; i <= depth; i++) {
             String nextName = "r" + i;
-            currentScan = new RenameScan(currentScan, lastName, nextName);
+            currentScan = new RenameScan(currentScan, Map.of(nextName, lastName));
             lastName = nextName;
         }
 
-        try (UpdateScan finalScan = currentScan) {
+        try (Scan finalScan = currentScan) {
             finalScan.beforeFirst();
             assertTrue(finalScan.next());
 

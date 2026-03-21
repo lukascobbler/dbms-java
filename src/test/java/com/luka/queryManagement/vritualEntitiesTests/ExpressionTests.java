@@ -21,7 +21,7 @@ public class ExpressionTests {
     @Test
     public void testConstantEvaluationExpression() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt = new ConstantExpression(new IntConstant(843));
         Expression eString = new ConstantExpression(new StringConstant("test"));
@@ -43,7 +43,7 @@ public class ExpressionTests {
     @Test
     public void testFieldNameExpression() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eFieldNameInt1 = new FieldNameExpression("t1_intField1");
         Expression eFieldNameInt2 = new FieldNameExpression("t1_intField2");
@@ -78,7 +78,7 @@ public class ExpressionTests {
     @Test
     public void testArithmeticExpressionConstant() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt1 = new ConstantExpression(new IntConstant(1));
         Expression eInt2 = new ConstantExpression(new IntConstant(2));
@@ -96,7 +96,7 @@ public class ExpressionTests {
     @Test
     public void testArithmeticExpressionFieldNameSimple() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt1 = new ConstantExpression(new IntConstant(500));
         Expression eInt2 = new FieldNameExpression("t1_intField2");
@@ -117,7 +117,7 @@ public class ExpressionTests {
     @Test
     public void testArithmeticExpressionFieldNameComplex() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // ((f1 * 10) + (f2 - 5)) / -2
         Expression complexExpr = new BinaryArithmeticExpression(
@@ -157,7 +157,7 @@ public class ExpressionTests {
     @Test
     public void testComplexFoldingAndEvaluation1() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // Target: ((t1_intField1 + (10 + 5)) * (20 / 10)) - (t1_intField1 + 15)
         // 1. (10 + 5) -> 15
@@ -208,7 +208,7 @@ public class ExpressionTests {
     @Test
     public void testComplexFoldingAndEvaluation2() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // Target: (-((t1_intField1 + (10 + 5)) * (20 / 20))) - (-(t1_intField1 + 15))
         // 1. (10 + 5) -> 15
@@ -396,7 +396,7 @@ public class ExpressionTests {
     @Test
     public void appliesToSchema() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Schema schema = testData.layouts().getFirst().getSchema();
 

@@ -43,7 +43,7 @@ public class TableReadOnlyPlan implements Plan<Scan> {
     }
 
     @Override
-    public Schema schema() {
+    public Schema outputSchema() {
         return tableLayout.getSchema();
     }
 }

@@ -241,9 +241,15 @@ public abstract class QueryPlanner {
         void validateFieldExists(String fieldName, String contextMessage) {
             if (!unifiedSchema.hasField(fieldName)) {
                 if (ambiguousUnqualified.contains(fieldName)) {
-                    throw new PlanValidationException("Ambiguous fieldName in " + contextMessage + ": " + fieldName);
+                    throw new PlanValidationException(String.format(
+                            "Ambiguous field: '%s' in %s",
+                            fieldName, contextMessage
+                    ));
                 }
-                throw new PlanValidationException("Field missing in " + contextMessage + ": " + fieldName);
+                throw new PlanValidationException(String.format(
+                        "Field '%s' does not exist (%s)",
+                        fieldName, contextMessage
+                ));
             }
         }
     }

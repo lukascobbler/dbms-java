@@ -2,9 +2,9 @@ package com.luka.queryManagement.scanTests;
 
 import com.luka.queryManagement.QueryTestUtils;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
+import com.luka.simpledb.queryManagement.scanTypes.readOnly.RenameScan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.SelectReadOnlyScan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.UnionScan;
-import com.luka.simpledb.queryManagement.scanTypes.update.RenameScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
@@ -17,6 +17,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,11 +25,11 @@ public class UnionScanTests {
     @Test
     public void testUnionAllRowsFromBothTables() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan renamedS2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
+             RenameScan renamedS2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
              UnionScan scan = new UnionScan(s1, renamedS2)) {
 
             scan.beforeFirst();
@@ -43,7 +44,7 @@ public class UnionScanTests {
     @Test
     public void testUnionWithMidComplexityPredicate() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -59,8 +60,8 @@ public class UnionScanTests {
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan renamedS2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
-             RenameScan renamedS2_2 = new RenameScan(renamedS2, "t2_boolField1", "t1_boolField1");
+             RenameScan renamedS2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
+             RenameScan renamedS2_2 = new RenameScan(renamedS2, Map.of("t1_boolField1", "t2_boolField1"));
              UnionScan union = new UnionScan(s1, renamedS2_2);
              SelectReadOnlyScan scan = new SelectReadOnlyScan(union, pred)) {
 
@@ -77,11 +78,11 @@ public class UnionScanTests {
     @Test
     public void testUnionNavigationBackwards() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan renamedS2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
+             RenameScan renamedS2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
              UnionScan scan = new UnionScan(s1, renamedS2)) {
 
             scan.afterLast();
@@ -100,7 +101,7 @@ public class UnionScanTests {
     @Test
     public void testUnionEmptyScans() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -111,7 +112,7 @@ public class UnionScanTests {
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan renamedS2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
+             RenameScan renamedS2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
              SelectReadOnlyScan sel1 = new SelectReadOnlyScan(s1, pred);
              SelectReadOnlyScan sel2 = new SelectReadOnlyScan(renamedS2, pred);
              UnionScan scan = new UnionScan(sel1, sel2)) {
@@ -124,7 +125,7 @@ public class UnionScanTests {
     @Test
     public void testUnionNullCheckWithIs() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),
@@ -140,8 +141,8 @@ public class UnionScanTests {
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
-             RenameScan renamedS2 = new RenameScan(s2, "t2_intField1", "t1_intField1");
-             RenameScan fullyRenamedS2 = new RenameScan(renamedS2, "t2_intField3", "t1_intField3");
+             RenameScan renamedS2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
+             RenameScan fullyRenamedS2 = new RenameScan(renamedS2, Map.of("t1_intField3", "t2_intField3"));
              UnionScan union = new UnionScan(s1, fullyRenamedS2);
              SelectReadOnlyScan scan = new SelectReadOnlyScan(union, pred)) {
 

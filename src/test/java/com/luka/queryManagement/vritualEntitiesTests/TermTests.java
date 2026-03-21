@@ -29,13 +29,13 @@ public class TermTests {
             if (fieldName.equals("t1_boolField1")) return 2;
             return 10;
         }
-        @Override public PhysicalSchema schema() { return null; }
+        @Override public PhysicalSchema outputSchema() { return null; }
     };
 
     @Test
     public void testIsOperatorWithNulls() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
         ts.next();
@@ -58,7 +58,7 @@ public class TermTests {
     @Test
     public void testNullPoisoningStandardOperators() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
         ts.next();
@@ -81,7 +81,7 @@ public class TermTests {
     @Test
     public void testComplexExpressionWithinTerm() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
         ts.next();
@@ -103,7 +103,7 @@ public class TermTests {
     @Test
     public void testStringAndBooleanLogic() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
 
@@ -127,7 +127,7 @@ public class TermTests {
     @Test
     public void testNumericComparisons() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
         ts.next();
@@ -220,7 +220,7 @@ public class TermTests {
     @Test
     public void testScanConsistencyWithEquates() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        var testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        var testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         String targetField = "t1_intField1";
         Constant targetVal = new IntConstant(42);

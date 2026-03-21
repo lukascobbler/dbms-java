@@ -2,7 +2,7 @@ package com.luka.queryManagement.scanTests;
 
 import com.luka.queryManagement.QueryTestUtils;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
-import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendScan;
+import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendProjectScan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.SelectReadOnlyScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -16,14 +16,15 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ExtendScanTests {
+public class ExtendProjectScanTests {
     @Test
     public void testAccessingExtendedField() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
@@ -32,7 +33,10 @@ public class ExtendScanTests {
         );
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             ExtendScan scan = new ExtendScan(tableScan, expr, "calculatedField")) {
+             ExtendProjectScan scan = new ExtendProjectScan(tableScan, Map.of(
+                     "calculatedField", expr,
+                     "t1_intField1", new FieldNameExpression("t1_intField1")
+             ))) {
 
             scan.beforeFirst();
 
@@ -53,7 +57,7 @@ public class ExtendScanTests {
     @Test
     public void testExtendedFieldInPredicate() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new BinaryArithmeticExpression(
                 new FieldNameExpression("t1_intField1"),
@@ -74,7 +78,11 @@ public class ExtendScanTests {
         Predicate pred = new Predicate(t1, t2);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             ExtendScan extendScan = new ExtendScan(tableScan, expr, "doubledVal");
+             ExtendProjectScan extendScan = new ExtendProjectScan(tableScan, Map.of(
+                     "doubledVal", expr,
+                     "t1_boolField1", new FieldNameExpression("t1_boolField1"),
+                     "t1_intField1", new FieldNameExpression("t1_intField1")
+             ));
              SelectReadOnlyScan scan = new SelectReadOnlyScan(extendScan, pred)) {
 
             scan.beforeFirst();
@@ -89,12 +97,15 @@ public class ExtendScanTests {
     @Test
     public void testExtendWithNullValues() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new FieldNameExpression("t1_intField3");
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             ExtendScan scan = new ExtendScan(tableScan, expr, "copyOffNull")) {
+             ExtendProjectScan scan = new ExtendProjectScan(tableScan, Map.of(
+                     "copyOffNull", expr,
+                     "t1_intField1", new FieldNameExpression("t1_intField1")
+             ))) {
 
             scan.beforeFirst();
             assertTrue(scan.next());
@@ -119,12 +130,12 @@ public class ExtendScanTests {
     @Test
     public void testExtendWithNullValueLiteral() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new ConstantExpression(NullConstant.INSTANCE);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             ExtendScan scan = new ExtendScan(tableScan, expr, "nullLiteral")) {
+             ExtendProjectScan scan = new ExtendProjectScan(tableScan, Map.of("nullLiteral", expr))) {
 
             scan.beforeFirst();
             assertTrue(scan.next());

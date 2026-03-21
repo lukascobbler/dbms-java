@@ -12,14 +12,14 @@ public class ProductPlan implements Plan<Scan> {
     public ProductPlan(Plan<Scan> childPlan1, Plan<Scan> childPlan2) {
         this.childPlan1 = childPlan1;
         this.childPlan2 = childPlan2;
-        schema.addAll(childPlan1.schema());
-        schema.addAll(childPlan2.schema());
+        schema.addAll(childPlan1.outputSchema());
+        schema.addAll(childPlan2.outputSchema());
     }
 
     @Override
     public Scan open() {
         Scan openedChildScan1 = childPlan1.open();
-        Scan openedChildScan2 = childPlan1.open();
+        Scan openedChildScan2 = childPlan2.open();
         return new ProductScan(openedChildScan1, openedChildScan2);
     }
 
@@ -35,7 +35,7 @@ public class ProductPlan implements Plan<Scan> {
 
     @Override
     public int distinctValues(String fieldName) {
-        if (childPlan1.schema().hasField(fieldName)) {
+        if (childPlan1.outputSchema().hasField(fieldName)) {
             return childPlan1.distinctValues(fieldName);
         } else {
             return childPlan2.distinctValues(fieldName);
@@ -43,7 +43,7 @@ public class ProductPlan implements Plan<Scan> {
     }
 
     @Override
-    public Schema schema() {
+    public Schema outputSchema() {
         return schema;
     }
 }

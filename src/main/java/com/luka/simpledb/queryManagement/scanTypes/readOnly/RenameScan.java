@@ -5,21 +5,21 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UnaryScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
+import java.util.Map;
 import java.util.function.Function;
 
 /// A rename read only scan represents the "rename" relational algebra operator.
-/// It is a unary table read-only scan. The user specifies the old and the
-/// new name for a given field, and from this scan upwards, that field
-/// can only be accessed by the new name.
-public class RenameReadOnlyScan extends UnaryScan {
-    private final String oldFieldName, newFieldName;
+/// It is a unary table read-only scan. The user specifies the map from new field
+/// names to old field names and from this scan upward, renamed fields can only
+/// be accessed through the new name.
+public class RenameScan extends UnaryScan {
+    private final Map<String, String> fieldNameMapper;
 
-    /// A rename scan requires the old and the new field name and a
+    /// A rename scan requires the field name mapping and a
     /// child scan.
-    public RenameReadOnlyScan(Scan updateScan, String oldFieldName, String newFieldName) {
+    public RenameScan(Scan updateScan, Map<String, String> newToOldMapper) {
         super(updateScan);
-        this.oldFieldName = oldFieldName;
-        this.newFieldName = newFieldName;
+        this.fieldNameMapper = newToOldMapper;
     }
 
     /// The field exists if it's either the new name for
@@ -76,13 +76,13 @@ public class RenameReadOnlyScan extends UnaryScan {
         return wrapGetMapping(fieldName, super::internalGetValue);
     }
 
-    /// Does the actual mapping from `newFieldName` -> `oldFieldName`.
-    /// If `oldFieldName` is passed as the argument, it returns null
-    /// as a special case to indicate its non-existence.
+    /// Does the actual mapping from the new field name to the old field name.
     private String map(String fieldName) {
-        if (fieldName.equals(newFieldName)) return oldFieldName;
-        if (fieldName.equals(oldFieldName)) return null;
-        return fieldName;
+        if (!fieldNameMapper.containsKey(fieldName)) {
+            if (fieldNameMapper.containsValue(fieldName)) return null;
+            return fieldName;
+        }
+        return fieldNameMapper.get(fieldName);
     }
 
     /// Maps the field name, and if its non-existent it errors out.

@@ -22,7 +22,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithBasicMatches() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -49,7 +49,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinYieldsOuterRecordOnceDespiteMultipleInnerMatches() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -74,7 +74,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithEmptyInnerTable() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -103,7 +103,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinBackwardsNavigation() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -131,7 +131,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithNullComparisons() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),

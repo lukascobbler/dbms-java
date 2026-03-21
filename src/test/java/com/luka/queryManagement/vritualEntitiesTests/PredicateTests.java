@@ -21,7 +21,7 @@ public class PredicateTests {
     @Test
     public void testPredicateLogicAndSubPredicates() throws Exception {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Schema sch = testData.layouts().getFirst().getSchema();
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -102,7 +102,7 @@ public class PredicateTests {
             @Override public int blocksAccessed() { return 0; }
             @Override public int recordsOutput() { return 0; }
             @Override public int distinctValues(String fieldName) { return 1000; }
-            @Override public Schema schema() { return null; }
+            @Override public Schema outputSchema() { return null; }
         };
 
         Predicate p = new Predicate();

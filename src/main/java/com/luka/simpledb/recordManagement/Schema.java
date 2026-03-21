@@ -1,7 +1,5 @@
 package com.luka.simpledb.recordManagement;
 
-import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,15 +14,14 @@ public class Schema {
     protected final Map<String, FieldInfo> info = new HashMap<>();
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
-    /// the length of that type.
-    ///
-    /// @throws FieldDuplicateNameException if the field already exists within this schema.
+    /// the length of that type. Allows duplicate types and assumes that every duplicate
+    /// type will have the same metadata so it always returns the first one.
     public void addField(String fieldName, int type, int length, boolean isNullable) {
-        if (fields.contains(fieldName)) {
-            throw new FieldDuplicateNameException();
-        }
         fields.add(fieldName);
-        info.put(fieldName, new FieldInfo(type, length, isNullable));
+
+        if (!info.containsKey(fieldName)) {
+            info.put(fieldName, new FieldInfo(type, length, isNullable));
+        }
     }
 
     /// Add an integer field.

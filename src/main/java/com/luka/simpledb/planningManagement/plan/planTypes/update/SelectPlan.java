@@ -50,7 +50,7 @@ public class SelectPlan implements Plan<UpdateScan> {
     }
 
     @Override
-    public Schema schema() {
-        return childPlan.schema();
+    public Schema outputSchema() {
+        return childPlan.outputSchema();
     }
 }

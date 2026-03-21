@@ -3,7 +3,7 @@ package com.luka.queryManagement.scanTests;
 import com.luka.queryManagement.QueryTestUtils;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
-import com.luka.simpledb.queryManagement.scanTypes.update.RenameScan;
+import com.luka.simpledb.queryManagement.scanTypes.readOnly.RenameScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
@@ -17,6 +17,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,10 +25,10 @@ public class RenameScanTests {
     @Test
     public void testAccessingFieldWithNewName() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             RenameScan scan = new RenameScan(tableScan, "t1_intField1", "renamedInt")) {
+             RenameScan scan = new RenameScan(tableScan, Map.of("renamedInt", "t1_intField1"))) {
 
             scan.beforeFirst();
             assertTrue(scan.next());
@@ -43,10 +44,10 @@ public class RenameScanTests {
     @Test
     public void testOldNameIsNoLongerAccessible() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             RenameScan scan = new RenameScan(tableScan, "t1_stringField1", "newStringName")) {
+             RenameScan scan = new RenameScan(tableScan, Map.of("newStringName", "t1_stringField1"))) {
 
             scan.beforeFirst();
             assertTrue(scan.next());
@@ -58,27 +59,9 @@ public class RenameScanTests {
     }
 
     @Test
-    public void testUpdatingThroughRenamedField() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
-
-        try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             RenameScan scan = new RenameScan(tableScan, "t1_boolField1", "activeStatus")) {
-
-            scan.beforeFirst();
-            assertTrue(scan.next());
-
-            scan.setBoolean("activeStatus", false);
-            assertFalse(scan.getBoolean("activeStatus"));
-
-            assertFalse(tableScan.getBoolean("t1_boolField1"));
-        }
-    }
-
-    @Test
     public void testRenamingWithPredicateFilter() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -94,7 +77,7 @@ public class RenameScanTests {
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
              SelectScan selectScan = new SelectScan(tableScan, pred);
-             RenameScan scan = new RenameScan(selectScan, "t1_stringField1", "description")) {
+             RenameScan scan = new RenameScan(selectScan, Map.of("description", "t1_stringField1"))) {
 
             scan.beforeFirst();
 
@@ -110,10 +93,10 @@ public class RenameScanTests {
     @Test
     public void testNullCheckThroughRename() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeSystemAndOneTable(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
-             RenameScan scan = new RenameScan(tableScan, "t1_intField3", "nullableInt")) {
+             RenameScan scan = new RenameScan(tableScan, Map.of("nullableInt", "t1_intField3"))) {
 
             scan.beforeFirst();
             assertTrue(scan.next());

@@ -24,7 +24,9 @@ public class TransactionManagementTests {
     public void testGetSetInt(boolean undoOnlyRecovery) throws IOException {
         String tempDirectory = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDBSettings settings = new SimpleDBSettings();
+        settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
 
         Transaction transaction1 = simpleDB.newTransaction();
         Transaction transaction2 = simpleDB.newTransaction();
@@ -48,7 +50,9 @@ public class TransactionManagementTests {
     public void testGetSetIntRollback(boolean undoOnlyRecovery) throws IOException {
         String tempDirectory = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDBSettings settings = new SimpleDBSettings();
+        settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
 
         Transaction transaction1 = simpleDB.newTransaction();
         Transaction transaction2 = simpleDB.newTransaction();
@@ -74,7 +78,9 @@ public class TransactionManagementTests {
     public void testConcurrentGetIntSameBlockSameTime(boolean undoOnlyRecovery) throws IOException {
         String tempDirectory = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDBSettings settings = new SimpleDBSettings();
+        settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
+        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
 
         Transaction transaction0 = simpleDB.newTransaction();
         Transaction transaction1 = simpleDB.newTransaction();

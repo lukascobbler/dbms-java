@@ -43,7 +43,7 @@ public class TablePlan implements Plan<UpdateScan> {
     }
 
     @Override
-    public Schema schema() {
+    public Schema outputSchema() {
         return tableLayout.getSchema();
     }
 }

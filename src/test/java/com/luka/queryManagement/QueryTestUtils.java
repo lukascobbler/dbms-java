@@ -20,7 +20,7 @@ public class QueryTestUtils {
 
     /// Creates one table "table1", with three fields of each type where
     /// the third field of each type is nullable and set to null.
-    public static QueryTestData initializeSystemAndOneTable(String tmpDir) {
+    public static QueryTestData initializeOneFullTable(String tmpDir) {
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
@@ -62,7 +62,7 @@ public class QueryTestUtils {
 
     /// Creates two tables "table1" and "table2", with three fields of each type where
     /// the third field of each type is nullable and set to null.
-    public static QueryTestData initializeSystemAndTwoTables(String tmpDir) {
+    public static QueryTestData initializeTwoTables(String tmpDir) {
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 

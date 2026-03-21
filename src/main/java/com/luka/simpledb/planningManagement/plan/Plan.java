@@ -8,6 +8,6 @@ public interface Plan<T extends Scan> {
     int blocksAccessed();
     int recordsOutput();
     int distinctValues(String fieldName);
-    Schema schema();
+    Schema outputSchema();
 //    @Override public abstract String toString(); todo add toString for nice printing of plans in the EXPLAIN command
 }

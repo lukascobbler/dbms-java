@@ -51,7 +51,7 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
     }
 
     @Override
-    public Schema schema() {
-        return childPlan.schema();
+    public Schema outputSchema() {
+        return childPlan.outputSchema();
     }
 }

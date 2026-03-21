@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// todo docs
 public class BasicUpdatePlanner extends UpdatePlanner {
     private final static Map<String, RecordId> lastInsertions = new HashMap<>();
 
