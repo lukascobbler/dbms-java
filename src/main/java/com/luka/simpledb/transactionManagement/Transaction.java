@@ -9,12 +9,14 @@ import com.luka.simpledb.transactionManagement.concurrencyManagement.Concurrency
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 import com.luka.simpledb.transactionManagement.recoveryManagement.RecoveryManager;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /// A transaction represents one unit of work in the database.
 /// All operations must be performed transactionally, even if they
 /// consist of one database query or update. A `Transaction` object
 /// manages its own buffers and locks.
 public class Transaction {
-    private static int nextTransactionNum = 0;
+    private final AtomicInteger nextTransactionNum;
 
     private static final int END_OF_FILE = -1;
 
@@ -33,7 +35,8 @@ public class Transaction {
     /// the system.
     public Transaction(FileManager fileManager, LogManager logManager,
                        BufferManager bufferManager, LockTable lockTable,
-                       boolean undoOnlyRecovery) {
+                       boolean undoOnlyRecovery, AtomicInteger nextTransactionNum) {
+        this.nextTransactionNum = nextTransactionNum;
         this.bufferManager = bufferManager;
         this.fileManager = fileManager;
         this.concurrencyManager = new ConcurrencyManager(lockTable);
@@ -67,7 +70,7 @@ public class Transaction {
     /// to the latest transaction id + 1.
     public void recover() {
         bufferManager.flushAll(transactionNumber);
-        nextTransactionNum = recoveryManager.recover();
+        nextTransactionNum.set(recoveryManager.recover());
         this.transactionNumber = nextTransactionNumber();
     }
 
@@ -224,14 +227,10 @@ public class Transaction {
         return bufferManager.available();
     }
 
-    /// Method is `synchronized` to ensure that two transactions
-    /// don't get the  same transaction number.
-    ///
     /// @return The transaction number representing the next
     /// transaction in the system.
-    private static synchronized int nextTransactionNumber() {
-        nextTransactionNum++;
-        return nextTransactionNum;
+    private int nextTransactionNumber() {
+        return nextTransactionNum.incrementAndGet();
     }
 
     public int getTransactionNumber() {

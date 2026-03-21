@@ -5,6 +5,9 @@ import com.luka.simpledb.planningManagement.planner.plannerDefinitions.QueryPlan
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.UpdatePlanner;
 import com.luka.simpledb.planningManagement.planner.plannerTypes.BasicUpdatePlanner;
 import com.luka.simpledb.planningManagement.planner.plannerTypes.BetterQueryPlanner;
+import com.luka.simpledb.recordManagement.RecordId;
+
+import java.util.Map;
 
 /// Settings class for changing the instantiation parameters
 /// of the system, useful for tests. The defaults are pretty good
@@ -12,7 +15,7 @@ import com.luka.simpledb.planningManagement.planner.plannerTypes.BetterQueryPlan
 public class SimpleDBSettings {
     public boolean UNDO_ONLY_RECOVERY = true;
     public int BLOCK_SIZE = 4096;
-    public int BUFFER_SIZE = 8;
+    public int BUFFER_POOL_SIZE = 8;
     public String LOG_FILE = "log_file";
     public QueryPlannerType queryPlannerType = QueryPlannerType.BETTER; // todo change default when heuristic is implemented
     public UpdatePlannerType updatePlannerType = UpdatePlannerType.BASIC;
@@ -26,9 +29,9 @@ public class SimpleDBSettings {
     }
 
     /// @return The update planner object according to the set setting.
-    public UpdatePlanner getUpdatePlanner(MetadataManager metadataManager) {
+    public UpdatePlanner getUpdatePlanner(MetadataManager metadataManager, Map<String, RecordId> lastInsertions) {
         return switch (updatePlannerType) {
-            case BASIC -> new BasicUpdatePlanner(metadataManager);
+            case BASIC -> new BasicUpdatePlanner(metadataManager, lastInsertions);
         };
     }
 }

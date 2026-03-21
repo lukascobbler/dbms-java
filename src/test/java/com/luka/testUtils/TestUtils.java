@@ -3,19 +3,21 @@ package com.luka.testUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /// Shared code across all tests.
 public abstract class TestUtils {
-    /// Removes all files in the directory and prepares it for the same test to be run again.
+    private static final Map<String, AtomicInteger> testIterationCounters = new ConcurrentHashMap<>();
+
+    /// Gives a unique directory name for each test run.
     ///
     /// @return The full directory path of the temporary directory as a string.
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static String setUpTempDirectory() throws IOException {
-        String folderName = StackWalker.getInstance()
+        String baseFolderName = StackWalker.getInstance()
                 .walk(frames -> frames
                         .skip(1)
                         .findFirst()
@@ -26,15 +28,12 @@ public abstract class TestUtils {
                         })
                         .orElse("anonymous_test"));
 
-        Path path = Paths.get(System.getProperty("java.io.tmpdir"), folderName);
+        AtomicInteger counter = testIterationCounters.computeIfAbsent(baseFolderName, k -> new AtomicInteger(0));
 
-        if (Files.exists(path)) {
-            try (var stream = Files.walk(path)) {
-                stream.sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-            }
-        }
+        int iteration = counter.incrementAndGet();
+        String uniqueFolderName = baseFolderName + "_" + iteration;
+
+        Path path = Paths.get(System.getProperty("java.io.tmpdir"), "simpledb", uniqueFolderName);
 
         return path.toAbsolutePath().toString();
     }

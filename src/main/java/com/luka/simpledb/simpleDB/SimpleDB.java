@@ -5,11 +5,15 @@ import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.logManagement.LogManager;
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.planningManagement.planner.Planner;
+import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /// The class that manages the system state. There should be only one per instance
 /// of server / embedded connection running.
@@ -21,6 +25,7 @@ public class SimpleDB {
     private final MetadataManager metadataManager;
     private final Planner planner;
     private final SimpleDBSettings settings;
+    private final AtomicInteger nextTransactionNum = new AtomicInteger(0);
 
     /// Initializes the whole system, given the directory name.
     /// Uses default configuration.
@@ -44,7 +49,7 @@ public class SimpleDB {
 
         fileManager = new FileManager(dbDirectory, settings.BLOCK_SIZE);
         logManager = new LogManager(fileManager, settings.LOG_FILE);
-        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_SIZE);
+        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_POOL_SIZE);
         lockTable = new LockTable();
 
         Transaction transaction = newTransaction();
@@ -54,11 +59,13 @@ public class SimpleDB {
             transaction.recover();
         }
 
-        metadataManager = new MetadataManager(transaction, fileManager);
+        AtomicInteger nextTableIdNum = new AtomicInteger(0);
+        metadataManager = new MetadataManager(transaction, fileManager, nextTableIdNum);
 
+        Map<String, RecordId> lastInsertions = new HashMap<>();
         planner = new Planner(
                 settings.getQueryPlanner(metadataManager),
-                settings.getUpdatePlanner(metadataManager)
+                settings.getUpdatePlanner(metadataManager, lastInsertions)
         );
 
         transaction.commit();
@@ -68,7 +75,7 @@ public class SimpleDB {
     ///
     /// @return A new transaction in the system.
     public Transaction newTransaction() {
-        return new Transaction(fileManager, logManager, bufferManager, lockTable, settings.UNDO_ONLY_RECOVERY);
+        return new Transaction(fileManager, logManager, bufferManager, lockTable, settings.UNDO_ONLY_RECOVERY, nextTransactionNum);
     }
 
     /// @return The metadata manager that is the part of this system object.

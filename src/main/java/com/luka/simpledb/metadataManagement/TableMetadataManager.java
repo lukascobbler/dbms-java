@@ -9,6 +9,7 @@ import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /// `TableMetadataManager` worries about what tables exist in the DBMS,
 /// and what fields do these tables contain. It uses two internal metadata
@@ -16,12 +17,12 @@ import java.util.Map;
 public class TableMetadataManager {
     public static final int MAX_NAME_LENGTH = 32;
     private final Layout tableCatalogLayout, fieldCatalogLayout;
-    private static int nextTableNum = 0;
+    private final AtomicInteger nextTableNum;
 
     /// Instantiates a new `TableMetadataManager` that has always in-memory layouts
     /// for catalog tables to improve efficiency. If the system is initialized for the first time
     /// (noted by `isNew`), the manager creates catalog tables as well.
-    public TableMetadataManager(boolean isNew, Transaction transaction) {
+    public TableMetadataManager(boolean isNew, Transaction transaction, AtomicInteger nextTableNum) {
         Schema tableCatalogSchema = new Schema();
         tableCatalogSchema.addIntField("tableid", false);
         tableCatalogSchema.addStringField("tablename", MAX_NAME_LENGTH, false);
@@ -37,12 +38,14 @@ public class TableMetadataManager {
         fieldCatalogSchema.addBooleanField("nullable", false);
         fieldCatalogLayout = new Layout(fieldCatalogSchema, transaction.blockSize());
 
+        this.nextTableNum = nextTableNum;
+
         if (isNew) {
-            nextTableNum = 1;
+            this.nextTableNum.set(1);
             createTable("tablecatalog", tableCatalogSchema, transaction);
             createTable("fieldcatalog", fieldCatalogSchema, transaction);
         } else {
-            nextTableNum = getLatestTableIdNum(transaction);
+            this.nextTableNum.set(getLatestTableIdNum(transaction));
         }
     }
 
@@ -186,13 +189,9 @@ public class TableMetadataManager {
         return maxTableNumber;
     }
 
-    /// Method is `synchronized` to ensure that two table
-    /// creations don't get the same table id number.
-    ///
     /// @return The table id number representing the next
     /// table id in the system.
-    private static synchronized int nextTableIdNum() {
-        nextTableNum++;
-        return nextTableNum;
+    private int nextTableIdNum() {
+        return nextTableNum.incrementAndGet();
     }
 }

@@ -10,6 +10,7 @@ import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /// A facade class for every manager. Makes the usage easier even though the
 /// code is organized in different files.
@@ -20,9 +21,9 @@ public class MetadataManager {
     private final IndexMetadataManager indexMetadataManager;
 
     /// Initializes every type of metadata manager, starting from the table manager.
-    public MetadataManager(Transaction transaction, FileManager fileManager) {
+    public MetadataManager(Transaction transaction, FileManager fileManager, AtomicInteger nextTableNum) {
         boolean isNew = fileManager.lengthInBlocks("tablecatalog.table") == 0;
-        tableMetadataManager = new TableMetadataManager(isNew, transaction);
+        tableMetadataManager = new TableMetadataManager(isNew, transaction, nextTableNum);
         viewMetadataManager = new ViewMetadataManager(isNew, tableMetadataManager, transaction);
         statisticsMetadataManager = new StatisticsMetadataManager(tableMetadataManager, transaction);
         indexMetadataManager = new IndexMetadataManager(isNew, tableMetadataManager, statisticsMetadataManager, transaction);

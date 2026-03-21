@@ -13,16 +13,16 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.transactionManagement.Transaction;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 // todo docs
 public class BasicUpdatePlanner extends UpdatePlanner {
-    private final static Map<String, RecordId> lastInsertions = new HashMap<>();
+    private final Map<String, RecordId> lastInsertions;
 
-    public BasicUpdatePlanner(MetadataManager metadataManager) {
+    public BasicUpdatePlanner(MetadataManager metadataManager, Map<String, RecordId> lastInsertions) {
         super(metadataManager);
+        this.lastInsertions = lastInsertions;
     }
 
     /// Inserts a new record from the position of the lastly inserted record.
@@ -135,12 +135,12 @@ public class BasicUpdatePlanner extends UpdatePlanner {
     }
 
     /// Synchronously gets the last insert record id position from a given table.
-    private static synchronized Optional<RecordId> getLastInsertion(String tableName) {
+    private synchronized Optional<RecordId> getLastInsertion(String tableName) {
         return Optional.ofNullable(lastInsertions.get(tableName));
     }
 
     /// Synchronously sets the last insert record id position for a given table.
-    private static synchronized void setLastInsertion(String tableName, RecordId recordId) {
+    private synchronized void setLastInsertion(String tableName, RecordId recordId) {
         lastInsertions.put(tableName, recordId);
     }
 }
