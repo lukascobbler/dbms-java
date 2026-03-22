@@ -293,7 +293,7 @@ public abstract class UpdatePlanner {
                 }
             }
 
-            if (lhs.type(schema) != rhs.type(schema)) {
+            if (lhs.type(schema) != rhs.type(schema) && lhs.type(schema) != NULL && rhs.type(schema) != NULL) {
                 throw new PlanValidationException("Different types are compared in the 'WHERE' predicate.");
             }
         }

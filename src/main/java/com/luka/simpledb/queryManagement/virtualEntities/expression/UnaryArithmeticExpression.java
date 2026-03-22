@@ -4,6 +4,7 @@ import com.luka.simpledb.queryManagement.exceptions.NonNumericArithmeticCalculat
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 
 /// Unary arithmetic expressions encapsulate logic for calculating the constant value
 /// a unary arithmetic AST can evaluate to. It has two components: the sub-expression
@@ -11,10 +12,14 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 public record UnaryArithmeticExpression(ArithmeticOperator op, Expression operand) implements Expression {
     /// Evaluates the sub-expression (can be recursive if it is also some sort of AST)
     /// and performs the arithmetic operation defined by the operator on the evaluated
-    /// sub-expression.
+    /// sub-expression. If the operand is NULL, returns NULL.
     @Override
     public Constant evaluate(Scan scan) {
         Constant val = operand.evaluate(scan);
+
+        if (val == NullConstant.INSTANCE) {
+            return NullConstant.INSTANCE;
+        }
 
         if (!(val instanceof IntConstant intVal)) {
             throw new NonNumericArithmeticCalculationException();

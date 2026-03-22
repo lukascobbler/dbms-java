@@ -3,6 +3,7 @@ package com.luka.simpledb.queryManagement.virtualEntities.expression;
 import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 
 /// A set of algorithms that performs obvious calculations on arithmetic
 /// expressions thus reducing the need for them to be calculated on the
@@ -37,6 +38,14 @@ public class PartialEvaluator {
     /// @return The folded binary arithmetic expression.
     /// @throws ZeroDivisionException if division by zero is done.
     private static Expression foldBinary(Expression left, ArithmeticOperator op, Expression right) {
+        if (right instanceof ConstantExpression(Constant rVal) && rVal == NullConstant.INSTANCE) {
+            return new ConstantExpression(NullConstant.INSTANCE);
+        }
+
+        if (left instanceof ConstantExpression(Constant lVal) && lVal == NullConstant.INSTANCE) {
+            return new ConstantExpression(NullConstant.INSTANCE);
+        }
+
         if (left instanceof ConstantExpression(Constant lVal) &&
                 right instanceof ConstantExpression(Constant rVal)) {
 

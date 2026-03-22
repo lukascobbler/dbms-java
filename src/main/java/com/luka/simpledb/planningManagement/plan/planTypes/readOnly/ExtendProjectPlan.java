@@ -25,7 +25,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
         for (ProjectionFieldInfo projectionFieldInfo : projectionFieldInfoList) {
             int type = projectionFieldInfo.expression().type(childPlan.outputSchema());
             int length = projectionFieldInfo.expression().length(childPlan.outputSchema());
-            boolean isNullable = false; // extended fields aren't nullable
+            boolean isNullable = projectionFieldInfo.expression().isNullable(childPlan.outputSchema());
 
             outputSchema.addField(projectionFieldInfo.name(), type, length, isNullable);
             projectionFieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.expression());

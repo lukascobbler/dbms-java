@@ -22,6 +22,8 @@ import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.*;
 
+import static java.sql.Types.NULL;
+
 /// Abstraction over all implementations of query planners which performs
 /// all semantic checks and prepares the planner for query execution. Any
 /// implementation of query planning only needs to extend this class and
@@ -168,8 +170,10 @@ public abstract class QueryPlanner {
                     } else {
                         for (var tableSchemaEntry : ctx.tableSchemas.entrySet()) {
                             for (String fieldName : tableSchemaEntry.getValue().getFields()) {
+                                String correctFieldName = ctx.ambiguousUnqualified.contains(fieldName) ?
+                                        tableSchemaEntry.getKey() + "." + fieldName : fieldName;
                                 expanded.add(new ProjectionFieldInfo(
-                                        fieldName,
+                                        correctFieldName,
                                         new FieldNameExpression(fieldName, tableSchemaEntry.getKey())
                                 ));
                             }
@@ -209,7 +213,8 @@ public abstract class QueryPlanner {
                 ctx.validateFieldExists(f, "WHERE clause");
             }
 
-            if (qualLhs.type(ctx.unifiedSchema) != qualRhs.type(ctx.unifiedSchema)) {
+            if (qualLhs.type(ctx.unifiedSchema) != qualRhs.type(ctx.unifiedSchema) &&
+                    (qualLhs.type(ctx.unifiedSchema) != NULL && qualRhs.type(ctx.unifiedSchema) != NULL)) {
                 throw new PlanValidationException("Different types are compared in the 'WHERE' predicate.");
             }
 
@@ -242,7 +247,7 @@ public abstract class QueryPlanner {
             if (!unifiedSchema.hasField(fieldName)) {
                 if (ambiguousUnqualified.contains(fieldName)) {
                     throw new PlanValidationException(String.format(
-                            "Ambiguous field: '%s' in %s",
+                            "Ambiguous field: '%s' (%s)",
                             fieldName, contextMessage
                     ));
                 }

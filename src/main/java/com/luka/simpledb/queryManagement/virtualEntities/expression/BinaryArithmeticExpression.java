@@ -11,7 +11,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
 public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) implements Expression {
     /// Evaluates the left and right sub-expressions (can be recursive if they are also
     /// some sort of AST) and performs the arithmetic operation defined by the operator
-    /// on the evaluated sub-expressions.
+    /// on the evaluated sub-expressions. If any of the operands is NULL, returns NULL;
     ///
     /// @return The evaluated value as a constant.
     /// @throws NonNumericArithmeticCalculationException if any of the operands is not an integer.
@@ -20,6 +20,10 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
     public Constant evaluate(Scan scan) {
         Constant lVal = left.evaluate(scan);
         Constant rVal = right.evaluate(scan);
+
+        if (lVal == NullConstant.INSTANCE || rVal == NullConstant.INSTANCE) {
+            return NullConstant.INSTANCE;
+        }
 
         if (!(lVal instanceof IntConstant) || !(rVal instanceof IntConstant)) {
             throw new NonNumericArithmeticCalculationException();

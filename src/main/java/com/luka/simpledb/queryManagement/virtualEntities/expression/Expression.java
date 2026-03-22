@@ -3,6 +3,7 @@ package com.luka.simpledb.queryManagement.virtualEntities.expression;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.recordManagement.Schema;
 
 import java.util.HashSet;
@@ -79,6 +80,18 @@ public sealed interface Expression permits
             case UnaryArithmeticExpression u -> u.operand().length(schema);
             case WildcardExpression w ->
                     throw new IncompatibleConstantTypeException("Wildcard has no length");
+        };
+    }
+
+    /// @return True if any of the fields in the expression AST is nullable.
+    default boolean isNullable(Schema schema) {
+        return switch (this) {
+            case ConstantExpression c -> c.constant() == NullConstant.INSTANCE;
+            case FieldNameExpression f -> schema.isNullable(f.qualifiedName());
+            case BinaryArithmeticExpression b -> b.left().isNullable(schema) || b.right().isNullable(schema);
+            case UnaryArithmeticExpression u -> u.operand().isNullable(schema);
+            case WildcardExpression w ->
+                    throw new IncompatibleConstantTypeException("Wildcard isn't nullable");
         };
     }
 

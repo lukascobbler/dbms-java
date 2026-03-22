@@ -466,6 +466,44 @@ public class ExpressionTests {
     }
 
     @Test
+    public void testExpressionNullabilityFieldName() {
+        Schema schema = new Schema();
+        schema.addIntField("i1", true);
+        schema.addIntField("i2", false);
+
+        Expression e = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
+                        new ConstantExpression(new IntConstant(100)),
+                        ArithmeticOperator.SUB,
+                        new FieldNameExpression("i1")
+                ),
+                ArithmeticOperator.DIV,
+                new FieldNameExpression("i2")
+        );
+
+        assertTrue(e.isNullable(schema));
+    }
+
+    @Test
+    public void testExpressionNullabilityConstant() {
+        Schema schema = new Schema();
+        schema.addIntField("i1", true);
+        schema.addIntField("i2", false);
+
+        Expression e = new BinaryArithmeticExpression(
+                new BinaryArithmeticExpression(
+                        new ConstantExpression(NullConstant.INSTANCE),
+                        ArithmeticOperator.SUB,
+                        new FieldNameExpression("i2")
+                ),
+                ArithmeticOperator.DIV,
+                new FieldNameExpression("i2")
+        );
+
+        assertTrue(e.isNullable(schema));
+    }
+
+    @Test
     public void testNullValueType() {
         Schema schema = new Schema();
         schema.addIntField("int", true);
