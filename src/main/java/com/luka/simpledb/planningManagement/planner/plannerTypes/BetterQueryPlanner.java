@@ -4,6 +4,7 @@ import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.exceptions.ViewDefinitionNotFoundException;
 import com.luka.simpledb.parsingManagement.parser.Parser;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
+import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
 import com.luka.simpledb.parsingManagement.statement.select.TableInfo;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.planningManagement.plan.planTypes.readOnly.*;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// todo add docs, visualize how the query tree looks
 public class BetterQueryPlanner extends QueryPlanner {
     public BetterQueryPlanner(MetadataManager metadataManager) {
         super(metadataManager);
@@ -23,13 +25,42 @@ public class BetterQueryPlanner extends QueryPlanner {
 
     @Override
     protected Plan<Scan> createPlan(SelectStatement selectStatement, Transaction transaction) {
+        List<SingleSelection> selections = selectStatement.unionizedSelections();
+
+        Plan<Scan> plan = createSingleSelectionPlan(selections.getFirst(), transaction);
+        List<String> originalProjectionVariableNames = plan.outputSchema().getFields();
+
+        for (int i = 1; i < selections.size(); i++) {
+            Plan<Scan> nextPlan = createSingleSelectionPlan(selections.get(i), transaction);
+
+            List<String> nextPlanProjectionVariableNames = nextPlan.outputSchema().getFields();
+
+            Map<String, String> fieldNameMapping = new HashMap<>();
+            for (int j = 0; j < originalProjectionVariableNames.size(); j++) {
+                String originalPlanProjectionVariableName = originalProjectionVariableNames.get(j);
+                String nextPlanProjectionVariableName = nextPlanProjectionVariableNames.get(j);
+
+                fieldNameMapping.put(originalPlanProjectionVariableName, nextPlanProjectionVariableName);
+            }
+
+            nextPlan = new RenamePlan(nextPlan, fieldNameMapping);
+
+            plan = new UnionAllPlan(plan, nextPlan);
+        }
+
+        return plan;
+    }
+
+    private Plan<Scan> createSingleSelectionPlan(SingleSelection singleSelection, Transaction transaction) {
         List<Plan<Scan>> differentTablePlans = new ArrayList<>();
-        for (TableInfo tableInfo : selectStatement.unionizedSelections().getFirst().tables()) { // todo unions
+
+        for (TableInfo tableInfo : singleSelection.tables()) {
             String tableOrViewName = tableInfo.tableName();
             Plan<Scan> initialPlan;
             try {
                 String viewDefinition = metadataManager.getViewDefinition(tableOrViewName, transaction);
                 Parser parser = new Parser(viewDefinition);
+
                 SelectStatement viewSelectStatement = (SelectStatement) parser.parse();
                 differentTablePlans.add(createPlan(viewSelectStatement, transaction)); // todo what to do with views
             } catch (ViewDefinitionNotFoundException e) {
@@ -50,7 +81,6 @@ public class BetterQueryPlanner extends QueryPlanner {
             }
         }
 
-        // joining all tables
         Plan<Scan> plan = differentTablePlans.removeFirst();
 
         for (Plan<Scan> nextPlan : differentTablePlans) {
@@ -59,12 +89,10 @@ public class BetterQueryPlanner extends QueryPlanner {
             plan = p1.blocksAccessed() < p2.blocksAccessed() ? p1 : p2;
         }
 
-        // selecting only on matching rows
-        if (!selectStatement.unionizedSelections().getFirst().predicate().getTerms().isEmpty()) {
-            plan = new SelectReadOnlyPlan(plan, selectStatement.unionizedSelections().getFirst().predicate()); // todo unions
+        if (!singleSelection.predicate().getTerms().isEmpty()) {
+            plan = new SelectReadOnlyPlan(plan, singleSelection.predicate());
         }
 
-        // projecting fields
-        return new ExtendProjectPlan(plan, selectStatement.unionizedSelections().getFirst().projectionFields()); // todo unions
+        return new ExtendProjectPlan(plan, singleSelection.projectionFields());
     }
 }

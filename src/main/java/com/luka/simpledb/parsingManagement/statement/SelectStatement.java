@@ -12,10 +12,10 @@ public record SelectStatement(List<SingleSelection> unionizedSelections) impleme
         StringBuilder result = new StringBuilder();
 
         for (SingleSelection singleSelection : unionizedSelections) {
-            result.append(singleSelection.toString()).append(" UNION ");
+            result.append(singleSelection.toString()).append(" UNION ALL ");
         }
 
-        result = new StringBuilder(result.substring(0, result.length() - 7));
+        result = new StringBuilder(result.substring(0, result.length() - 11));
         result.append(';');
 
         return result.toString();

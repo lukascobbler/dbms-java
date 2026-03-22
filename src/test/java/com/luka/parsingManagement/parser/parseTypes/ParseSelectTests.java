@@ -73,24 +73,24 @@ public class ParseSelectTests {
 
     @Test
     public void parseUnions() {
-        String query = "SELECT a, b FROM c UNION SELECT c, d FROM e";
-        String expected = "SELECT a, b FROM c UNION SELECT c, d FROM e;";
+        String query = "SELECT a, b FROM c UNION ALL SELECT c, d FROM e";
+        String expected = "SELECT a, b FROM c UNION ALL SELECT c, d FROM e;";
         assertEquals(expected, parse(query).toString());
     }
 
     @Test
     public void parseUnionsFailMissingSecondSelect() {
-        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION ALL"));
     }
 
     @Test
     public void parseUnionsFailIncompleteSecondSelect() {
-        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION SELECT a FROM"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a, b FROM c UNION ALL SELECT a FROM"));
     }
 
     @Test
     public void parseUnionsFailMissingFirstSelect() {
-        assertThrows(ParsingException.class, () -> parse("UNION SELECT a, b FROM c"));
+        assertThrows(ParsingException.class, () -> parse("UNION ALL SELECT a, b FROM c"));
     }
 
     @Test
@@ -122,8 +122,8 @@ public class ParseSelectTests {
 
     @Test
     public void parseMultipleUnions() {
-        String query = "SELECT a FROM b UNION SELECT c FROM d UNION SELECT e FROM f";
-        String expected = "SELECT a FROM b UNION SELECT c FROM d UNION SELECT e FROM f;";
+        String query = "SELECT a FROM b UNION ALL SELECT c FROM d UNION ALL SELECT e FROM f";
+        String expected = "SELECT a FROM b UNION ALL SELECT c FROM d UNION ALL SELECT e FROM f;";
         assertEquals(expected, parse(query).toString());
     }
 
@@ -144,7 +144,6 @@ public class ParseSelectTests {
 
     @Test
     public void parseFailDanglingCommaInFrom() {
-        // "SELECT a FROM b, "
         assertThrows(ParsingException.class, () -> parse("SELECT a FROM b, "));
     }
 
@@ -155,7 +154,7 @@ public class ParseSelectTests {
 
     @Test
     public void parseFailDoubleUnionKeywords() {
-        assertThrows(ParsingException.class, () -> parse("SELECT a FROM b UNION UNION SELECT c FROM d"));
+        assertThrows(ParsingException.class, () -> parse("SELECT a FROM b UNION ALL UNION ALL SELECT c FROM d"));
     }
 
     @Test

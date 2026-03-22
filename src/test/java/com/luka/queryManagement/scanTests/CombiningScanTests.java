@@ -102,7 +102,7 @@ public class CombiningScanTests {
              UpdateScan s2b = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              SemijoinScan semiJoin = new SemijoinScan(s1b, s2b, semiPred);
 
-             UnionScan finalUnion = new UnionScan(selectPair, semiJoin)) {
+             UnionAllScan finalUnion = new UnionAllScan(selectPair, semiJoin)) {
 
             finalUnion.beforeFirst();
 
@@ -224,14 +224,14 @@ public class CombiningScanTests {
     }
 
     @Test
-    public void testUnionUpdateTransparency() throws IOException {
+    public void testUnionAllUpdateTransparency() throws IOException {
         String tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
              RenameScan rs2 = new RenameScan(s2, Map.of("t1_intField1", "t2_intField1"));
-             UnionScan union = new UnionScan(s1, rs2)) {
+             UnionAllScan union = new UnionAllScan(s1, rs2)) {
 
             s2.beforeFirst();
             s2.next();

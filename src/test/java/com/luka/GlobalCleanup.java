@@ -18,8 +18,8 @@ public class GlobalCleanup implements BeforeAllCallback {
 
     @Override
     public void beforeAll(ExtensionContext context) throws IOException {
-        System.out.println("GLOBAL CLEANUP");
         if (started.compareAndSet(false, true)) {
+            System.out.println("GLOBAL CLEANUP");
             Path root = Paths.get(System.getProperty("java.io.tmpdir"), "simpledb");
             if (Files.exists(root)) {
                 try (var stream = Files.walk(root)) {

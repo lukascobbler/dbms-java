@@ -41,8 +41,8 @@ public class ParseCreateViewTests {
 
     @Test
     public void parseViewWithUnion() {
-        String query = "VIEW all_contacts AS SELECT name FROM customers UNION SELECT name FROM suppliers";
-        String expected = "CREATE VIEW all_contacts AS SELECT name FROM customers UNION SELECT name FROM suppliers;";
+        String query = "VIEW all_contacts AS SELECT name FROM customers UNION ALL SELECT name FROM suppliers";
+        String expected = "CREATE VIEW all_contacts AS SELECT name FROM customers UNION ALL SELECT name FROM suppliers;";
 
         assertEquals(expected, parse(query).toString());
     }
@@ -69,6 +69,6 @@ public class ParseCreateViewTests {
 
     @Test
     public void parseFailWithDanglingUnion() {
-        assertThrows(ParsingException.class, () -> parse("my_view AS SELECT a FROM b UNION"));
+        assertThrows(ParsingException.class, () -> parse("my_view AS SELECT a FROM b UNION ALL"));
     }
 }

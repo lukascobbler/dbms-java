@@ -20,7 +20,7 @@ import java.util.*;
 /// ```
 /// <Field>                     := IdentificationToken
 /// <TableName>                 := IdentificationToken[.IdentificationToken]
-/// <ParseSelect>               := <ParseSingleSelection> [UNION <ParseSingleSelection>]
+/// <ParseSelect>               := <ParseSingleSelection> [UNION ALL <ParseSingleSelection>]
 /// <ParseSingleSelection>      := SELECT <ProjectedFields> FROM <JoinSpecs> [WHERE<ParsePredicate>]
 /// <ProjectedFields>           := <ParseExpression> [AS <Field>] [, <ProjectedFields>]
 /// <JoinSpecs>                 := <TableName> [<JoinSpec>] [, <JoinSpecs>]
@@ -42,6 +42,7 @@ public class ParseSelect {
     public SelectStatement parse() {
         List<SingleSelection> singleSelections = new ArrayList<>();
 
+        boolean hasMoreUnions;
         do {
             ctx.eat(KeywordToken.SELECT);
             List<ProjectionFieldInfo> fields = projectedFields();
@@ -61,7 +62,14 @@ public class ParseSelect {
             }
 
             singleSelections.add(new SingleSelection(fields, tables, predicate));
-        } while (ctx.eatIfMatches(KeywordToken.UNION));
+
+            if (ctx.eatIfMatches(KeywordToken.UNION)) {
+                ctx.eat(KeywordToken.ALL);
+                hasMoreUnions = true;
+            } else {
+                hasMoreUnions = false;
+            }
+        } while (hasMoreUnions);
 
         return new SelectStatement(singleSelections);
     }
@@ -74,7 +82,6 @@ public class ParseSelect {
         List<ProjectionFieldInfo> projectList = new ArrayList<>();
 
         // todo predicates instead of expressions here
-        // todo what happens with duplicate field names (handle in JDBC? with field number accesses)
         do {
             String newFieldName;
 

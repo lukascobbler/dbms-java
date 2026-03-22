@@ -4,16 +4,16 @@ import com.luka.simpledb.queryManagement.scanDefinitions.BinaryScan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 
-/// A union scan represents the "union" relational algebra operator.
+/// A union all scan represents the "union all" relational algebra operator.
 /// It is a binary table read-only scan. The user specifies two tables
 /// where the result of this scan are the rows from the first table plus
-/// the rows from the second table.
-/// Assumes the scans operate on identical schemas.
-public class UnionScan extends BinaryScan {
+/// the rows from the second table, including duplicated values.
+/// Assumes the child scans operate on identical schemas.
+public class UnionAllScan extends BinaryScan {
     private boolean isFirstScanSelected = true;
 
     /// A union scan requires two child scans.
-    public UnionScan(Scan childScan1, Scan childScan2) {
+    public UnionAllScan(Scan childScan1, Scan childScan2) {
         super(childScan1, childScan2);
     }
 
