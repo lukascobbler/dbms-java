@@ -10,6 +10,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,9 +20,9 @@ public class RecordManagementTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testRecordInsertionSuccessful() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -77,9 +78,9 @@ public class RecordManagementTests {
 
     @Test
     public void testRecordNullValues() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();

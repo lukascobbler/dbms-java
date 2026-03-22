@@ -12,15 +12,16 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StatisticsMetadataManagerTests {
     @Test
     public void testCorrectNumberOfRecordsAndBlocks() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -79,9 +80,9 @@ public class StatisticsMetadataManagerTests {
 
     @Test
     public void testCorrectUniqueFieldsSmallCardinality() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -140,9 +141,9 @@ public class StatisticsMetadataManagerTests {
 
     @Test
     public void testCorrectUniqueFieldsBigCardinality() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 

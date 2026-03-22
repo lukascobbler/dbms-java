@@ -13,6 +13,7 @@ import com.luka.simpledb.recordManagement.Schema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PredicateTests {
     @Test
     public void testPredicateLogicAndSubPredicates() throws Exception {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Schema sch = testData.layouts().getFirst().getSchema();

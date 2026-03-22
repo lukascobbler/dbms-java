@@ -10,7 +10,7 @@ import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.simpledb.transactionManagement.concurrencyManagement.LockTable;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,8 +33,8 @@ public class SimpleDB {
     /// - if it does, then the recovery algorithm is run;
     /// - if it doesn't, all required files are created and set up for the
     ///  system to run.
-    public SimpleDB(String directoryName) {
-        this(directoryName, new SimpleDBSettings());
+    public SimpleDB(Path dbDirectory) {
+        this(dbDirectory, new SimpleDBSettings());
     }
 
     /// Initializes the whole system, given the directory name.
@@ -43,9 +43,8 @@ public class SimpleDB {
     /// - if it does, then the recovery algorithm is run;
     /// - if it doesn't, all required files are created and set up for the
     ///  system to run.
-    public SimpleDB(String directoryName, SimpleDBSettings settings) {
+    public SimpleDB(Path dbDirectory, SimpleDBSettings settings) {
         this.settings = settings;
-        File dbDirectory = new File(directoryName);
 
         fileManager = new FileManager(dbDirectory, settings.BLOCK_SIZE);
         logManager = new LogManager(fileManager, settings.LOG_FILE);

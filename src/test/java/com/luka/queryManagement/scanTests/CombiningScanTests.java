@@ -20,6 +20,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CombiningScanTests {
     @Test
     public void testComplexAntiJoinWithTransformation() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term filterInner = new Term(
@@ -71,7 +72,7 @@ public class CombiningScanTests {
 
     @Test
     public void testProductUnionSemiJoinPipeline() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term pairTerm1 = new Term(
@@ -119,7 +120,7 @@ public class CombiningScanTests {
 
     @Test
     public void testFilteringByExtendedFieldInAntiJoin() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Expression constExpr = new ConstantExpression(new IntConstant(100));
@@ -155,7 +156,7 @@ public class CombiningScanTests {
     // );
     @Test
     public void testDeeplyNestedUpdatePipeline() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term protTerm = new Term(
@@ -225,7 +226,7 @@ public class CombiningScanTests {
 
     @Test
     public void testUnionAllUpdateTransparency() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
@@ -251,7 +252,7 @@ public class CombiningScanTests {
 
     @Test
     public void profileHasFieldValidationChecks() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 

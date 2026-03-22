@@ -17,6 +17,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RenameScanTests {
     @Test
     public void testAccessingFieldWithNewName() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -43,7 +44,7 @@ public class RenameScanTests {
 
     @Test
     public void testOldNameIsNoLongerAccessible() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -60,7 +61,7 @@ public class RenameScanTests {
 
     @Test
     public void testRenamingWithPredicateFilter() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -92,7 +93,7 @@ public class RenameScanTests {
 
     @Test
     public void testNullCheckThroughRename() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         try (UpdateScan tableScan = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());

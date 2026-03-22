@@ -11,6 +11,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static java.sql.Types.INTEGER;
 
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ExpressionTests {
     @Test
     public void testConstantEvaluationExpression() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt = new ConstantExpression(new IntConstant(843));
@@ -42,7 +43,7 @@ public class ExpressionTests {
 
     @Test
     public void testFieldNameExpression() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eFieldNameInt1 = new FieldNameExpression("t1_intField1");
@@ -77,7 +78,7 @@ public class ExpressionTests {
 
     @Test
     public void testArithmeticExpressionConstant() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt1 = new ConstantExpression(new IntConstant(1));
@@ -95,7 +96,7 @@ public class ExpressionTests {
 
     @Test
     public void testArithmeticExpressionFieldNameSimple() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression eInt1 = new ConstantExpression(new IntConstant(500));
@@ -116,7 +117,7 @@ public class ExpressionTests {
 
     @Test
     public void testArithmeticExpressionFieldNameComplex() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // ((f1 * 10) + (f2 - 5)) / -2
@@ -156,7 +157,7 @@ public class ExpressionTests {
 
     @Test
     public void testComplexFoldingAndEvaluation1() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // Target: ((t1_intField1 + (10 + 5)) * (20 / 10)) - (t1_intField1 + 15)
@@ -207,7 +208,7 @@ public class ExpressionTests {
 
     @Test
     public void testComplexFoldingAndEvaluation2() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         // Target: (-((t1_intField1 + (10 + 5)) * (20 / 20))) - (-(t1_intField1 + 15))
@@ -395,7 +396,7 @@ public class ExpressionTests {
 
     @Test
     public void appliesToSchema() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Schema schema = testData.layouts().getFirst().getSchema();

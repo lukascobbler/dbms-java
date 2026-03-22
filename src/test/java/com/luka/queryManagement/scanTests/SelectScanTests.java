@@ -17,13 +17,14 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SelectScanTests {
     @Test
     public void testScanningForEquality() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -54,7 +55,7 @@ public class SelectScanTests {
 
     @Test
     public void testScanningForInequality() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -88,7 +89,7 @@ public class SelectScanTests {
 
     @Test
     public void testScanningForGreaterThan() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -121,7 +122,7 @@ public class SelectScanTests {
 
     @Test
     public void testEmptyScanAllRowsFiltered() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -146,7 +147,7 @@ public class SelectScanTests {
 
     @Test
     public void testNoRowsFiltered() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -177,7 +178,7 @@ public class SelectScanTests {
 
     @Test
     public void testUpdateOperations() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -222,7 +223,7 @@ public class SelectScanTests {
 
     @Test
     public void testScanningForNullWithEqualsOperator() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(
@@ -247,7 +248,7 @@ public class SelectScanTests {
 
     @Test
     public void testScanningForNullWithIsOperator() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Term t1 = new Term(

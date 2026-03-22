@@ -16,6 +16,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +35,7 @@ public class TermTests {
 
     @Test
     public void testIsOperatorWithNulls() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -57,7 +58,7 @@ public class TermTests {
 
     @Test
     public void testNullPoisoningStandardOperators() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -80,7 +81,7 @@ public class TermTests {
 
     @Test
     public void testComplexExpressionWithinTerm() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -102,7 +103,7 @@ public class TermTests {
 
     @Test
     public void testStringAndBooleanLogic() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -126,7 +127,7 @@ public class TermTests {
 
     @Test
     public void testNumericComparisons() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Scan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst());
@@ -219,7 +220,7 @@ public class TermTests {
 
     @Test
     public void testScanConsistencyWithEquates() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         var testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         String targetField = "t1_intField1";

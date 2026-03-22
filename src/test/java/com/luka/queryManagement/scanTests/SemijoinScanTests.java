@@ -15,13 +15,14 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SemijoinScanTests {
     @Test
     public void testSemijoinWithBasicMatches() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
@@ -48,7 +49,7 @@ public class SemijoinScanTests {
 
     @Test
     public void testSemijoinYieldsOuterRecordOnceDespiteMultipleInnerMatches() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
@@ -73,7 +74,7 @@ public class SemijoinScanTests {
 
     @Test
     public void testSemijoinWithEmptyInnerTable() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term emptyTerm = new Term(
@@ -102,7 +103,7 @@ public class SemijoinScanTests {
 
     @Test
     public void testSemijoinBackwardsNavigation() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
@@ -130,7 +131,7 @@ public class SemijoinScanTests {
 
     @Test
     public void testSemijoinWithNullComparisons() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(

@@ -12,15 +12,16 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 public class IndexMetadataManagerTests {
     @Test
     public void testDuplicateIndex() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -38,9 +39,9 @@ public class IndexMetadataManagerTests {
 
     @Test
     public void testIndexCreationForUnknownTableOrField() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 

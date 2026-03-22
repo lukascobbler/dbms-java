@@ -16,6 +16,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ExtendProjectScanTests {
     @Test
     public void testAccessingExtendedField() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new BinaryArithmeticExpression(
@@ -56,7 +57,7 @@ public class ExtendProjectScanTests {
 
     @Test
     public void testExtendedFieldInPredicate() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new BinaryArithmeticExpression(
@@ -96,7 +97,7 @@ public class ExtendProjectScanTests {
 
     @Test
     public void testExtendWithNullValues() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new FieldNameExpression("t1_intField3");
@@ -129,7 +130,7 @@ public class ExtendProjectScanTests {
 
     @Test
     public void testExtendWithNullValueLiteral() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeOneFullTable(tmpDir);
 
         Expression expr = new ConstantExpression(NullConstant.INSTANCE);

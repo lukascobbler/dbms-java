@@ -16,6 +16,7 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,9 +26,9 @@ public class MetadataManagerTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testMetadataManagerAllTypes() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         MetadataManager metadataManager = simpleDB.getMetadataManager();
         Transaction transaction = simpleDB.newTransaction();
 
@@ -82,9 +83,9 @@ public class MetadataManagerTests {
 
     @Test
     public void testRemoveFieldReconstructTableAndIndex() throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction transaction = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 

@@ -2,46 +2,39 @@ package com.luka.simpledb.fileManagement;
 
 import com.luka.simpledb.fileManagement.exceptions.FileException;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /// The `FileManager` is the main API interface to the operating
 /// system's files. Also called a Pager. Works exclusively with
 /// blocks and pages, not direct bytes.
 public class FileManager {
-    private final File dbDirectory;
+    private final Path dbDirectory;
     private final int blockSize;
     private final boolean isNew;
-    private final Map<String, RandomAccessFile> openFiles = new HashMap<>();
+    private final Map<String, FileChannel> openFiles = new HashMap<>();
 
     /// The constructor initializes the directory where the database files will
     /// be stored by removing all files that start with "temp", or if the directory
     /// doesn't exist, it creates it.
     ///
     /// @throws FileException if the directory couldn't be initialized properly.
-    public FileManager(File dbDirectory, int blockSize) {
+    public FileManager(Path dbDirectory, int blockSize) {
         this.dbDirectory = dbDirectory;
         this.blockSize = blockSize;
-        isNew = !dbDirectory.exists();
+        this.isNew = !Files.exists(dbDirectory);
 
-        if (isNew) {
-            if (!dbDirectory.mkdirs()) {
-                throw new FileException("could not initialize directory: " + dbDirectory);
-            }
-        }
-
-        for (String filename : Objects.requireNonNull(dbDirectory.list())) {
-            if (filename.startsWith("temp")) {
-                if (!new File(dbDirectory, filename).delete()) {
-                    throw new FileException("could not delete temporary file: " + filename);
-                }
-            }
+        try {
+            if (isNew) Files.createDirectories(dbDirectory);
+        } catch (IOException e) {
+            throw new FileException("Could not initialize directory: " + e.getMessage());
         }
     }
 
@@ -53,9 +46,9 @@ public class FileManager {
     /// @throws FileException if the block couldn't be read.
     public synchronized int read(BlockId blockId, Page page) {
         try {
-            RandomAccessFile f = getFile(blockId.filename());
-            f.seek((long) blockId.blockNum() * blockSize);
-            return f.getChannel().read(page.contents());
+            FileChannel fc = getFile(blockId.filename());
+
+            return fc.read(page.contents(), (long) blockId.blockNum() * blockSize);
         } catch (IOException e) {
             throw new FileException("cannot read block " + blockId);
         }
@@ -70,15 +63,14 @@ public class FileManager {
     /// Blocks need to be appended first.
     public synchronized int write(BlockId blockId, Page page) {
         try {
-            RandomAccessFile f = getFile(blockId.filename());
+            FileChannel fc = getFile(blockId.filename());
 
-            if (f.length() <= (long) blockId.blockNum() * blockSize) {
+            if (fc.size() <= (long) blockId.blockNum() * blockSize) {
                 throw new FileException("cannot write to block with index " +
                         "greater than length of blocks for file " + blockId.filename());
             }
 
-            f.seek((long) blockId.blockNum() * blockSize);
-            return f.getChannel().write(page.contents());
+            return fc.write(page.contents(), (long) blockId.blockNum() * blockSize);
         } catch (IOException e) {
             throw new FileException("cannot write block " + blockId);
         }
@@ -94,11 +86,10 @@ public class FileManager {
     public synchronized BlockId append(String filename) {
         int newBlockNum = lengthInBlocks(filename);
         BlockId blockId = new BlockId(filename, newBlockNum);
-        byte[] bytes = new byte[blockSize];
+        ByteBuffer buf = ByteBuffer.allocate(blockSize);
         try {
-            RandomAccessFile f = getFile(blockId.filename());
-            f.seek((long) blockId.blockNum() * blockSize);
-            f.write(bytes);
+            FileChannel fc = getFile(blockId.filename());
+            fc.write(buf, (long) blockId.blockNum() * blockSize);
         } catch (IOException e) {
             throw new FileException("cannot append block " + blockId);
         }
@@ -114,16 +105,16 @@ public class FileManager {
     /// @throws FileException if the file couldn't be truncated.
     public synchronized void truncate(String filename) {
         try {
-            RandomAccessFile f = getFile(filename);
-            long length = f.length();
+            FileChannel fc = getFile(filename);
+            long length = fc.size();
             long newLength = length > blockSize ? length - blockSize : 0;
-            f.setLength(newLength);
+            fc.truncate(newLength);
 
             if (newLength == 0) {
                 removeFile(filename);
             }
         } catch (IOException e) {
-            throw new FileException("cannot truncate file " + filename);
+            throw new FileException("Cannot truncate file " + filename);
         }
     }
 
@@ -131,35 +122,27 @@ public class FileManager {
     /// @throws FileException if the file couldn't be accessed.
     public int lengthInBlocks(String filename) {
         try {
-            RandomAccessFile f = getFile(filename);
-            return (int)(f.length() / blockSize);
+            FileChannel fc = getFile(filename);
+            return (int) (fc.size() / blockSize);
         } catch (IOException e) {
-            throw new FileException("cannot access " + filename);
+            throw new FileException("Cannot access " + filename);
         }
     }
 
     /// Removes a file managed by this database.
     /// @throws FileException if the file couldn't be deleted or is not managed by this database.
     public synchronized void removeFile(String filename) {
-        RandomAccessFile f = openFiles.remove(filename);
+        FileChannel fc = openFiles.remove(filename);
 
-        if (f == null) {
-            throw new FileException("cannot remove file not managed by this database: " + filename);
+        if (fc == null) {
+            throw new FileException("Cannot remove file not managed by this database: " + filename);
         }
 
         try {
-            f.close();
+            fc.close();
+            Files.deleteIfExists(dbDirectory.resolve(filename));
         } catch (IOException e) {
-            System.err.println("warning: Failed to close handle for " + filename);
-        }
-
-        File file = new File(dbDirectory, filename);
-        Path filePath = file.toPath();
-
-        try {
-            Files.delete(filePath);
-        } catch (IOException e) {
-            throw new FileException("failed to delete file: " + filename);
+            throw new FileException("Failed to delete file: " + filename);
         }
     }
 
@@ -185,15 +168,15 @@ public class FileManager {
     ///
     /// @return The file corresponding to the filename, from the file manager's
     /// open files map.
-    private RandomAccessFile getFile(String filename) throws IOException {
-        RandomAccessFile f = openFiles.get(filename);
+    private FileChannel getFile(String filename) throws IOException {
+        FileChannel fc = openFiles.get(filename);
 
-        if (f == null) {
-            File dbTable = new File(dbDirectory, filename);
-            f = new RandomAccessFile(dbTable, "rws");
-            openFiles.put(filename, f);
+        if (fc == null) {
+            Path path = dbDirectory.resolve(filename);
+            fc = FileChannel.open(path, CREATE, READ, WRITE, SYNC);
+            openFiles.put(filename, fc);
         }
 
-        return f;
+        return fc;
     }
 }

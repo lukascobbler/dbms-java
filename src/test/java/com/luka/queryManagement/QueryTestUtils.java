@@ -8,6 +8,7 @@ import com.luka.simpledb.recordManagement.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,7 @@ public class QueryTestUtils {
 
     /// Creates one table "table1", with three fields of each type where
     /// the third field of each type is nullable and set to null.
-    public static QueryTestData initializeOneFullTable(String tmpDir) {
+    public static QueryTestData initializeOneFullTable(Path tmpDir) {
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
@@ -62,7 +63,7 @@ public class QueryTestUtils {
 
     /// Creates two tables "table1" and "table2", with three fields of each type where
     /// the third field of each type is nullable and set to null.
-    public static QueryTestData initializeTwoTables(String tmpDir) {
+    public static QueryTestData initializeTwoTables(Path tmpDir) {
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 

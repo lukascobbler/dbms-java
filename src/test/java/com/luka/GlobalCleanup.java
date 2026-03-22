@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /// Runs before all tests and cleans up the whole test directory.
 /// Best choice for maximum separation of environments, allows
-/// concurrent tests.
+/// concurrent tests (only really useful if disk tests are toggled on).
 public class GlobalCleanup implements BeforeAllCallback {
     private static final AtomicBoolean started = new AtomicBoolean(false);
 

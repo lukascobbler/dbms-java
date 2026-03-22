@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,9 +26,9 @@ public class TableScanTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testTableScanAddMultipleRecordsExceedBlockSize() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -78,9 +79,9 @@ public class TableScanTests {
 
     @Test
     public void testBackwardsTraversal() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -110,9 +111,9 @@ public class TableScanTests {
 
     @Test
     public void testInsertAfterAfterLast() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -151,9 +152,9 @@ public class TableScanTests {
 
     @Test
     public void testNextPreviousRepeated() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -190,12 +191,12 @@ public class TableScanTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testTableScanAddMultipleRecordsCommitRollback(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -239,12 +240,12 @@ public class TableScanTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testTableScanAddMultipleRecordsCommitCrash(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -268,7 +269,7 @@ public class TableScanTests {
 
         assertEquals(10, fm.lengthInBlocks("B.table"));
 
-        simpleDB = new SimpleDB(tempDirectory, settings);
+        simpleDB = new SimpleDB(tmpDir, settings);
         fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
 
         assertEquals(10, fm.lengthInBlocks("B.table"));
@@ -276,9 +277,9 @@ public class TableScanTests {
 
     @Test
     public void testTableScanNullValues() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();

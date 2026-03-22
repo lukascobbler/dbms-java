@@ -1,6 +1,8 @@
 package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /// Represents the parsed data of `SELECT` queries.
@@ -8,7 +10,7 @@ import java.util.List;
 /// queries that are joined by the `UNION` keyword.
 public record SelectStatement(List<SingleSelection> unionizedSelections) implements Statement {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         StringBuilder result = new StringBuilder();
 
         for (SingleSelection singleSelection : unionizedSelections) {

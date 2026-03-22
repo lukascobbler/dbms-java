@@ -6,18 +6,17 @@ import com.luka.simpledb.fileManagement.Page;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FileManagementTests {
     @Test
     public void testTruncate() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        File dbDir = new File(tempDirectory);
-        FileManager mgr = new FileManager(dbDir, 1);
+        FileManager mgr = new FileManager(tmpDir, 1);
 
         for (int i = 0; i < 10; i++) {
             mgr.append("truncate");
@@ -33,10 +32,9 @@ public class FileManagementTests {
 
     @Test
     public void testPageWriting() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        File dbDir = new File(tempDirectory);
-        FileManager mgr = new FileManager(dbDir, 200);
+        FileManager mgr = new FileManager(tmpDir, 200);
         mgr.append("read_write");
 
         BlockId b1 = new BlockId("read_write", 0);

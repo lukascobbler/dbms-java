@@ -12,9 +12,9 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,11 +23,11 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetInt(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
 
         Transaction transaction1 = simpleDB.newTransaction();
         Transaction transaction2 = simpleDB.newTransaction();
@@ -49,11 +49,11 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testGetSetIntRollback(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
 
         Transaction transaction1 = simpleDB.newTransaction();
         Transaction transaction2 = simpleDB.newTransaction();
@@ -77,11 +77,11 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testConcurrentGetIntSameBlockSameTime(boolean undoOnlyRecovery) throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
 
         Transaction transaction0 = simpleDB.newTransaction();
         Transaction transaction1 = simpleDB.newTransaction();
@@ -110,9 +110,9 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedAppendBlocks(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
 
         FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
         LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
@@ -128,17 +128,17 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        new SimpleDB(tempDirectory);
+        new SimpleDB(tmpDir);
 
-        assertFalse(TestUtils.fileExists(new File(tempDirectory), "file1"));
+        assertFalse(TestUtils.fileExists(tmpDir, "file1"));
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedUpdates(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
 
         BlockId b0 = new BlockId("file1", 0);
 
@@ -165,7 +165,7 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        simpleDB = new SimpleDB(tempDirectory);
+        simpleDB = new SimpleDB(tmpDir);
         fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
 
         Transaction transaction2 = simpleDB.newTransaction();
@@ -186,9 +186,9 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testSystemRecoveryUndoNonCommitedMixed(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
 
         BlockId b0 = new BlockId("file1", 0);
         BlockId b3 = new BlockId("file1", 3);
@@ -221,7 +221,7 @@ public class TransactionManagementTests {
         // no commit or rollback
 
         // simulating system crash by manager reinstantiation
-        simpleDB = new SimpleDB(tempDirectory);
+        simpleDB = new SimpleDB(tmpDir);
         fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
         lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
         bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
@@ -245,12 +245,12 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testTransactionNumbersContinuingAfterRecoveryWithQuiescentCheckpointing(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, recoverySettings);
 
         Field field = SimpleDB.class.getDeclaredField("nextTransactionNum");
         field.setAccessible(true);
@@ -290,7 +290,7 @@ public class TransactionManagementTests {
 
         // simulating system crash by manager reinstantiation
         field.set(simpleDB, new AtomicInteger(0));
-        simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        simpleDB = new SimpleDB(tmpDir, recoverySettings);
         fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
         lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
         bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
@@ -312,12 +312,12 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testRedoRecovery(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, recoverySettings);
 
         FileManager fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
         LogManager lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
@@ -338,7 +338,7 @@ public class TransactionManagementTests {
         transaction1.commit();
 
         // simulating system crash by manager reinstantiation
-        simpleDB = new SimpleDB(tempDirectory, recoverySettings);
+        simpleDB = new SimpleDB(tmpDir, recoverySettings);
         fm = (FileManager) TestUtils.getPrivateField(simpleDB, "fileManager");
         lm = (LogManager) TestUtils.getPrivateField(simpleDB, "logManager");
         bm = (BufferManager) TestUtils.getPrivateField(simpleDB, "bufferManager");
@@ -356,13 +356,12 @@ public class TransactionManagementTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testRemoveFileAddedByTransactionOneBlockLargeIfCommitNotSuccessful(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
-        File dbDirectory = new File(tempDirectory);
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        FileManager fm = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
+        FileManager fm = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         LogManager lm = new LogManager(fm, recoverySettings.LOG_FILE);
         BufferManager bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE);
         LockTable lt = new LockTable();
@@ -372,7 +371,7 @@ public class TransactionManagementTests {
 
         transaction1.appendEmptyBlock("file1", true);
 
-        fm = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
+        fm = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         lm = new LogManager(fm, recoverySettings.LOG_FILE);
         bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE);
         lt = new LockTable();
@@ -380,19 +379,18 @@ public class TransactionManagementTests {
         Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
         transaction2.recover();
 
-        assertFalse(TestUtils.fileExists(dbDirectory, "file1"));
+        assertFalse(TestUtils.fileExists(tmpDir, "file1"));
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testDontCreateFileDefinedInThisTransactionAfterRollback(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
-        File dbDirectory = new File(tempDirectory);
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings recoverySettings = new SimpleDBSettings();
         recoverySettings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        FileManager fileManager = new FileManager(dbDirectory, recoverySettings.BLOCK_SIZE);
+        FileManager fileManager = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         LogManager logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
         BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_POOL_SIZE);
         LockTable lockTable = new LockTable();
@@ -407,6 +405,6 @@ public class TransactionManagementTests {
         transaction1.unpin(b0);
         transaction1.rollback();
 
-        assertFalse(TestUtils.fileExists(dbDirectory, "file1"));
+        assertFalse(TestUtils.fileExists(tmpDir, "file1"));
     }
 }

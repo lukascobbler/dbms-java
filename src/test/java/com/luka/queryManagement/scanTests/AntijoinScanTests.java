@@ -15,13 +15,14 @@ import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AntijoinScanTests {
     @Test
     public void testAntijoinWithEmptyInnerTableReturnsAllOuter() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term emptyTerm = new Term(
@@ -54,7 +55,7 @@ public class AntijoinScanTests {
 
     @Test
     public void testAntijoinWithPerfectMatchReturnsNothing() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(
@@ -75,7 +76,7 @@ public class AntijoinScanTests {
 
     @Test
     public void testAntijoinFilteringSpecificRange() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term filterInner = new Term(
@@ -109,7 +110,7 @@ public class AntijoinScanTests {
 
     @Test
     public void testAntijoinBackwardsNavigation() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term excludeFive = new Term(
@@ -140,7 +141,7 @@ public class AntijoinScanTests {
 
     @Test
     public void testAntijoinWithNullCheck() throws IOException {
-        String tmpDir = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
         QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
 
         Term t1 = new Term(

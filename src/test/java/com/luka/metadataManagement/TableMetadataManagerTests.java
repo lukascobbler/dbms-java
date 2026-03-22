@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,9 +25,9 @@ public class TableMetadataManagerTests {
     // asserts are used and prints and randoms removed
     @Test
     public void testTableCreationAndLayoutRetrival() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Schema sch = new Schema();
@@ -46,9 +46,9 @@ public class TableMetadataManagerTests {
     // the test from the book Fig 7.5
     @Test
     public void testTableCatalog() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 
         Layout layout = simpleDB.getMetadataManager().getLayout("tablecatalog", tx);
@@ -82,9 +82,9 @@ public class TableMetadataManagerTests {
 
     @Test
     public void testDuplicateTableName() throws IOException {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory);
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -100,12 +100,12 @@ public class TableMetadataManagerTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testCreateTableInsertRecordRollback(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -131,18 +131,18 @@ public class TableMetadataManagerTests {
         Transaction tx2 = simpleDB.newTransaction();
 
         assertThrowsExactly(TableNotFoundException.class, () -> metadataManager.getLayout("tbl1", tx2));
-        assertFalse(TestUtils.fileExists(new File(tempDirectory), "tbl1.table"));
+        assertFalse(TestUtils.fileExists(tmpDir, "tbl1.table"));
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testCreateTableInsertRecordRollbackCreateTableSameName(boolean undoOnlyRecovery) throws Exception {
-        String tempDirectory = TestUtils.setUpTempDirectory();
+        Path tmpDir = TestUtils.setUpTempDirectory();
 
         SimpleDBSettings settings = new SimpleDBSettings();
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
-        SimpleDB simpleDB = new SimpleDB(tempDirectory, settings);
+        SimpleDB simpleDB = new SimpleDB(tmpDir, settings);
         Transaction tx = simpleDB.newTransaction();
         MetadataManager metadataManager = simpleDB.getMetadataManager();
 
@@ -168,7 +168,7 @@ public class TableMetadataManagerTests {
         Transaction tx2 = simpleDB.newTransaction();
 
         assertThrowsExactly(TableNotFoundException.class, () -> metadataManager.getLayout("tbl1", tx2));
-        assertFalse(TestUtils.fileExists(new File(tempDirectory), "tbl1.table"));
+        assertFalse(TestUtils.fileExists(tmpDir, "tbl1.table"));
 
         schema.addIntField("field1", false);
         schema.addIntField("field2", false);
