@@ -91,12 +91,13 @@ public class StatisticsMetadataManager {
 
                 for (String fieldName : tableSchema.getFields()) {
                     if (tableScan.isNull(fieldName)) {
+                        uniqueFieldsInfo.addNullValue(fieldName);
                         continue;
                     }
                     switch (tableSchema.type(fieldName)) {
-                        case DatabaseType.INT -> uniqueFieldsInfo.addValue(fieldName, tableScan.getInt(fieldName));
-                        case DatabaseType.VARCHAR -> uniqueFieldsInfo.addValue(fieldName, tableScan.getString(fieldName));
-                        case DatabaseType.BOOLEAN -> uniqueFieldsInfo.addValue(fieldName, tableScan.getBoolean(fieldName));
+                        case DatabaseType.INT -> uniqueFieldsInfo.addIntValue(fieldName, tableScan.getInt(fieldName));
+                        case DatabaseType.VARCHAR -> uniqueFieldsInfo.addStringValue(fieldName, tableScan.getString(fieldName));
+                        case DatabaseType.BOOLEAN -> uniqueFieldsInfo.addBooleanValue(fieldName, tableScan.getBoolean(fieldName));
                         default -> throw new DatabaseTypeNotImplementedException();
                     }
                 }

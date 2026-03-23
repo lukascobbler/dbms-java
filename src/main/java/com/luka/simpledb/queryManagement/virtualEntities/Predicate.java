@@ -3,10 +3,15 @@ package com.luka.simpledb.queryManagement.virtualEntities;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.ConstantExpression;
+import com.luka.simpledb.queryManagement.virtualEntities.expression.FieldNameExpression;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
+import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
 import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /// A predicate is the topmost structure that binds all terms,
 /// which hold all expressions. It defines logical operators between
@@ -47,15 +52,15 @@ public class Predicate {
     /// of reduction factors of all terms that it holds.
     ///
     /// @return The total reduction factor of all predicates.
-    public <T extends Scan> int reductionFactor(Plan<T> plan) {
+    public <T extends Scan> double reductionFactor(Plan<T> plan) {
         double totalFactor = 1.0;
         for (Term term : terms) {
             totalFactor *= term.reductionFactor(plan);
-            if (totalFactor > Integer.MAX_VALUE) {
-                return Integer.MAX_VALUE;
+            if (totalFactor > Double.MAX_VALUE) {
+                return Double.MAX_VALUE;
             }
         }
-        return (int) totalFactor;
+        return totalFactor;
     }
 
     // todo add docs once heuristic table planner is complete
@@ -95,38 +100,60 @@ public class Predicate {
         return result;
     }
 
-    /// Checks for "Field = Constant" or "Constant = Field" cases
-    /// and if that is true, returns the constant. Does this check
-    /// for all terms, and returns the first found constant.
+    /// Checks for "Field1 = Constant" or "Constant = Field1" cases
+    /// and if that is true, returns the constants that the requested
+    /// field equates to (only for the field equalities that have
+    /// the requested field).
     ///
-    /// @return The constant that some field equates to for any term.
-    /// `null` in any other case.
-    public Constant equatesWithConstant(String fieldName) {
-        for (Term term : terms) {
-            Constant c = term.equatesWithConstant(fieldName);
-            if (c != null) {
-                return c;
-            }
-        }
-
-        return null;
+    /// @return The stream of constants that the requested field equates to.
+    /// An empty stream in any other case.
+    public Stream<Constant> allEquatedConstants(String fieldName) {
+        return terms.stream()
+                .flatMap(t -> t.equatesWithConstant(fieldName).stream());
     }
 
     /// Checks for "Field1 = Field2" or "Field2 = Field1" cases
-    /// and if that is true, returns the right field. Does this check
-    /// for all terms, and returns the first found field name.
+    /// and if that is true, returns the fields that the requested
+    /// field equates to (only for the field equalities that have
+    /// the requested field).
     ///
-    /// @return The right field for two field equality comparisons for any term.
-    /// `null` in any other case.
-    public String equatesWithFieldName(String fieldName) {
-        for (Term term : terms) {
-            String s = term.equatesWithFieldName(fieldName);
-            if (s != null) {
-                return s;
-            }
-        }
+    /// @return The stream of fields that the requested field equates to.
+    /// An empty stream in any other case.
+    public Stream<String> allEquatedFields(String fieldName) {
+        return terms.stream()
+                .flatMap(t -> t.equatesWithFieldName(fieldName).stream());
+    }
 
-        return null;
+    /// Checks for "Field1 IS NULL" or "NULL IS Field1" cases
+    /// and if any of them match, returns true.
+    ///
+    /// @return True if there is at least one NULL comparison.
+    public boolean equatesWithNull(String fieldName) {
+        return terms.stream().anyMatch(t ->
+                t.getTermOperator() == TermOperator.IS &&
+                (
+                    (t.getLhs() instanceof FieldNameExpression f1 && f1.qualifiedName().equals(fieldName) &&
+                    t.getRhs() instanceof ConstantExpression(Constant constant1) && constant1 == NullConstant.INSTANCE)
+                        ||
+                    (t.getRhs() instanceof FieldNameExpression f2 && f2.qualifiedName().equals(fieldName) &&
+                    t.getLhs() instanceof ConstantExpression(Constant constant2) && constant2 == NullConstant.INSTANCE)
+                )
+        );
+    }
+
+    /// Checks for operations that exclude NULL values after
+    /// applying them.
+    ///
+    /// @return True if any operation excludes null values.
+    public boolean excludesNulls(String fieldName) {
+        return terms.stream().anyMatch(t ->
+                t.getTermOperator() != TermOperator.IS &&
+                (
+                    t.getLhs() instanceof FieldNameExpression f1 && f1.qualifiedName().equals(fieldName)
+                        ||
+                    t.getRhs() instanceof FieldNameExpression f2 && f2.qualifiedName().equals(fieldName)
+                )
+        );
     }
 
     /// Folds every term in the predicate. Uses `PartialEvaluator` internally.

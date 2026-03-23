@@ -1,7 +1,6 @@
 package com.luka.queryManagement.vritualEntitiesTests;
 
 import com.luka.queryManagement.QueryTestUtils;
-import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
@@ -11,28 +10,17 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
-import com.luka.simpledb.recordManagement.schema.PhysicalSchema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class TermTests {
-    Plan<Scan> mockPlan = new Plan<>() {
-        @Override public Scan open() { return null; }
-        @Override public int blocksAccessed() { return 0; }
-        @Override public int recordsOutput() { return 0; }
-        @Override public int distinctValues(String fieldName) {
-            if (fieldName.equals("t1_intField1")) return 250;
-            if (fieldName.equals("t1_boolField1")) return 2;
-            return 10;
-        }
-        @Override public PhysicalSchema outputSchema() { return null; }
-    };
-
     @Test
     public void testIsOperatorWithNulls() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
@@ -181,41 +169,19 @@ public class TermTests {
         Expression e10 = new ConstantExpression(c10);
 
         Term t1 = new Term(f1, TermOperator.EQUALS, e10);
-        assertEquals(c10, t1.equatesWithConstant("t1_intField1"));
-        assertNull(t1.equatesWithFieldName("t1_intField1"));
+        assertEquals(c10, t1.equatesWithConstant("t1_intField1").get());
+        assertEquals(Optional.empty(), t1.equatesWithFieldName("t1_intField1"));
 
         Term t2 = new Term(e10, TermOperator.EQUALS, f1);
-        assertEquals(c10, t2.equatesWithConstant("t1_intField1"));
+        assertEquals(c10, t2.equatesWithConstant("t1_intField1").get());
 
         Term t3 = new Term(f1, TermOperator.EQUALS, f2);
-        assertEquals("t1_intField2", t3.equatesWithFieldName("t1_intField1"));
-        assertEquals("t1_intField1", t3.equatesWithFieldName("t1_intField2"));
-        assertNull(t3.equatesWithConstant("t1_intField1"));
+        assertEquals("t1_intField2", t3.equatesWithFieldName("t1_intField1").get());
+        assertEquals("t1_intField1", t3.equatesWithFieldName("t1_intField2").get());
+        assertEquals(Optional.empty(), t3.equatesWithConstant("t1_intField1"));
 
         Term t4 = new Term(f1, TermOperator.GREATER_THAN, e10);
-        assertNull(t4.equatesWithConstant("t1_intField1"));
-    }
-
-    @Test
-    public void testReductionFactors() {
-        Expression f1 = new FieldNameExpression("t1_intField1");
-        Expression f_bool = new FieldNameExpression("t1_boolField1");
-        Expression c10 = new ConstantExpression(new IntConstant(10));
-
-        Term rangeTerm = new Term(f1, TermOperator.GREATER_THAN, c10);
-        assertEquals(2, rangeTerm.reductionFactor(mockPlan));
-
-        Term eqTerm = new Term(f1, TermOperator.EQUALS, c10);
-        assertEquals(250, eqTerm.reductionFactor(mockPlan));
-
-        Term joinTerm = new Term(f1, TermOperator.EQUALS, f_bool);
-        assertEquals(250, joinTerm.reductionFactor(mockPlan)); // max(250, 2)
-
-        Term trueTerm = new Term(c10, TermOperator.EQUALS, c10);
-        assertEquals(1, trueTerm.reductionFactor(mockPlan));
-
-        Term falseTerm = new Term(c10, TermOperator.EQUALS, new ConstantExpression(new IntConstant(99)));
-        assertEquals(Integer.MAX_VALUE, falseTerm.reductionFactor(mockPlan));
+        assertEquals(Optional.empty(), t4.equatesWithConstant("t1_intField1"));
     }
 
     @Test
@@ -231,7 +197,7 @@ public class TermTests {
                 new ConstantExpression(targetVal)
         );
 
-        Constant equated = term.equatesWithConstant(targetField);
+        Constant equated = term.equatesWithConstant(targetField).get();
         assertEquals(targetVal, equated);
 
         try (TableScan ts = new TableScan(testData.tx(), "table1", testData.layouts().getFirst())) {

@@ -26,7 +26,7 @@ public class UnionAllScanTests {
     @Test
     public void testUnionAllRowsFromBothTables() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
@@ -45,7 +45,7 @@ public class UnionAllScanTests {
     @Test
     public void testUnionAllWithMidComplexityPredicate() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -79,7 +79,7 @@ public class UnionAllScanTests {
     @Test
     public void testUnionAllNavigationBackwards() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
@@ -102,7 +102,7 @@ public class UnionAllScanTests {
     @Test
     public void testUnionAllEmptyScans() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -126,7 +126,7 @@ public class UnionAllScanTests {
     @Test
     public void testUnionAllNullCheckWithIs() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),

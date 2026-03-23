@@ -23,7 +23,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithBasicMatches() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -50,7 +50,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinYieldsOuterRecordOnceDespiteMultipleInnerMatches() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -75,7 +75,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithEmptyInnerTable() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -104,7 +104,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinBackwardsNavigation() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -132,7 +132,7 @@ public class SemijoinScanTests {
     @Test
     public void testSemijoinWithNullComparisons() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),

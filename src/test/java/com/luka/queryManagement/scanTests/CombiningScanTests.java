@@ -29,7 +29,7 @@ public class CombiningScanTests {
     @Test
     public void testComplexAntiJoinWithTransformation() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term filterInner = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -73,7 +73,7 @@ public class CombiningScanTests {
     @Test
     public void testProductUnionSemiJoinPipeline() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term pairTerm1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -121,7 +121,7 @@ public class CombiningScanTests {
     @Test
     public void testFilteringByExtendedFieldInAntiJoin() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Expression constExpr = new ConstantExpression(new IntConstant(100));
 
@@ -157,7 +157,7 @@ public class CombiningScanTests {
     @Test
     public void testDeeplyNestedUpdatePipeline() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term protTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -227,7 +227,7 @@ public class CombiningScanTests {
     @Test
     public void testUnionAllUpdateTransparency() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));

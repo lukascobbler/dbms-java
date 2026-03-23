@@ -63,7 +63,7 @@ public class QueryTestUtils {
 
     /// Creates two tables "table1" and "table2", with three fields of each type where
     /// the third field of each type is nullable and set to null.
-    public static QueryTestData initializeTwoTables(Path tmpDir) {
+    public static QueryTestData initializeTwoFullTables(Path tmpDir) {
         SimpleDB simpleDB = new SimpleDB(tmpDir);
         Transaction tx = simpleDB.newTransaction();
 

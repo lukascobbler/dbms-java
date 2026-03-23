@@ -23,7 +23,7 @@ public class AntijoinScanTests {
     @Test
     public void testAntijoinWithEmptyInnerTableReturnsAllOuter() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -56,7 +56,7 @@ public class AntijoinScanTests {
     @Test
     public void testAntijoinWithPerfectMatchReturnsNothing() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -77,7 +77,7 @@ public class AntijoinScanTests {
     @Test
     public void testAntijoinFilteringSpecificRange() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term filterInner = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -111,7 +111,7 @@ public class AntijoinScanTests {
     @Test
     public void testAntijoinBackwardsNavigation() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term excludeFive = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -142,7 +142,7 @@ public class AntijoinScanTests {
     @Test
     public void testAntijoinWithNullCheck() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField3"),

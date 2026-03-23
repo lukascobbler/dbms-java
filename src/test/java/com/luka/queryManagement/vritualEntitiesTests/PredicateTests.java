@@ -62,16 +62,17 @@ public class PredicateTests {
         mixedPred.conjoinWith(new Predicate(tExt));
 
         Predicate sub = mixedPred.selectSubPredicate(sch);
-        List<Term> terms = (List<Term>) TestUtils.getPrivateField(sub, "terms");
+        List<Term> terms = sub.getTerms();
         assertEquals(1, terms.size());
-        assertEquals("t1_intField1",
-                terms.getFirst().equatesWithFieldName("t1_intField1") == null ? "t1_intField1" : "");
+        assertFalse(terms.getFirst().equatesWithFieldName("t1_intField1").isPresent());
+        //noinspection OptionalGetWithoutIsPresent
+        assertEquals(new IntConstant(0), terms.getFirst().equatesWithConstant("t1_intField1").get());
 
         ts.close();
     }
 
     @Test
-    public void testJoinSubPredicate() throws Exception {
+    public void testJoinSubPredicate() {
         Schema s1 = new Schema(); s1.addIntField("f1", false);
         Schema s2 = new Schema(); s2.addIntField("f2", false);
 
@@ -90,7 +91,7 @@ public class PredicateTests {
         p.conjoinWith(new Predicate(selectTerm));
 
         Predicate result = p.joinSubPredicate(s1, s2);
-        List<Term> terms = (List<Term>) TestUtils.getPrivateField(result, "terms");
+        List<Term> terms = result.getTerms();
 
         assertEquals(1, terms.size());
         assertNotNull(terms.getFirst().equatesWithFieldName("f1"));
@@ -101,21 +102,22 @@ public class PredicateTests {
         Plan<Scan> plan = new Plan<>() {
             @Override public Scan open() { return null; }
             @Override public int blocksAccessed() { return 0; }
-            @Override public int recordsOutput() { return 0; }
+            @Override public int recordsOutput() { return 1000; }
             @Override public int distinctValues(String fieldName) { return 1000; }
             @Override public Schema outputSchema() { return null; }
+            @Override public int nullValues(String fieldName) { return 0; }
         };
 
         Predicate p = new Predicate();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000; i++) {
             Term t = new Term(
-                    new FieldNameExpression("f"+i),
+                    new FieldNameExpression("f" + i),
                     TermOperator.EQUALS,
                     new ConstantExpression(new IntConstant(i))
             );
             p.conjoinWith(new Predicate(t));
         }
 
-        assertEquals(Integer.MAX_VALUE, p.reductionFactor(plan));
+        assertEquals(Double.MAX_VALUE, p.reductionFactor(plan));
     }
 }

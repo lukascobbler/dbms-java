@@ -9,6 +9,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /// The term class represents the logic for comparison operators
 /// between two expressions. It also has logic for how much will
@@ -64,95 +65,45 @@ public class Term {
     }
 
     /// A reduction factor for a term is the dividing factor for how many rows
-    /// this term will affect. For example, when the operator is `<=,`
-    /// by some estimations the number of queried rows that this term
-    /// will reduce for a given plan is n/2. In the case of equality operators,
-    /// the reduction factor is calculated based on distinct values for some
-    /// field name. `Integer.MAX_VALUE` denotes an "infinite" reduction factor
-    /// meaning a small number of rows will pass the term comparison.
+    /// this term will affect.
     ///
     /// @return The calculated reduction factor for this term.
-    public <T extends Scan> int reductionFactor(Plan<T> plan) {
-        if (termOperator != TermOperator.EQUALS && termOperator != TermOperator.IS) {
-            return 2;
-        }
-
-        // todo check reduction factor and equates
-
-        return switch (lhs) {
-            case Expression leftExpr when getUniqueField(leftExpr) instanceof String leftField -> switch (rhs) {
-                case Expression rightExpr when getUniqueField(rightExpr) instanceof String rightField ->
-                        Math.max(plan.distinctValues(leftField), plan.distinctValues(rightField));
-                case Expression r when r.isConstant() ->
-                        plan.distinctValues(leftField);
-                default -> Integer.MAX_VALUE;
-            };
-            case Expression leftExpr when leftExpr.isConstant() -> switch (rhs) {
-                case Expression rightExpr when getUniqueField(rightExpr) instanceof String rField -> {
-                    if (leftExpr.evaluate(null) instanceof NullConstant) yield Integer.MAX_VALUE;
-                    yield plan.distinctValues(rField);
-                }
-                case Expression r when r.isConstant() ->
-                        leftExpr.evaluate(null).equals(r.evaluate(null)) ? 1 : Integer.MAX_VALUE;
-                default -> Integer.MAX_VALUE;
-            };
-            default -> Integer.MAX_VALUE;
-        };
+    public <T extends Scan> double reductionFactor(Plan<T> plan) {
+        return ReductionFactorCalculator.calculateReductionFactor(this, plan);
     }
 
     /// Checks for "Field = Constant" or "Constant = Field" cases
     /// and if that is true, returns the constant.
     ///
-    /// @return The constant that some field equates to. `null`
+    /// @return The constant that some field equates to. `Optional.empty()`
     /// in any other case.
-    public Constant equatesWithConstant(String fieldName) {
-        if (termOperator != TermOperator.EQUALS) return null;
+    public Optional<Constant> equatesWithConstant(String fieldName) {
+        if (termOperator != TermOperator.EQUALS) return Optional.empty();
 
         return switch (new Pair(lhs, rhs)) {
             case Pair(FieldNameExpression exp, ConstantExpression(Constant c))
-                    when exp.qualifiedName().equals(fieldName) -> c;
+                    when exp.qualifiedName().equals(fieldName) -> Optional.of(c);
             case Pair(ConstantExpression(Constant c), FieldNameExpression exp)
-                    when exp.qualifiedName().equals(fieldName) -> c;
-            default -> null;
+                    when exp.qualifiedName().equals(fieldName) -> Optional.of(c);
+            default -> Optional.empty();
         };
     }
 
     /// Checks for "Field1 = Field2" or "Field2 = Field1" cases
-    /// and if that is true, returns the right field.
+    /// and if that is true, returns the field that the requested
+    /// field equals to.
     ///
-    /// @return The right field for two field equality comparisons. `null`
+    /// @return The field that the requested field equals to. `Optional.empty()`
     /// in any other case.
-    public String equatesWithFieldName(String fieldName) {
-        if (termOperator != TermOperator.EQUALS) return null;
+    public Optional<String> equatesWithFieldName(String fieldName) {
+        if (termOperator != TermOperator.EQUALS) return Optional.empty();
 
         return switch (new Pair(lhs, rhs)) {
             case Pair(FieldNameExpression exp1, FieldNameExpression exp2)
-                    when exp1.qualifiedName().equals(fieldName) -> exp2.qualifiedName();
+                    when exp1.qualifiedName().equals(fieldName) -> Optional.of(exp2.qualifiedName());
             case Pair(FieldNameExpression exp1, FieldNameExpression exp2)
-                    when exp2.qualifiedName().equals(fieldName) -> exp1.qualifiedName();
-            default -> null;
-        };
-    }
-
-    /// Extracts the unique field from a given expression for the
-    /// distinct value count.
-    ///
-    /// @return The extracted field's name if there is one field,
-    /// null if there is none or more than one.
-    private String getUniqueField(Expression expr) {
-        return switch (expr) {
-            case FieldNameExpression exp -> exp.qualifiedName();
-            case UnaryArithmeticExpression(var op, Expression operand) -> getUniqueField(operand);
-            case BinaryArithmeticExpression(Expression left, var op, Expression right) -> {
-                String leftField = getUniqueField(left);
-                String rightField = getUniqueField(right);
-
-                if (leftField != null && rightField != null) yield null;
-
-                yield (leftField != null) ? leftField : rightField;
-            }
-            case ConstantExpression c -> null;
-            case WildcardExpression wildcardExpression -> null;
+                    when exp2.qualifiedName().equals(fieldName) -> Optional.of(exp1.qualifiedName());
+            default -> Optional.empty();
         };
     }
 

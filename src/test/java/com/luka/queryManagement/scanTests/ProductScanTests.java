@@ -24,7 +24,7 @@ public class ProductScanTests {
     @Test
     public void testProductTotalRecordCount() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
@@ -42,7 +42,7 @@ public class ProductScanTests {
     @Test
     public void testProductFieldRetrievalFromDisjointSchemas() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
@@ -70,7 +70,7 @@ public class ProductScanTests {
     @Test
     public void testProductWithMidComplexityPredicate() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -100,7 +100,7 @@ public class ProductScanTests {
     @Test
     public void testProductWithFirstEmptyChild() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -122,7 +122,7 @@ public class ProductScanTests {
     @Test
     public void testProductWithSecondEmptyChild() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -144,7 +144,7 @@ public class ProductScanTests {
     @Test
     public void testProductWithBothEmptyChildren() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -173,7 +173,7 @@ public class ProductScanTests {
     @Test
     public void testProductBackwardsWithFirstEmptyChild() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -195,7 +195,7 @@ public class ProductScanTests {
     @Test
     public void testProductBackwardsWithSecondEmptyChild() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm = new Term(
                 new FieldNameExpression("t2_intField1"),
@@ -217,7 +217,7 @@ public class ProductScanTests {
     @Test
     public void testProductBackwardsWithBothEmptyChildren() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term emptyTerm1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -247,7 +247,7 @@ public class ProductScanTests {
     @Test
     public void testProductNavigationBackwards() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         try (UpdateScan s1 = new TableScan(testData.tx(), "table1", testData.layouts().get(0));
              UpdateScan s2 = new TableScan(testData.tx(), "table2", testData.layouts().get(1));
@@ -268,7 +268,7 @@ public class ProductScanTests {
     @Test
     public void testProductWithNullCheckThroughJoin() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
-        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoTables(tmpDir);
+        QueryTestUtils.QueryTestData testData = QueryTestUtils.initializeTwoFullTables(tmpDir);
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),

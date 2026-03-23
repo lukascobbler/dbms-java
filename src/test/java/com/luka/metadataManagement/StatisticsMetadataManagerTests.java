@@ -211,4 +211,46 @@ public class StatisticsMetadataManagerTests {
 
         tx.commit();
     }
+
+    @Test
+    public void testNullValuesCounting() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+
+        SimpleDB simpleDB = new SimpleDB(tmpDir);
+        Transaction tx = simpleDB.newTransaction();
+        MetadataManager metadataManager = simpleDB.getMetadataManager();
+
+        StatisticsMetadataManager sm = (StatisticsMetadataManager)
+                TestUtils.getPrivateField(metadataManager, "statisticsMetadataManager");
+        Method refreshStatisticsMethod = StatisticsMetadataManager.class.getDeclaredMethod("refreshStatistics", Transaction.class);
+        refreshStatisticsMethod.setAccessible(true);
+
+        Schema schema = new Schema();
+        schema.addIntField("int1", true);
+        schema.addIntField("int2", true);
+        schema.addIntField("int3", true);
+
+        metadataManager.createTable("tbl1", schema, tx);
+        Layout tableLayout = metadataManager.getLayout("tbl1", tx);
+
+        TableScan tableScanInsert = new TableScan(tx, "tbl1", tableLayout);
+
+        try (tableScanInsert) {
+            for (int i = 0; i < 10000; i++) {
+                tableScanInsert.insert();
+                tableScanInsert.setNull("int1");
+                tableScanInsert.setNull("int2");
+                tableScanInsert.setNull("int3");
+            }
+        }
+
+        refreshStatisticsMethod.invoke(sm, tx);
+
+        StatisticsInfo statisticsInfoAfter = metadataManager.getStatisticsInfo("tbl1", tableLayout, tx);
+
+        assertEquals(10000, statisticsInfoAfter.nullValues("int1"));
+        assertEquals(10000, statisticsInfoAfter.nullValues("int2"));
+        assertEquals(10000, statisticsInfoAfter.nullValues("int3"));
+        tx.commit();
+    }
 }
