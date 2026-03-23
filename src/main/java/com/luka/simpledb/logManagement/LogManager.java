@@ -71,16 +71,16 @@ public class LogManager {
     /// The algorithm implementation is as follows:
     /// * get boundary of block
     /// * calculate bytes needed for the new log record to be written
-    /// (log record length + integer length)
+    /// (log record runtimeLength + integer runtimeLength)
     /// * if boundary - bytes needed for the new log record is
     /// less than the size of an integer (because an additional integer
-    /// is needed to store new log record byte length),
+    /// is needed to store new log record byte runtimeLength),
     /// flush the block to disk and get a new one as the last block
     /// * position the new log record at the byte:
-    /// boundary - bytes length of the new record
+    /// boundary - bytes runtimeLength of the new record
     /// * place the bytes into the page using regular page API
     /// (which automatically puts the bytes and an integer
-    /// that contains the length of those bytes)
+    /// that contains the runtimeLength of those bytes)
     /// * update the block boundary to be the first byte
     /// where the newly written log record starts
     /// * update the latest log sequence number

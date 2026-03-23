@@ -6,16 +6,14 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static java.sql.Types.INTEGER;
-
-import static java.sql.Types.NULL;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ExpressionTests {
@@ -444,7 +442,7 @@ public class ExpressionTests {
                 new FieldNameExpression("int")
         );
 
-        assertEquals(INTEGER, e.type(schema));
+        assertEquals(DatabaseType.INT, e.type(schema));
     }
 
     @Test
@@ -511,6 +509,6 @@ public class ExpressionTests {
 
         Expression e = new ConstantExpression(NullConstant.INSTANCE);
 
-        assertEquals(NULL, e.type(schema));
+        assertEquals(DatabaseType.NULL, e.type(schema));
     }
 }

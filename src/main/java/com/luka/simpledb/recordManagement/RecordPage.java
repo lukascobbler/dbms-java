@@ -5,9 +5,8 @@ import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedE
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.recordManagement.exceptions.FieldIncorrectTypeException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLengthExceededException;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
-
-import static java.sql.Types.*;
 
 /// A `RecordPage` object represents an interface to the records of some block.
 /// It is an abstraction over getters and setters of fields, but leaves the
@@ -52,7 +51,7 @@ public class RecordPage {
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this get method.
     public int getInt(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != INTEGER) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.INT) {
             throw new FieldIncorrectTypeException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -66,7 +65,7 @@ public class RecordPage {
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this get method.
     public String getString(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != VARCHAR) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.VARCHAR) {
             throw new FieldIncorrectTypeException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -80,7 +79,7 @@ public class RecordPage {
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this get method.
     public boolean getBoolean(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != BOOLEAN) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.BOOLEAN) {
             throw new FieldIncorrectTypeException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -111,7 +110,7 @@ public class RecordPage {
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this set method.
     public void setInt(int slot, String fieldName, int value) {
-        if (layout.getSchema().type(fieldName) != INTEGER) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.INT) {
             throw new FieldIncorrectTypeException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -124,15 +123,15 @@ public class RecordPage {
     ///
     /// Sets a string in some slot, in some field with some value.
     ///
-    /// @throws FieldLengthExceededException if the length of the passed values exceeds
-    /// the maximum length defined by the schema for that field.
+    /// @throws FieldLengthExceededException if the runtimeLength of the passed values exceeds
+    /// the maximum runtimeLength defined by the schema for that field.
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this set method.
     public void setString(int slot, String fieldName, String value) {
-        if (layout.getSchema().type(fieldName) != VARCHAR) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.VARCHAR) {
             throw new FieldIncorrectTypeException();
         }
-        if (value.length() > layout.getSchema().length(fieldName)) {
+        if (value.length() > layout.getSchema().runtimeLength(fieldName)) {
             throw new FieldLengthExceededException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -147,7 +146,7 @@ public class RecordPage {
     /// @throws FieldIncorrectTypeException if the field name defined in the schema
     /// isn't of the type of this set method.
     public void setBoolean(int slot, String fieldName, boolean value) {
-        if (layout.getSchema().type(fieldName) != BOOLEAN) {
+        if (layout.getSchema().type(fieldName) != DatabaseType.BOOLEAN) {
             throw new FieldIncorrectTypeException();
         }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
@@ -173,9 +172,9 @@ public class RecordPage {
             for (String fieldName : schema.getFields()) {
                 int fieldPosition = offset(slot) + layout.getOffset(fieldName);
                 switch (schema.type(fieldName)) {
-                    case INTEGER -> transaction.setInt(blockId, fieldPosition, 0, false);
-                    case BOOLEAN -> transaction.setBoolean(blockId, fieldPosition, false, false);
-                    case VARCHAR -> transaction.setString(blockId, fieldPosition, "", false);
+                    case DatabaseType.INT -> transaction.setInt(blockId, fieldPosition, 0, false);
+                    case DatabaseType.BOOLEAN -> transaction.setBoolean(blockId, fieldPosition, false, false);
+                    case DatabaseType.VARCHAR -> transaction.setString(blockId, fieldPosition, "", false);
                     default -> throw new DatabaseTypeNotImplementedException();
                 }
             }

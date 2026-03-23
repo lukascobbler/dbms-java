@@ -3,7 +3,7 @@ package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ProductScan;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 public class ProductPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan1, childPlan2;

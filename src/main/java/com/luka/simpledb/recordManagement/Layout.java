@@ -4,12 +4,11 @@ import com.luka.simpledb.fileManagement.Page;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.recordManagement.exceptions.RecordTooLongException;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import static java.sql.Types.*;
 
 /// A `Layout` represents a physical description of some table's records. It
 /// contains information about where can fields be found, the current size of the record,
@@ -34,7 +33,7 @@ public class Layout {
         for (String fieldName : schema.getFields()) {
             fieldPositions.put(fieldName, i);
             offsets.put(fieldName, position);
-            position += lengthInBytes(fieldName);
+            position += runtimeLengthInBytes(fieldName);
             i += 1;
         }
         recordSize = position;
@@ -62,17 +61,17 @@ public class Layout {
 
     /// @return The number of bytes for a given field.
     /// @throws DatabaseTypeNotImplementedException if the type for that field is not implemented in the system.
-    private int lengthInBytes(String fieldName) {
-        int type = schema.type(fieldName);
-        switch (type) {
-            case INTEGER -> { return Integer.BYTES; }
-            case BOOLEAN -> { return Byte.BYTES; }
-            case VARCHAR -> {
-                int rawLen = Page.maxLength(schema.length(fieldName));
-                return padToFour(rawLen);
+    private int runtimeLengthInBytes(String fieldName) {
+        DatabaseType type = schema.type(fieldName);
+        return switch (type) {
+            case DatabaseType.INT -> DatabaseType.INT.length;
+            case DatabaseType.BOOLEAN -> DatabaseType.BOOLEAN.length;
+            case DatabaseType.VARCHAR -> {
+                int rawLen = Page.maxLength(schema.runtimeLength(fieldName));
+                yield padToFour(rawLen);
             }
             default -> throw new DatabaseTypeNotImplementedException();
-        }
+        };
     }
 
     /// @return The schema of this layout.

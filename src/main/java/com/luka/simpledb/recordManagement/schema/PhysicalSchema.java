@@ -1,5 +1,6 @@
-package com.luka.simpledb.recordManagement;
+package com.luka.simpledb.recordManagement.schema;
 
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
@@ -10,12 +11,12 @@ public class PhysicalSchema extends Schema {
     public static final int MAX_FIELDS = 31;
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
-    /// the length of that type.
+    /// the runtimeLength of that type.
     ///
     /// @throws FieldLimitException if the maximum number of fields is reached.
     /// @throws FieldDuplicateNameException if the field already exists within this schema.
     @Override
-    public void addField(String fieldName, int type, int length, boolean isNullable) {
+    public void addField(String fieldName, DatabaseType type, int length, boolean isNullable) {
         if (fields.size() + 1 > MAX_FIELDS) {
             throw new FieldLimitException();
         }

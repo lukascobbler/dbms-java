@@ -3,7 +3,7 @@ package com.luka.simpledb.metadataManagement;
 import com.luka.simpledb.metadataManagement.exceptions.ViewDefinitionNotFoundException;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 /// `ViewMetadataManager` worries about which view name corresponds to which view

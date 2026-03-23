@@ -4,7 +4,7 @@ import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.*;
 

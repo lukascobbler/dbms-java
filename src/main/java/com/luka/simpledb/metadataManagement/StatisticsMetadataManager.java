@@ -3,15 +3,14 @@ package com.luka.simpledb.metadataManagement;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.UniqueFieldsInfo;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.sql.Types.*;
 
 /// Keeps track of useful statistics for each table. They include: number of blocks,
 /// number of records, number of unique values for each field. It uses the implementation
@@ -95,9 +94,9 @@ public class StatisticsMetadataManager {
                         continue;
                     }
                     switch (tableSchema.type(fieldName)) {
-                        case INTEGER -> uniqueFieldsInfo.addValue(fieldName, tableScan.getInt(fieldName));
-                        case VARCHAR -> uniqueFieldsInfo.addValue(fieldName, tableScan.getString(fieldName));
-                        case BOOLEAN -> uniqueFieldsInfo.addValue(fieldName, tableScan.getBoolean(fieldName));
+                        case DatabaseType.INT -> uniqueFieldsInfo.addValue(fieldName, tableScan.getInt(fieldName));
+                        case DatabaseType.VARCHAR -> uniqueFieldsInfo.addValue(fieldName, tableScan.getString(fieldName));
+                        case DatabaseType.BOOLEAN -> uniqueFieldsInfo.addValue(fieldName, tableScan.getBoolean(fieldName));
                         default -> throw new DatabaseTypeNotImplementedException();
                     }
                 }

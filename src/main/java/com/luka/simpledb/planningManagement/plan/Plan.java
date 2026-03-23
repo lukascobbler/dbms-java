@@ -1,7 +1,7 @@
 package com.luka.simpledb.planningManagement.plan;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 public interface Plan<T extends Scan> {
     T open();

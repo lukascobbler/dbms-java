@@ -31,8 +31,8 @@ public class ParseCreateTableTests {
         String query = "TABLE cache (key VARCHAR(10 + 20 * 2), val VARCHAR(50))";
         CreateTableStatement stmt = parse(query);
 
-        assertEquals(50, stmt.schema().length("key"));
-        assertEquals(50, stmt.schema().length("val"));
+        assertEquals(50, stmt.schema().runtimeLength("key"));
+        assertEquals(50, stmt.schema().runtimeLength("val"));
     }
 
     @Test

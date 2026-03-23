@@ -4,6 +4,7 @@ import com.luka.simpledb.fileManagement.BlockId;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.RecordPage;
@@ -12,8 +13,6 @@ import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLengthExceededException;
 import com.luka.simpledb.recordManagement.exceptions.FieldNotFoundException;
 import com.luka.simpledb.transactionManagement.Transaction;
-
-import static java.sql.Types.*;
 
 /// A table scan is a special type of update scan because it has
 /// no child scans, and is always at the bottom of the scan evaluation
@@ -128,9 +127,9 @@ public class TableScan extends UpdateScan {
             return NullConstant.INSTANCE;
         }
         switch (layout.getSchema().type(fieldName)) {
-            case INTEGER -> { return new IntConstant(getInt(fieldName)); }
-            case BOOLEAN -> { return new BooleanConstant(getBoolean(fieldName)); }
-            case VARCHAR -> { return new StringConstant(getString(fieldName)); }
+            case DatabaseType.INT -> { return new IntConstant(getInt(fieldName)); }
+            case DatabaseType.BOOLEAN -> { return new BooleanConstant(getBoolean(fieldName)); }
+            case DatabaseType.VARCHAR -> { return new StringConstant(getString(fieldName)); }
             default -> throw new DatabaseTypeNotImplementedException();
         }
     }
@@ -147,8 +146,8 @@ public class TableScan extends UpdateScan {
 
     /// Sets the string field with the provided string value.
     ///
-    /// @throws FieldLengthExceededException – if the length of the passed values
-    /// exceeds the maximum length defined by the schema for that field.
+    /// @throws FieldLengthExceededException – if the runtimeLength of the passed values
+    /// exceeds the maximum runtimeLength defined by the schema for that field.
     public void internalSetString(String fieldName, String value) {
         recordPage.setString(currentRecord, fieldName, value);
     }
@@ -182,9 +181,9 @@ public class TableScan extends UpdateScan {
             return;
         }
         switch (layout.getSchema().type(fieldName)) {
-            case INTEGER -> setInt(fieldName, value.asInt());
-            case VARCHAR -> setString(fieldName, value.asString());
-            case BOOLEAN -> setBoolean(fieldName, value.asBoolean());
+            case DatabaseType.INT -> setInt(fieldName, value.asInt());
+            case DatabaseType.VARCHAR -> setString(fieldName, value.asString());
+            case DatabaseType.BOOLEAN -> setBoolean(fieldName, value.asBoolean());
             default -> throw new DatabaseTypeNotImplementedException();
         }
     }

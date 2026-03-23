@@ -13,7 +13,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;

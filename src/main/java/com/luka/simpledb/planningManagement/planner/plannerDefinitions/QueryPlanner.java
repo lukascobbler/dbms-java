@@ -17,12 +17,11 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.FieldNameExp
 import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.WildcardExpression;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.*;
-
-import static java.sql.Types.NULL;
 
 /// Abstraction over all implementations of query planners which performs
 /// all semantic checks and prepares the planner for query execution. Any
@@ -76,7 +75,7 @@ public abstract class QueryPlanner {
     /// @throws PlanValidationException on various failed query checks.
     private SelectStatement checkStatement(SelectStatement selectStatement, Transaction transaction) throws PlanValidationException {
         List<SingleSelection> expandedSingleSelections = new ArrayList<>();
-        List<Integer> firstTableFieldTypes = null;
+        List<DatabaseType> firstTableFieldTypes = null;
 
         for (SingleSelection singleSelection : selectStatement.unionizedSelections()) {
             ValidationContext ctx = new ValidationContext();
@@ -85,7 +84,7 @@ public abstract class QueryPlanner {
             List<ProjectionFieldInfo> expandedProjectionFields = expandProjections(singleSelection, ctx);
             Predicate qualifiedPredicate = validateAndQualifyPredicate(singleSelection.predicate(), ctx);
 
-            List<Integer> currentTypes = getProjectionTypes(expandedProjectionFields, ctx.unifiedSchema);
+            List<DatabaseType> currentTypes = getProjectionTypes(expandedProjectionFields, ctx.unifiedSchema);
             if (firstTableFieldTypes == null) {
                 firstTableFieldTypes = currentTypes;
             } else if (!firstTableFieldTypes.equals(currentTypes)) {
@@ -122,7 +121,7 @@ public abstract class QueryPlanner {
 
                 for (String field : tableSchema.getFields()) {
                     ctx.unifiedSchema.addField(qualifier + "." + field,
-                            tableSchema.type(field), tableSchema.length(field), tableSchema.isNullable(field));
+                            tableSchema.type(field), tableSchema.runtimeLength(field), tableSchema.isNullable(field));
 
                     if (!seenUnqualified.add(field)) {
                         ctx.ambiguousUnqualified.add(field);
@@ -214,7 +213,8 @@ public abstract class QueryPlanner {
             }
 
             if (qualLhs.type(ctx.unifiedSchema) != qualRhs.type(ctx.unifiedSchema) &&
-                    (qualLhs.type(ctx.unifiedSchema) != NULL && qualRhs.type(ctx.unifiedSchema) != NULL)) {
+                    (qualLhs.type(ctx.unifiedSchema) != DatabaseType.NULL &&
+                            qualRhs.type(ctx.unifiedSchema) != DatabaseType.NULL)) {
                 throw new PlanValidationException("Different types are compared in the 'WHERE' predicate.");
             }
 
@@ -225,7 +225,7 @@ public abstract class QueryPlanner {
     }
 
     /// @return The type checked list of all expressions' types.
-    private List<Integer> getProjectionTypes(List<ProjectionFieldInfo> projections, Schema unifiedSchema) {
+    private List<DatabaseType> getProjectionTypes(List<ProjectionFieldInfo> projections, Schema unifiedSchema) {
         try {
             return projections.stream()
                     .map(p -> p.expression().type(unifiedSchema))

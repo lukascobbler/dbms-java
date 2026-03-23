@@ -4,7 +4,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 

@@ -3,7 +3,8 @@ package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.UnionAllScan;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 public class UnionAllPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan1, childPlan2;
@@ -17,11 +18,11 @@ public class UnionAllPlan implements Plan<Scan> {
         Schema child2Schema = childPlan2.outputSchema();
 
         for (String fieldName : child1Schema.getFields()) {
-            int type = child1Schema.type(fieldName);
-            int length = Math.max(child1Schema.length(fieldName), child2Schema.length(fieldName));
+            DatabaseType type = child1Schema.type(fieldName);
+            int runtimeLength = Math.max(child1Schema.runtimeLength(fieldName), child2Schema.runtimeLength(fieldName));
             boolean isNullable = child1Schema.isNullable(fieldName) || child2Schema.isNullable(fieldName);
 
-            outputSchema.addField(fieldName, type, length, isNullable);
+            outputSchema.addField(fieldName, type, runtimeLength, isNullable);
         }
     }
 

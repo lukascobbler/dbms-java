@@ -5,7 +5,7 @@ import com.luka.simpledb.metadataManagement.exceptions.IndexDuplicateNameExcepti
 import com.luka.simpledb.metadataManagement.exceptions.IndexTableIncorrectException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;

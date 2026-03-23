@@ -4,13 +4,12 @@ import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeExce
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static java.sql.Types.INTEGER;
 
 /// Expressions that the database virtual machine evaluates on concrete table
 /// rows. This interface is an abstraction over all types of expressions that
@@ -46,22 +45,22 @@ public sealed interface Expression permits
     }
 
     /// @return The type of this expression AST for a given schema.
-    default int type(Schema schema) {
+    default DatabaseType type(Schema schema) {
         return switch (this) {
             case ConstantExpression c -> c.constant().type();
             case FieldNameExpression f -> schema.type(f.qualifiedName());
             case BinaryArithmeticExpression b -> {
-                int leftT = b.left().type(schema);
-                int rightT = b.right().type(schema);
-                if (leftT == INTEGER && rightT == INTEGER) {
-                    yield INTEGER;
+                DatabaseType leftT = b.left().type(schema);
+                DatabaseType rightT = b.right().type(schema);
+                if (leftT == DatabaseType.INT && rightT == DatabaseType.INT) {
+                    yield DatabaseType.INT;
                 }
                 throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
             }
             case UnaryArithmeticExpression u -> {
-                int operandT = u.operand().type(schema);
-                if (operandT == INTEGER) {
-                    yield INTEGER;
+                DatabaseType operandT = u.operand().type(schema);
+                if (operandT == DatabaseType.INT) {
+                    yield DatabaseType.INT;
                 }
                 throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
             }
@@ -70,16 +69,16 @@ public sealed interface Expression permits
         };
     }
 
-    /// @return The length needed for the longest operand
+    /// @return The runtimeLength needed for the longest operand
     /// in the expression AST for a given schema.
     default int length(Schema schema) {
         return switch (this) {
             case ConstantExpression c -> c.constant().length();
-            case FieldNameExpression f -> schema.length(f.qualifiedName());
+            case FieldNameExpression f -> schema.runtimeLength(f.qualifiedName());
             case BinaryArithmeticExpression b -> Math.max(b.left().length(schema), b.right().length(schema));
             case UnaryArithmeticExpression u -> u.operand().length(schema);
             case WildcardExpression w ->
-                    throw new IncompatibleConstantTypeException("Wildcard has no length");
+                    throw new IncompatibleConstantTypeException("Wildcard has no runtimeLength");
         };
     }
 

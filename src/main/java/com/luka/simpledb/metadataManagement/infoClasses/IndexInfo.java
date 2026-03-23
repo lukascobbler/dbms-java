@@ -1,12 +1,10 @@
 package com.luka.simpledb.metadataManagement.infoClasses;
 
-import com.luka.simpledb.metadataManagement.exceptions.IndexNotImplementedException;
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.recordManagement.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.simpledb.transactionManagement.Transaction;
-
-import static java.sql.Types.*;
 
 // todo comment class once indexes are implemented
 public class IndexInfo {
@@ -62,9 +60,10 @@ public class IndexInfo {
         schema.addIntField("id", false);
 
         switch (tableSchema.type(fieldName)) {
-            case INTEGER -> schema.addIntField("datavalue", false);
-            case BOOLEAN -> schema.addBooleanField("datavalue", false);
-            case VARCHAR -> schema.addStringField("datavalue", tableSchema.length(fieldName), false);
+            case DatabaseType.INT -> schema.addIntField("datavalue", false);
+            case DatabaseType.BOOLEAN -> schema.addBooleanField("datavalue", false);
+            case DatabaseType.VARCHAR -> schema.addStringField(
+                    "datavalue", tableSchema.runtimeLength(fieldName), false);
             default -> throw new DatabaseTypeNotImplementedException();
         }
 

@@ -11,8 +11,9 @@ import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.PartialEvaluator;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.recordManagement.exceptions.RecordTooLongException;
 import com.luka.simpledb.transactionManagement.Transaction;
 
@@ -20,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.sql.Types.NULL;
 
 /// Abstraction over all implementations of update planners which performs
 /// all semantic checks and prepares the planner for update execution. Any
@@ -73,14 +72,14 @@ public abstract class UpdatePlanner {
             }
 
             if (!tableLayout.getSchema().isNullable(newFieldValue.fieldName())
-                    && foldedExpr.type(tableLayout.getSchema()) == NULL) {
+                    && foldedExpr.type(tableLayout.getSchema()) == DatabaseType.NULL) {
                 throw new PlanValidationException(
                         String.format("Field '%s' isn't nullable", newFieldValue.fieldName())
                 );
             }
 
             if (tableLayout.getSchema().type(newFieldValue.fieldName()) != foldedExpr.type(tableLayout.getSchema())
-                    && newFieldValue.newValueExpression().type(tableLayout.getSchema()) != NULL) {
+                    && newFieldValue.newValueExpression().type(tableLayout.getSchema()) != DatabaseType.NULL) {
                 throw new PlanValidationException(String.format(
                         "Expression '%s' has the wrong type",
                         newFieldValue.newValueExpression())
@@ -125,14 +124,14 @@ public abstract class UpdatePlanner {
             }
 
             if (!tableLayout.getSchema().isNullable(newFieldValue.fieldName())
-                    && newFieldValue.newValue().type() == NULL) {
+                    && newFieldValue.newValue().type() == DatabaseType.NULL) {
                 throw new PlanValidationException(
                         String.format("Field '%s' isn't nullable", newFieldValue.fieldName())
                 );
             }
 
             if (tableLayout.getSchema().type(newFieldValue.fieldName()) != newFieldValue.newValue().type()
-                    && newFieldValue.newValue().type() != NULL) {
+                    && newFieldValue.newValue().type() != DatabaseType.NULL) {
                 throw new PlanValidationException(
                         String.format("Field '%s' has the wrong type", newFieldValue.fieldName())
                 );
@@ -293,7 +292,8 @@ public abstract class UpdatePlanner {
                 }
             }
 
-            if (lhs.type(schema) != rhs.type(schema) && lhs.type(schema) != NULL && rhs.type(schema) != NULL) {
+            if (lhs.type(schema) != rhs.type(schema)
+                    && lhs.type(schema) != DatabaseType.NULL && rhs.type(schema) != DatabaseType.NULL) {
                 throw new PlanValidationException("Different types are compared in the 'WHERE' predicate.");
             }
         }

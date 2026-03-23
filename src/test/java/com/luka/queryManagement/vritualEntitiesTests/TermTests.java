@@ -11,7 +11,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
-import com.luka.simpledb.recordManagement.PhysicalSchema;
+import com.luka.simpledb.recordManagement.schema.PhysicalSchema;
 import com.luka.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 

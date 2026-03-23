@@ -7,8 +7,8 @@ import com.luka.simpledb.parsingManagement.tokenizer.token.KeywordToken;
 import com.luka.simpledb.parsingManagement.tokenizer.token.SymbolToken;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
-import com.luka.simpledb.recordManagement.PhysicalSchema;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.PhysicalSchema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.recordManagement.exceptions.FieldDuplicateNameException;
 import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 
@@ -23,7 +23,7 @@ import com.luka.simpledb.recordManagement.exceptions.FieldLimitException;
 /// <FieldDefinition>       := <FieldName> INT | VARCHAR (<Expression>) | BOOLEAN [NOT NULL]
 /// ```
 ///
-/// For CREATE TABLE commands, putting expressions as VARCHAR length values is technically
+/// For CREATE TABLE commands, putting expressions as VARCHAR runtimeLength values is technically
 /// valid SQL, but these expressions must be constant and will be evaluated in the parser
 /// instead of in the scan.
 public class ParseCreateTable {
@@ -78,7 +78,7 @@ public class ParseCreateTable {
 
     /// @return Parsed one field definition wrapped in a schema object for
     /// easier addition of schemas.
-    /// @throws ParsingException if the VARCHAR length isn't a constant or if it
+    /// @throws ParsingException if the VARCHAR runtimeLength isn't a constant or if it
     /// isn't an integer; if the DB type isn't recognized.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
@@ -89,7 +89,7 @@ public class ParseCreateTable {
         } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 
-            // Since VARCHAR can contain expressions as the length, they
+            // Since VARCHAR can contain expressions as the runtimeLength, they
             // must be calculated here instead of the planner to not complicate
             // Schema objects. The calculation fails if the user provides a
             // non-constant non-int expression as the value. Constant expressions
@@ -97,14 +97,14 @@ public class ParseCreateTable {
             Expression constantExpression = new ParseExpression(ctx).parse();
 
             if (!constantExpression.isConstant()) {
-                throw new ParsingException("The varchar string length must be a constant expression");
+                throw new ParsingException("The varchar string runtimeLength must be a constant expression");
             }
 
             int stringLength;
             try {
                 stringLength = constantExpression.evaluate(null).asInt();
             } catch (IncompatibleConstantTypeException e) {
-                throw new ParsingException("The varchar string length must be an integer");
+                throw new ParsingException("The varchar string runtimeLength must be an integer");
             }
 
             ctx.eat(SymbolToken.RIGHT_PAREN);

@@ -1,27 +1,27 @@
 package com.luka.simpledb.parsingManagement.statement;
 
-import com.luka.simpledb.recordManagement.Schema;
-
-import static java.sql.Types.*;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
+import org.jetbrains.annotations.NotNull;
 
 /// Represents the parsed data of `CREATE TABLE` queries.
 /// `CREATE TABLE` queries need the new table name, and
 /// a schema of that new table.
 public record CreateTableStatement(String tableName, Schema schema) implements Statement {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         StringBuilder result = new StringBuilder("CREATE TABLE ");
         result.append(tableName).append(" (");
 
         for (String fieldName : schema.getFields()) {
             switch (schema.type(fieldName)) {
-                case INTEGER -> result.append(fieldName).append(" INT");
-                case VARCHAR -> result
+                case DatabaseType.INT -> result.append(fieldName).append(" INT");
+                case DatabaseType.VARCHAR -> result
                         .append(fieldName)
                         .append(" VARCHAR(")
-                        .append(schema.length(fieldName))
+                        .append(schema.runtimeLength(fieldName))
                         .append(")");
-                case BOOLEAN -> result.append(fieldName).append(" BOOLEAN");
+                case DatabaseType.BOOLEAN -> result.append(fieldName).append(" BOOLEAN");
             }
 
             if (!schema.isNullable(fieldName)) {

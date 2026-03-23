@@ -3,7 +3,8 @@ package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.RenameScan;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.Map;
 
@@ -19,11 +20,11 @@ public class RenamePlan implements Plan<Scan> {
         Schema oldSchema = childPlan.outputSchema();
 
         for (var mapEntry : newToOldNames.entrySet()) {
-            int fieldType = oldSchema.type(mapEntry.getValue());
-            int length = oldSchema.length(mapEntry.getValue());
+            DatabaseType fieldType = oldSchema.type(mapEntry.getValue());
+            int runtimeLength = oldSchema.runtimeLength(mapEntry.getValue());
             boolean isNullable = oldSchema.isNullable(mapEntry.getValue());
 
-            outputSchema.addField(mapEntry.getKey(), fieldType, length, isNullable);
+            outputSchema.addField(mapEntry.getKey(), fieldType, runtimeLength, isNullable);
         }
     }
 

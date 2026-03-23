@@ -3,8 +3,9 @@ package com.luka.simpledb.metadataManagement;
 import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class TableMetadataManager {
 
         Schema fieldCatalogSchema = new Schema();
         fieldCatalogSchema.addIntField("type", false);
-        fieldCatalogSchema.addIntField("length", false);
+        fieldCatalogSchema.addIntField("runtimeLength", false);
         fieldCatalogSchema.addIntField("offset", false);
         fieldCatalogSchema.addIntField("tableid", false);
         fieldCatalogSchema.addStringField("fieldname", MAX_NAME_LENGTH, false);
@@ -83,8 +84,8 @@ public class TableMetadataManager {
                 fieldCatalogScan.setInt("tableid", tableIdNum);
                 fieldCatalogScan.setString("fieldname", fieldName);
                 fieldCatalogScan.setBoolean("nullable", schema.isNullable(fieldName));
-                fieldCatalogScan.setInt("type", schema.type(fieldName));
-                fieldCatalogScan.setInt("length", schema.length(fieldName));
+                fieldCatalogScan.setInt("type", schema.type(fieldName).sqlType);
+                fieldCatalogScan.setInt("runtimeLength", schema.runtimeLength(fieldName));
                 fieldCatalogScan.setInt("offset", layout.getOffset(fieldName));
             }
         }
@@ -124,12 +125,12 @@ public class TableMetadataManager {
             while (fieldCatalogScan.next()) {
                 if (fieldCatalogScan.getInt("tableid") == tableId) {
                     String fieldName = fieldCatalogScan.getString("fieldname");
-                    int fieldType = fieldCatalogScan.getInt("type");
-                    int fieldLength = fieldCatalogScan.getInt("length");
+                    int sqlType = fieldCatalogScan.getInt("type");
+                    int fieldLength = fieldCatalogScan.getInt("runtimeLength");
                     int fieldOffset = fieldCatalogScan.getInt("offset");
                     boolean fieldNullable = fieldCatalogScan.getBoolean("nullable");
                     offsets.put(fieldName, fieldOffset);
-                    schema.addField(fieldName, fieldType, fieldLength, fieldNullable);
+                    schema.addField(fieldName, DatabaseType.get(sqlType), fieldLength, fieldNullable);
                 }
             }
         }

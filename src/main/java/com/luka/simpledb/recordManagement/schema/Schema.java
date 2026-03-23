@@ -1,11 +1,12 @@
-package com.luka.simpledb.recordManagement;
+package com.luka.simpledb.recordManagement.schema;
+
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.FieldInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.sql.Types.*;
 
 /// `Schema` objects hold information about a table's field names, lengths
 /// and types. Does not limit the number of records per field.
@@ -14,37 +15,37 @@ public class Schema {
     protected final Map<String, FieldInfo> info = new HashMap<>();
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
-    /// the length of that type. Allows duplicate types and assumes that every duplicate
+    /// the runtimeLength of that type. Allows duplicate types and assumes that every duplicate
     /// type will have the same metadata so it always returns the first one.
-    public void addField(String fieldName, int type, int length, boolean isNullable) {
+    public void addField(String fieldName, DatabaseType type, int runtimeLength, boolean isNullable) {
         fields.add(fieldName);
 
         if (!info.containsKey(fieldName)) {
-            info.put(fieldName, new FieldInfo(type, length, isNullable));
+            info.put(fieldName, new FieldInfo(type, runtimeLength, isNullable));
         }
     }
 
     /// Add an integer field.
     public void addIntField(String fieldName, boolean isNullable) {
-        addField(fieldName, INTEGER, 4, isNullable);
+        addField(fieldName, DatabaseType.INT, DatabaseType.INT.length, isNullable);
     }
 
-    /// Add a string field with the maximum length (VARCHAR type).
-    public void addStringField(String fieldName, int length, boolean isNullable) {
-        addField(fieldName, VARCHAR, length, isNullable);
+    /// Add a string field with the maximum runtimeLength (VARCHAR type).
+    public void addStringField(String fieldName, int runtimeLength, boolean isNullable) {
+        addField(fieldName, DatabaseType.VARCHAR, runtimeLength, isNullable);
     }
 
     /// Add a boolean field.
     public void addBooleanField(String fieldName, boolean isNullable) {
-        addField(fieldName, BOOLEAN, 1, isNullable);
+        addField(fieldName, DatabaseType.BOOLEAN, DatabaseType.BOOLEAN.length, isNullable);
     }
 
     /// Add a field described by its name from some other schema.
     public void add(String fieldName, Schema otherSchema) {
-        int type = otherSchema.type(fieldName);
-        int length = otherSchema.length(fieldName);
+        DatabaseType type = otherSchema.type(fieldName);
+        int runtimeLength = otherSchema.runtimeLength(fieldName);
         boolean isNullable = otherSchema.isNullable(fieldName);
-        addField(fieldName, type, length, isNullable);
+        addField(fieldName, type, runtimeLength, isNullable);
     }
 
     /// Add all fields from other schema to this schema.
@@ -65,13 +66,13 @@ public class Schema {
     }
 
     /// @return The type of the field described by its name from the SQL constants.
-    public int type(String fieldName) {
+    public DatabaseType type(String fieldName) {
         return info.get(fieldName).type();
     }
 
-    /// @return The length of the field described by its name.
-    public int length(String fieldName) {
-        return info.get(fieldName).length();
+    /// @return The runtime length of the field described by its name.
+    public int runtimeLength(String fieldName) {
+        return info.get(fieldName).runtimeLength();
     }
 
     /// @return Whether the field is nullable.

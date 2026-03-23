@@ -9,7 +9,7 @@ import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
@@ -44,8 +44,8 @@ public class MetadataManagerTests {
         metadataManager.createTable("TestTable1", schema, transaction);
         Layout layout = metadataManager.getLayout("TestTable1", transaction);
         int size = layout.recordLength();
-        // 4 for the slot, 4 for one integer, 9 for the string length, 3 for the
-        // bytes per character, 4 for the actual length and 1 for padding to 4
+        // 4 for the slot, 4 for one integer, 9 for the string runtimeLength, 3 for the
+        // bytes per character, 4 for the actual runtimeLength and 1 for padding to 4
         assertEquals(4 + 4 + ((9 * 3) + 4 + 1), size);
         assertEquals(schema, layout.getSchema());
 

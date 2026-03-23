@@ -7,7 +7,7 @@ import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.settings.SimpleDBSettings;
 import com.luka.simpledb.transactionManagement.Transaction;
 import com.luka.testUtils.TestUtils;
@@ -70,10 +70,10 @@ public class TableMetadataManagerTests {
                 int tableId = fieldCatalogScan.getInt("tableid");
                 String fieldName = fieldCatalogScan.getString("fieldname");
                 int type = fieldCatalogScan.getInt("type");
-                int length = fieldCatalogScan.getInt("length");
+                int length = fieldCatalogScan.getInt("runtimeLength");
                 int offset = fieldCatalogScan.getInt("offset");
                 System.out.println("Table Id: " + tableId + ", field name: " +
-                        fieldName + ", field type: " + type + ", length: " + length + ", offset: " + offset);
+                        fieldName + ", field type: " + type + ", runtimeLength: " + length + ", offset: " + offset);
             }
         }
 

@@ -6,7 +6,7 @@ import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.metadataManagement.exceptions.*;
 import com.luka.simpledb.recordManagement.Layout;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
 
 import java.util.Map;

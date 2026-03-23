@@ -6,7 +6,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.Objects;
 

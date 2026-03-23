@@ -67,7 +67,7 @@ public class FileManager {
 
             if (fc.size() <= (long) blockId.blockNum() * blockSize) {
                 throw new FileException("cannot write to block with index " +
-                        "greater than length of blocks for file " + blockId.filename());
+                        "greater than runtimeLength of blocks for file " + blockId.filename());
             }
 
             return fc.write(page.contents(), (long) blockId.blockNum() * blockSize);

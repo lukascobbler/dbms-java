@@ -4,7 +4,7 @@ import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.SelectReadOnlyScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 public class SelectReadOnlyPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan;

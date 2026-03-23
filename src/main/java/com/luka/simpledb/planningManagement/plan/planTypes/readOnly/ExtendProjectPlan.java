@@ -5,7 +5,8 @@ import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendProjectScan;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.DatabaseType;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +24,11 @@ public class ExtendProjectPlan implements Plan<Scan> {
         projectionFieldInfos = new HashMap<>();
 
         for (ProjectionFieldInfo projectionFieldInfo : projectionFieldInfoList) {
-            int type = projectionFieldInfo.expression().type(childPlan.outputSchema());
-            int length = projectionFieldInfo.expression().length(childPlan.outputSchema());
+            DatabaseType type = projectionFieldInfo.expression().type(childPlan.outputSchema());
+            int runtimeLength = projectionFieldInfo.expression().length(childPlan.outputSchema());
             boolean isNullable = projectionFieldInfo.expression().isNullable(childPlan.outputSchema());
 
-            outputSchema.addField(projectionFieldInfo.name(), type, length, isNullable);
+            outputSchema.addField(projectionFieldInfo.name(), type, runtimeLength, isNullable);
             projectionFieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.expression());
         }
     }

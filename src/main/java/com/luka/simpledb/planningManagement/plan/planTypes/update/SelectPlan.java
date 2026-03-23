@@ -4,7 +4,7 @@ import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
-import com.luka.simpledb.recordManagement.Schema;
+import com.luka.simpledb.recordManagement.schema.Schema;
 
 public class SelectPlan implements Plan<UpdateScan> {
     private final Plan<UpdateScan> childPlan;
