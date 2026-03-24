@@ -2,12 +2,15 @@ package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
+
+import java.util.List;
 
 /// A table plan is a plan that has direct information about a table.
 /// It is a special type of plan that isn't related to any relational algebra
@@ -78,5 +81,16 @@ public class TableReadOnlyPlan implements Plan<Scan> {
     @Override
     public Schema outputSchema() {
         return tableLayout.getSchema();
+    }
+
+    @Override
+    public void explainPlan(List<ExplainData> previousExplanations, int ident) {
+        previousExplanations.add(new ExplainData(
+                ident,
+                this.getClass().getSimpleName(),
+                blocksAccessed(),
+                recordsOutput(),
+                String.format("'%s'", tableName)
+        ));
     }
 }

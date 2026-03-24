@@ -3,6 +3,9 @@ package com.luka.simpledb.planningManagement.plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.recordManagement.schema.Schema;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /// Plans objects have two purposes:
 /// - doing different estimations on data in order to produce cost functions'
 /// results for the query subtree
@@ -75,5 +78,16 @@ public interface Plan<T extends Scan> {
     /// @return The schema of this plan's output data. If this plan doesn't transform the
     /// data, it will probably return the subplan's output schema.
     Schema outputSchema();
-//    @Override public abstract String toString(); todo add toString for nice printing of plans in the EXPLAIN command
+
+    /// @return The string representing a table with all subplan explanations.
+    default String explainedPlan() {
+        List<ExplainData> explainData = new ArrayList<>();
+
+        this.explainPlan(explainData, 0);
+
+        return ExplainData.explainAllPlans(explainData);
+    }
+
+    /// Populates the plan recursively with correct indentations.
+    void explainPlan(List<ExplainData> previousExplanations, int ident);
 }

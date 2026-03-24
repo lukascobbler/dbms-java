@@ -1,10 +1,13 @@
 package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.UnionAllScan;
 import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.schema.Schema;
+
+import java.util.List;
 
 /// Plan for the "union all" relational algebra operator.
 /// Does not remove duplicate rows. Read-only operations only.
@@ -83,5 +86,19 @@ public class UnionAllPlan implements Plan<Scan> {
     @Override
     public Schema outputSchema() {
         return outputSchema;
+    }
+
+    @Override
+    public void explainPlan(List<ExplainData> previousExplanations, int ident) {
+        previousExplanations.add(new ExplainData(
+                ident,
+                this.getClass().getSimpleName(),
+                blocksAccessed(),
+                recordsOutput(),
+                ""
+        ));
+
+        childPlan1.explainPlan(previousExplanations, ident + 1);
+        childPlan2.explainPlan(previousExplanations, ident + 1);
     }
 }

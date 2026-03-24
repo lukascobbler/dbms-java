@@ -27,9 +27,6 @@ public class Planner {
             case SelectStatement selectStatement -> {
                 return queryPlanner.createValidatedPlan(selectStatement, transaction);
             }
-            case ExplainStatement explainStatement -> { // todo statement explaining (plan printing)
-                throw new UnsupportedOperationException();
-            }
             default -> throw new PlanValidationException("The given statement is not a query statement");
         }
     }
@@ -52,10 +49,26 @@ public class Planner {
                 updatePlanner.executeInsertValidated(insertStatement, transaction);
             case UpdateStatement updateStatement ->
                 updatePlanner.executeUpdateValidated(updateStatement, transaction);
-            case ExplainStatement explainStatement -> { // todo statement explaining (plan printing)
-                throw new UnsupportedOperationException();
-            }
             default -> throw new PlanValidationException("The given statement is not an update statement.");
+        };
+    }
+
+    public String explainStatement(String query, Transaction transaction) {
+        Parser parser = new Parser(query);
+
+        Statement statement = parser.parse();
+
+        return switch (statement) {
+            case ExplainStatement explainStatement ->
+                switch (explainStatement.explainingStatement()) {
+                    case SelectStatement s ->
+                            queryPlanner.createValidatedPlan(s, transaction).explainedPlan();
+                    case ExplainStatement e ->
+                            "You can't explain an explain statement :)";
+                    default ->
+                            "Update plan explaining is sadly not supported";
+                };
+            default -> throw new PlanValidationException("The given statement is not an explain statement.");
         };
     }
 }

@@ -1,6 +1,7 @@
 package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.parsingManagement.statement.insert.NewFieldValueInfo;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 /// fields should be set to in the new row.
 public record InsertStatement(String tableName, List<NewFieldValueInfo> newFieldValues) implements Statement {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         StringBuilder result = new StringBuilder("INSERT INTO ");
         result.append(tableName).append(" ");
 

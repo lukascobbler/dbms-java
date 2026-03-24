@@ -1,5 +1,6 @@
 package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.SelectReadOnlyScan;
@@ -82,7 +83,7 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
     /// If any of the terms of a predicate equate the requested field to a NULL (all
     /// terms are joined by `AND`), the number of null values for that field will
     /// be exactly the record output of this plan since all other rows where that isn't
-    /// the case failed the filter.
+    /// the case failed the filter (only if the field is nullable).
     ///
     /// Else, if at least one term explicitly excludes nulls by doing operations like
     /// F = NULL or F > NULL, 0 rows will be NULL for the requested field.
@@ -94,8 +95,10 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
     /// @return The number of distinct values for a field after the selection (filtering).
     @Override
     public int nullValues(String fieldName) {
-        if (predicate.equatesWithNull(fieldName)) {
+        if (predicate.equatesWithNull(fieldName) && childPlan.outputSchema().isNullable(fieldName)) {
             return recordsOutput();
+        } else if (predicate.equatesWithNull(fieldName) && !childPlan.outputSchema().isNullable(fieldName)) {
+            return 0;
         }
 
         if (predicate.excludesNulls(fieldName)) {
@@ -113,5 +116,18 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
     @Override
     public Schema outputSchema() {
         return childPlan.outputSchema();
+    }
+
+    @Override
+    public void explainPlan(List<ExplainData> previousExplanations, int ident) {
+        previousExplanations.add(new ExplainData(
+                ident,
+                this.getClass().getSimpleName(),
+                blocksAccessed(),
+                recordsOutput(),
+                predicate.toString()
+        ));
+
+        childPlan.explainPlan(previousExplanations, ident + 1);
     }
 }

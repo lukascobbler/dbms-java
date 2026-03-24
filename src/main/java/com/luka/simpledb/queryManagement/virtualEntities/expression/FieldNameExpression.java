@@ -2,6 +2,7 @@ package com.luka.simpledb.queryManagement.virtualEntities.expression;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public record FieldNameExpression(String fieldName, Optional<String> rangeVariab
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return qualifiedName();
     }
 }

@@ -2,6 +2,7 @@ package com.luka.simpledb.parsingManagement.statement;
 
 import com.luka.simpledb.parsingManagement.statement.update.NewFieldExpressionAssignment;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public record UpdateStatement(String tableName, List<NewFieldExpressionAssignment> newValues, Predicate predicate)
         implements Statement {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         StringBuilder result = new StringBuilder("UPDATE ");
         result.append(tableName);
         result.append(" SET ");

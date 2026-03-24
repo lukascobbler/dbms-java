@@ -1,6 +1,7 @@
 package com.luka.simpledb.planningManagement.plan.planTypes.readOnly;
 
 import com.luka.simpledb.parsingManagement.statement.select.ProjectionFieldInfo;
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendProjectScan;
@@ -9,10 +10,7 @@ import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.schema.Schema;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /// Plan for the "generalized projection" relational algebra operator.
 /// Read-only operations only.
@@ -86,7 +84,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
 
         if (referencedFields.size() == 1) {
             String childField = referencedFields.iterator().next();
-            return childPlan.distinctValues(childField); // todo test t1_intfield1 should be the same as table1.intfield1
+            return childPlan.distinctValues(childField);
         }
 
         return childPlan.recordsOutput();
@@ -139,5 +137,17 @@ public class ExtendProjectPlan implements Plan<Scan> {
     @Override
     public Schema outputSchema() {
         return outputSchema;
+    }
+
+    @Override
+    public void explainPlan(List<ExplainData> previousExplanations, int ident) {
+        previousExplanations.add(new ExplainData(
+                ident, this.getClass().getSimpleName(),
+                blocksAccessed(),
+                recordsOutput(),
+                ""
+        ));
+
+        childPlan.explainPlan(previousExplanations, ident + 1);
     }
 }

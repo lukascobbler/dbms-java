@@ -1,6 +1,7 @@
 package com.luka.queryManagement.vritualEntitiesTests;
 
 import com.luka.queryManagement.QueryTestUtils;
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
@@ -106,6 +107,7 @@ public class PredicateTests {
             @Override public int distinctValues(String fieldName) { return 1000; }
             @Override public Schema outputSchema() { return null; }
             @Override public int nullValues(String fieldName) { return 0; }
+            @Override public void explainPlan(List<ExplainData> previousExplanations, int ident) { }
         };
 
         Predicate p = new Predicate();

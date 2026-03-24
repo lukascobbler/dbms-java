@@ -1,5 +1,6 @@
 package com.luka.simpledb.planningManagement.plan.planTypes.update;
 
+import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
@@ -113,5 +114,18 @@ public class SelectPlan implements Plan<UpdateScan> {
     @Override
     public Schema outputSchema() {
         return childPlan.outputSchema();
+    }
+
+    @Override
+    public void explainPlan(List<ExplainData> previousExplanations, int ident) {
+        previousExplanations.add(new ExplainData(
+                ident,
+                this.getClass().getSimpleName(),
+                blocksAccessed(),
+                recordsOutput(),
+                predicate.toString()
+        ));
+
+        childPlan.explainPlan(previousExplanations, ident + 1);
     }
 }
