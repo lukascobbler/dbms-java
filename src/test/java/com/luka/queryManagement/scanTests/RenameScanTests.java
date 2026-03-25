@@ -35,10 +35,10 @@ public class RenameScanTests {
             assertTrue(scan.next());
 
             assertTrue(scan.hasField("renamedInt"));
-            assertEquals(0, scan.getInt("renamedInt"));
+            assertEquals(0, scan.getValue("renamedInt").asInt());
 
             assertTrue(scan.hasField("t1_intField2"));
-            assertEquals(1, scan.getInt("t1_intField2"));
+            assertEquals(1, scan.getValue("t1_intField2").asInt());
         }
     }
 
@@ -55,7 +55,7 @@ public class RenameScanTests {
 
             assertFalse(scan.hasField("t1_stringField1"));
 
-            assertThrows(FieldNotFoundInScanException.class, () -> scan.getString("t1_stringField1"));
+            assertThrows(FieldNotFoundInScanException.class, () -> scan.getValue("t1_stringField1").asString());
         }
     }
 
@@ -84,7 +84,7 @@ public class RenameScanTests {
 
             int count = 0;
             while (scan.next()) {
-                assertTrue(scan.getString("description").startsWith("str"));
+                assertTrue(scan.getValue("description").asString().startsWith("str"));
                 count++;
             }
             assertEquals(8, count);

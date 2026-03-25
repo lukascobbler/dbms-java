@@ -3,7 +3,6 @@ package com.luka.simpledb.queryManagement.virtualEntities;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.ConstantExpression;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.FieldNameExpression;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
@@ -133,10 +132,10 @@ public class Predicate {
                 t.getTermOperator() == TermOperator.IS &&
                 (
                     (t.getLhs() instanceof FieldNameExpression f1 && f1.qualifiedName().equals(fieldName) &&
-                    t.getRhs() instanceof ConstantExpression(Constant constant1) && constant1 == NullConstant.INSTANCE)
+                    t.getRhs() instanceof ConstantExpression(Constant constant1) && constant1.isNull())
                         ||
                     (t.getRhs() instanceof FieldNameExpression f2 && f2.qualifiedName().equals(fieldName) &&
-                    t.getLhs() instanceof ConstantExpression(Constant constant2) && constant2 == NullConstant.INSTANCE)
+                    t.getLhs() instanceof ConstantExpression(Constant constant2) && constant2.isNull())
                 )
         );
     }

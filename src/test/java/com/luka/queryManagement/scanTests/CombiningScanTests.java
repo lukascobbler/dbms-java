@@ -9,6 +9,7 @@ import com.luka.simpledb.queryManagement.scanTypes.update.SelectScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.*;
 import com.luka.simpledb.queryManagement.virtualEntities.term.Term;
 import com.luka.simpledb.queryManagement.virtualEntities.term.TermOperator;
@@ -64,8 +65,8 @@ public class CombiningScanTests {
             finalScan.beforeFirst();
             assertTrue(finalScan.next());
 
-            assertEquals(11, finalScan.getInt("user_id"));
-            assertEquals(110, finalScan.getInt("bonus_score"));
+            assertEquals(11, finalScan.getValue("user_id").asInt());
+            assertEquals(110, finalScan.getValue("bonus_score").asInt());
             assertFalse(finalScan.hasField("t1_intField1"));
         }
     }
@@ -108,7 +109,7 @@ public class CombiningScanTests {
             finalUnion.beforeFirst();
 
             assertTrue(finalUnion.next());
-            assertEquals(5, finalUnion.getInt("t1_intField1"));
+            assertEquals(5, finalUnion.getValue("t1_intField1").asInt());
 
             int count = 1;
             while (finalUnion.next()) {
@@ -140,7 +141,7 @@ public class CombiningScanTests {
             antiJoin.beforeFirst();
             int count = 0;
             while (antiJoin.next()) {
-                assertNotEquals(100, antiJoin.getInt("t1_intField1"));
+                assertNotEquals(100, antiJoin.getValue("t1_intField1").asInt());
                 count++;
             }
             assertEquals(249, count);
@@ -192,14 +193,14 @@ public class CombiningScanTests {
             int updatedCount = 0;
 
             while (extended.next()) {
-                int originalId = extended.getInt("t1_intField1");
-                int newValue = extended.getInt("temp_val");
+                int originalId = extended.getValue("t1_intField1").asInt();
+                int newValue = extended.getValue("temp_val").asInt();
 
                 s1.beforeFirst();
                 while (s1.next()) {
-                    if (s1.getInt("t1_intField1") == originalId) {
-                        s1.setInt("t1_intField1", newValue); // The actual Update
-                        s1.setString("t1_stringField1", "UPDATED");
+                    if (s1.getValue("t1_intField1").asInt() == originalId) {
+                        s1.setValue("t1_intField1", new IntConstant(newValue)); // The actual Update
+                        s1.setValue("t1_stringField1", new StringConstant("UPDATED"));
                         updatedCount++;
                         break;
                     }
@@ -211,13 +212,13 @@ public class CombiningScanTests {
             s1.beforeFirst();
             int i = 0;
             while (s1.next()) {
-                int val = s1.getInt("t1_intField1");
+                int val = s1.getValue("t1_intField1").asInt();
                 if (val < 1000) {
                     assertTrue(val >= 0 && val < 5);
-                    assertNotEquals("UPDATED", s1.getString("t1_stringField1"));
+                    assertNotEquals("UPDATED", s1.getValue("t1_stringField1").asString());
                 } else {
                     assertTrue(val >= 1005);
-                    assertEquals("UPDATED", s1.getString("t1_stringField1"));
+                    assertEquals("UPDATED", s1.getValue("t1_stringField1").asString());
                 }
                 i++;
             }
@@ -236,12 +237,12 @@ public class CombiningScanTests {
 
             s2.beforeFirst();
             s2.next();
-            s2.setInt("t2_intField1", 9999);
+            s2.setValue("t2_intField1", new IntConstant(9999));
 
             union.beforeFirst();
             boolean found = false;
             while (union.next()) {
-                if (union.getInt("t1_intField1") == 9999) {
+                if (union.getValue("t1_intField1").asInt() == 9999) {
                     found = true;
                     break;
                 }
@@ -265,7 +266,7 @@ public class CombiningScanTests {
         try (UpdateScan tableScan = new TableScan(tx, "table1", layout)) {
             tableScan.beforeFirst();
             tableScan.insert();
-            tableScan.setInt(baseFieldName, 50);
+            tableScan.setValue(baseFieldName, new IntConstant(50));
         }
 
         int depth = 1000;
@@ -290,10 +291,10 @@ public class CombiningScanTests {
             assertFalse(finalScan.hasField(penultimateName));
             assertFalse(finalScan.hasField(baseFieldName));
 
-            assertEquals(50, finalScan.getInt(topLevelName));
+            assertEquals(50, finalScan.getValue(topLevelName).asInt());
 
-            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getInt(penultimateName));
-            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getInt(baseFieldName));
+            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getValue(penultimateName).asInt());
+            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getValue(baseFieldName).asInt());
         }
     }
 }

@@ -44,10 +44,10 @@ public class ExtendProjectScanTests {
             int i = 0;
             while(scan.next()) {
                 assertTrue(scan.hasField("calculatedField"));
-                assertEquals(100 + i, scan.getInt("calculatedField"));
+                assertEquals(100 + i, scan.getValue("calculatedField").asInt());
 
                 assertTrue(scan.hasField("t1_intField1"));
-                assertEquals(i, scan.getInt("t1_intField1"));
+                assertEquals(i, scan.getValue("t1_intField1").asInt());
                 i++;
             }
 
@@ -89,8 +89,8 @@ public class ExtendProjectScanTests {
             scan.beforeFirst();
             assertTrue(scan.next());
 
-            assertEquals(20, scan.getInt("doubledVal"));
-            assertEquals(10, scan.getInt("t1_intField1"));
+            assertEquals(20, scan.getValue("doubledVal").asInt());
+            assertEquals(10, scan.getValue("t1_intField1").asInt());
             assertFalse(scan.next());
         }
     }

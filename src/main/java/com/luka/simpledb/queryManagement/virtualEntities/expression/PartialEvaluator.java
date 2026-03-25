@@ -38,11 +38,11 @@ public class PartialEvaluator {
     /// @return The folded binary arithmetic expression.
     /// @throws ZeroDivisionException if division by zero is done.
     private static Expression foldBinary(Expression left, ArithmeticOperator op, Expression right) {
-        if (right instanceof ConstantExpression(Constant rVal) && rVal == NullConstant.INSTANCE) {
+        if (right instanceof ConstantExpression(Constant rVal) && rVal.isNull()) {
             return new ConstantExpression(NullConstant.INSTANCE);
         }
 
-        if (left instanceof ConstantExpression(Constant lVal) && lVal == NullConstant.INSTANCE) {
+        if (left instanceof ConstantExpression(Constant lVal) && lVal.isNull()) {
             return new ConstantExpression(NullConstant.INSTANCE);
         }
 

@@ -101,7 +101,7 @@ public class AntijoinScanTests {
             scan.beforeFirst();
             int count = 0;
             while (scan.next()) {
-                assertNotEquals(10, scan.getInt("t1_intField1"));
+                assertNotEquals(10, scan.getValue("t1_intField1").asInt());
                 count++;
             }
             assertEquals(249, count);
@@ -134,7 +134,7 @@ public class AntijoinScanTests {
 
             scan.afterLast();
             assertTrue(scan.previous());
-            assertEquals(5, scan.getInt("t1_intField1"));
+            assertEquals(5, scan.getValue("t1_intField1").asInt());
             assertFalse(scan.previous());
         }
     }

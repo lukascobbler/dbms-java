@@ -8,6 +8,7 @@ import com.luka.simpledb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.transactionManagement.Transaction;
@@ -61,11 +62,11 @@ public class IndexMetadataManager {
 
         try (indexCatalogDuplicateScan) {
             while (indexCatalogDuplicateScan.next()) {
-                if (indexCatalogDuplicateScan.getString("indexname").equals(indexName)) {
+                if (indexCatalogDuplicateScan.getValue("indexname").asString().equals(indexName)) {
                     indexNameDuplicate = true;
                 }
-                if (indexCatalogDuplicateScan.getString("tablename").equals(tableName) &&
-                    indexCatalogDuplicateScan.getString("fieldname").equals(fieldName)) {
+                if (indexCatalogDuplicateScan.getValue("tablename").asString().equals(tableName) &&
+                    indexCatalogDuplicateScan.getValue("fieldname").asString().equals(fieldName)) {
                     indexTableFieldDuplicate = true;
                 }
             }
@@ -78,10 +79,10 @@ public class IndexMetadataManager {
 
         try (indexCatalogScan) {
             indexCatalogScan.insert();
-            indexCatalogScan.setString("indexname", indexName);
-            indexCatalogScan.setString("tablename", tableName);
-            indexCatalogScan.setString("fieldname", fieldName);
-            indexCatalogScan.setString("indextype", indexType.name());
+            indexCatalogScan.setValue("indexname", new StringConstant(indexName));
+            indexCatalogScan.setValue("tablename", new StringConstant(tableName));
+            indexCatalogScan.setValue("fieldname", new StringConstant(fieldName));
+            indexCatalogScan.setValue("indextype", new StringConstant(indexType.name()));
         }
     }
 
@@ -92,8 +93,8 @@ public class IndexMetadataManager {
         try (indexCatalogScan) {
             while (indexCatalogScan.next()) {
                 if (
-                    indexCatalogScan.getString("tablename").equals(tableName) &&
-                    indexCatalogScan.getString("fieldname").equals(fieldName)
+                    indexCatalogScan.getValue("tablename").asString().equals(tableName) &&
+                    indexCatalogScan.getValue("fieldname").asString().equals(fieldName)
                 ) {
                     indexCatalogScan.delete();
                     return;
@@ -110,10 +111,10 @@ public class IndexMetadataManager {
 
         try (indexCatalogScan) {
             while (indexCatalogScan.next()) {
-                if (!indexCatalogScan.getString("tablename").equals(tableName)) continue;
-                String indexName = indexCatalogScan.getString("indexname");
-                String fieldName = indexCatalogScan.getString("fieldname");
-                String indexType = indexCatalogScan.getString("indextype");
+                if (!indexCatalogScan.getValue("tablename").asString().equals(tableName)) continue;
+                String indexName = indexCatalogScan.getValue("indexname").asString();
+                String fieldName = indexCatalogScan.getValue("fieldname").asString();
+                String indexType = indexCatalogScan.getValue("indextype").asString();
                 Layout tableLayout = tableMetadataManager.getLayout(tableName, transaction);
                 StatisticsInfo statisticsInfo = statisticsMetadataManager.getStatisticsInfo(tableName, tableLayout, transaction);
                 IndexInfo indexInfo = new IndexInfo(indexName, fieldName, IndexType.valueOf(indexType), tableLayout.getSchema(), transaction, statisticsInfo);

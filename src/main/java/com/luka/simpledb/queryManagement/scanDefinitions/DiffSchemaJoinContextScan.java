@@ -40,36 +40,6 @@ public class DiffSchemaJoinContextScan extends BinaryScan {
         return childScan1.hasField(fieldName) || childScan2.hasField(fieldName);
     }
 
-    /// @return The integer value from the scan that has that field.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        if (childScan1.hasField(fieldName)) {
-            return childScan1.getInt(fieldName);
-        }
-
-        return childScan2.getInt(fieldName);
-    }
-
-    /// @return The string value from the scan that has that field.
-    @Override
-    protected String internalGetString(String fieldName) {
-        if (childScan1.hasField(fieldName)) {
-            return childScan1.getString(fieldName);
-        }
-
-        return childScan2.getString(fieldName);
-    }
-
-    /// @return The boolean value from the scan that has that field.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        if (childScan1.hasField(fieldName)) {
-            return childScan1.getBoolean(fieldName);
-        }
-
-        return childScan2.getBoolean(fieldName);
-    }
-
     /// @return The constant from the scan that has that field.
     @Override
     protected Constant internalGetValue(String fieldName) {

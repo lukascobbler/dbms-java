@@ -60,10 +60,10 @@ public class ProductScanTests {
             assertTrue(scan.next());
 
             assertTrue(scan.hasField("t1_intField1"));
-            assertEquals(0, scan.getInt("t1_intField1"));
+            assertEquals(0, scan.getValue("t1_intField1").asInt());
 
             assertTrue(scan.hasField("t2_intField1"));
-            assertEquals(0, scan.getInt("t2_intField1"));
+            assertEquals(0, scan.getValue("t2_intField1").asInt());
         }
     }
 
@@ -91,8 +91,8 @@ public class ProductScanTests {
 
             scan.beforeFirst();
             assertTrue(scan.next());
-            assertEquals(5, scan.getInt("t1_intField1"));
-            assertEquals(10, scan.getInt("t2_intField1"));
+            assertEquals(5, scan.getValue("t1_intField1").asInt());
+            assertEquals(10, scan.getValue("t2_intField1").asInt());
             assertFalse(scan.next());
         }
     }
@@ -256,12 +256,12 @@ public class ProductScanTests {
             scan.afterLast();
 
             assertTrue(scan.previous());
-            assertEquals(249, scan.getInt("t1_intField1"));
-            assertEquals(249, scan.getInt("t2_intField1"));
+            assertEquals(249, scan.getValue("t1_intField1").asInt());
+            assertEquals(249, scan.getValue("t2_intField1").asInt());
 
             assertTrue(scan.previous());
-            assertEquals(249, scan.getInt("t1_intField1"));
-            assertEquals(248, scan.getInt("t2_intField1"));
+            assertEquals(249, scan.getValue("t1_intField1").asInt());
+            assertEquals(248, scan.getValue("t2_intField1").asInt());
         }
     }
 

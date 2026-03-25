@@ -585,5 +585,4 @@ public class SelectStatementRunTests {
 
         assertEquals(37450, totalCount);
     }
-    // todo antijoin, semijoin
 }

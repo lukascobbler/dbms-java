@@ -59,7 +59,7 @@ public class StatisticsMetadataManager {
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
-                String tableName = tableCatalogScan.getString("tablename");
+                String tableName = tableCatalogScan.getValue("tablename").asString();
                 Layout layout = tableMetadataManager.getLayout(tableName, transaction);
                 StatisticsInfo statisticsInfo = calculateTableStats(tableName, layout, transaction);
                 tableStats.put(tableName, statisticsInfo);
@@ -90,14 +90,14 @@ public class StatisticsMetadataManager {
                 numBlocks = tableScan.getRecordId().blockNum() + 1;
 
                 for (String fieldName : tableSchema.getFields()) {
-                    if (tableScan.isNull(fieldName)) {
+                    if (tableScan.getValue(fieldName).isNull()) {
                         uniqueFieldsInfo.addNullValue(fieldName);
                         continue;
                     }
                     switch (tableSchema.type(fieldName)) {
-                        case DatabaseType.INT -> uniqueFieldsInfo.addIntValue(fieldName, tableScan.getInt(fieldName));
-                        case DatabaseType.VARCHAR -> uniqueFieldsInfo.addStringValue(fieldName, tableScan.getString(fieldName));
-                        case DatabaseType.BOOLEAN -> uniqueFieldsInfo.addBooleanValue(fieldName, tableScan.getBoolean(fieldName));
+                        case DatabaseType.INT -> uniqueFieldsInfo.addIntValue(fieldName, tableScan.getValue(fieldName).asInt());
+                        case DatabaseType.VARCHAR -> uniqueFieldsInfo.addStringValue(fieldName, tableScan.getValue(fieldName).asString());
+                        case DatabaseType.BOOLEAN -> uniqueFieldsInfo.addBooleanValue(fieldName, tableScan.getValue(fieldName).asBoolean());
                         default -> throw new DatabaseTypeNotImplementedException();
                     }
                 }

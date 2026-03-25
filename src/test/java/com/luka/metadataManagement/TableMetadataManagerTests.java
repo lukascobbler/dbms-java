@@ -4,6 +4,7 @@ import com.luka.simpledb.fileManagement.FileManager;
 import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 import com.luka.simpledb.simpleDB.SimpleDB;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
 import com.luka.simpledb.recordManagement.Layout;
@@ -56,8 +57,8 @@ public class TableMetadataManagerTests {
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
-                String tableName = tableCatalogScan.getString("tablename");
-                int size = tableCatalogScan.getInt("slotsize");
+                String tableName = tableCatalogScan.getValue("tablename").asString();
+                int size = tableCatalogScan.getValue("slotsize").asInt();
                 System.out.println("Table name: " + tableName + ", table size: " + size);
             }
         }
@@ -67,11 +68,11 @@ public class TableMetadataManagerTests {
 
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
-                int tableId = fieldCatalogScan.getInt("tableid");
-                String fieldName = fieldCatalogScan.getString("fieldname");
-                int type = fieldCatalogScan.getInt("type");
-                int length = fieldCatalogScan.getInt("runtimeLength");
-                int offset = fieldCatalogScan.getInt("offset");
+                int tableId = fieldCatalogScan.getValue("tableid").asInt();
+                String fieldName = fieldCatalogScan.getValue("fieldname").asString();
+                int type = fieldCatalogScan.getValue("type").asInt();
+                int length = fieldCatalogScan.getValue("runtimeLength").asInt();
+                int offset = fieldCatalogScan.getValue("offset").asInt();
                 System.out.println("Table Id: " + tableId + ", field name: " +
                         fieldName + ", field type: " + type + ", runtimeLength: " + length + ", offset: " + offset);
             }
@@ -122,7 +123,7 @@ public class TableMetadataManagerTests {
         try (tableScan) {
             for (int i = 0; i < 1000; i++) {
                 tableScan.insert();
-                tableScan.setInt("field", 100);
+                tableScan.setValue("field", new IntConstant(100));
             }
         }
 
@@ -159,7 +160,7 @@ public class TableMetadataManagerTests {
         try (tableScanOld) {
             for (int i = 0; i < 1000; i++) {
                 tableScanOld.insert();
-                tableScanOld.setInt("field", 100);
+                tableScanOld.setValue("field", new IntConstant(100));
             }
         }
 
@@ -183,11 +184,11 @@ public class TableMetadataManagerTests {
         try (tableScanNew) {
             for (int i = 0; i < 1000; i++) {
                 tableScanNew.insert();
-                tableScanNew.setInt("field", 100);
-                tableScanNew.setInt("field1", 100);
-                tableScanNew.setInt("field2", 100);
-                tableScanNew.setInt("field3", 100);
-                tableScanNew.setInt("field4", 100);
+                tableScanNew.setValue("field", new IntConstant(100));
+                tableScanNew.setValue("field1", new IntConstant(100));
+                tableScanNew.setValue("field2", new IntConstant(100));
+                tableScanNew.setValue("field3", new IntConstant(100));
+                tableScanNew.setValue("field4", new IntConstant(100));
             }
         }
 
@@ -201,11 +202,11 @@ public class TableMetadataManagerTests {
         try (tableScanNewRead) {
             while (tableScanNewRead.next()) {
                 count += 1;
-                assertEquals(100, tableScanNewRead.getInt("field"));
-                assertEquals(100, tableScanNewRead.getInt("field1"));
-                assertEquals(100, tableScanNewRead.getInt("field2"));
-                assertEquals(100, tableScanNewRead.getInt("field3"));
-                assertEquals(100, tableScanNewRead.getInt("field4"));
+                assertEquals(100, tableScanNewRead.getValue("field").asInt());
+                assertEquals(100, tableScanNewRead.getValue("field1").asInt());
+                assertEquals(100, tableScanNewRead.getValue("field2").asInt());
+                assertEquals(100, tableScanNewRead.getValue("field3").asInt());
+                assertEquals(100, tableScanNewRead.getValue("field4").asInt());
             }
         }
 

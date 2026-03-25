@@ -40,48 +40,12 @@ public abstract class UpdateScan extends Scan {
 
     // public API scan setters that concrete scans mustn't redefine
 
-    /// Sets an integer value for the field name.
-    ///
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final void setInt(String fieldName, int value) { validate(fieldName); internalSetInt(fieldName, value); }
-
-    /// Sets a string value for the field name.
-    ///
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final void setString(String fieldName, String value) { validate(fieldName); internalSetString(fieldName, value); }
-
-    /// Sets a boolean value for the field name.
-    ///
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final void setBoolean(String fieldName, boolean value) { validate(fieldName); internalSetBoolean(fieldName, value); }
-
     /// Sets a constant value for the field name.
     ///
     /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
     public final void setValue(String fieldName, Constant value) { validate(fieldName); internalSetValue(fieldName, value); }
 
     // private API scan setters with no field exist that concrete scans must implement
-
-    /// A direct setter for integer values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    protected abstract void internalSetInt(String fieldName, int value);
-
-    /// A direct setter for string values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    protected abstract void internalSetString(String fieldName, String value);
-
-    /// A direct setter for boolean values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    protected abstract void internalSetBoolean(String fieldName, boolean value);
 
     /// A direct setter for constants that does not check
     /// for field name existence. Users do not call this function

@@ -4,6 +4,10 @@ import com.luka.simpledb.metadataManagement.MetadataManager;
 import com.luka.simpledb.metadataManagement.StatisticsMetadataManager;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -56,15 +60,15 @@ public class StatisticsMetadataManagerTests {
         try (tableScanInsert) {
             for (int i = 0; i < 1000; i++) {
                 tableScanInsert.insert();
-                tableScanInsert.setInt("int1", 100);
-                tableScanInsert.setInt("int2", 100);
-                tableScanInsert.setInt("int3", 100);
-                tableScanInsert.setString("string1", "string");
-                tableScanInsert.setString("string2", "string");
-                tableScanInsert.setString("string3", "string");
-                tableScanInsert.setBoolean("bool1", true);
-                tableScanInsert.setBoolean("bool2", true);
-                tableScanInsert.setBoolean("bool3", true);
+                tableScanInsert.setValue("int1", new IntConstant(100));
+                tableScanInsert.setValue("int2", new IntConstant(100));
+                tableScanInsert.setValue("int3", new IntConstant(100));
+                tableScanInsert.setValue("string1", new StringConstant("string"));
+                tableScanInsert.setValue("string2", new StringConstant("string"));
+                tableScanInsert.setValue("string3", new StringConstant("string"));
+                tableScanInsert.setValue("bool1", new BooleanConstant(true));
+                tableScanInsert.setValue("bool2", new BooleanConstant(true));
+                tableScanInsert.setValue("bool3", new BooleanConstant(true));
             }
         }
 
@@ -110,15 +114,15 @@ public class StatisticsMetadataManagerTests {
         try (tableScanInsert) {
             for (int i = 0; i < 1000; i++) {
                 tableScanInsert.insert();
-                tableScanInsert.setInt("int1", 100);
-                tableScanInsert.setInt("int2", 100);
-                tableScanInsert.setInt("int3", 100);
-                tableScanInsert.setString("string1", "string");
-                tableScanInsert.setString("string2", "string");
-                tableScanInsert.setString("string3", "string");
-                tableScanInsert.setBoolean("bool1", true);
-                tableScanInsert.setBoolean("bool2", true);
-                tableScanInsert.setBoolean("bool3", true);
+                tableScanInsert.setValue("int1", new IntConstant(100));
+                tableScanInsert.setValue("int2", new IntConstant(100));
+                tableScanInsert.setValue("int3", new IntConstant(100));
+                tableScanInsert.setValue("string1", new StringConstant("string"));
+                tableScanInsert.setValue("string2", new StringConstant("string"));
+                tableScanInsert.setValue("string3", new StringConstant("string"));
+                tableScanInsert.setValue("bool1", new BooleanConstant(true));
+                tableScanInsert.setValue("bool2", new BooleanConstant(true));
+                tableScanInsert.setValue("bool3", new BooleanConstant(true));
             }
         }
 
@@ -176,15 +180,15 @@ public class StatisticsMetadataManagerTests {
         try (tableScanInsert) {
             for (int i = 0; i < 4000; i++) {
                 tableScanInsert.insert();
-                tableScanInsert.setInt("int1", i);
-                tableScanInsert.setInt("int2", i + 1);
-                tableScanInsert.setInt("int3", i + 2);
-                tableScanInsert.setString("string1", sCache[i]);
-                tableScanInsert.setString("string2", sCache[i]);
-                tableScanInsert.setString("string3", sCache[i]);
-                tableScanInsert.setBoolean("bool1", i % 2 == 0);
-                tableScanInsert.setBoolean("bool2", i % 2 == 1);
-                tableScanInsert.setBoolean("bool3", i % 2 == 0);
+                tableScanInsert.setValue("int1", new IntConstant(i));
+                tableScanInsert.setValue("int2", new IntConstant(i + 1));
+                tableScanInsert.setValue("int3", new IntConstant(i + 2));
+                tableScanInsert.setValue("string1", new StringConstant(sCache[i]));
+                tableScanInsert.setValue("string2", new StringConstant(sCache[i]));
+                tableScanInsert.setValue("string3", new StringConstant(sCache[i]));
+                tableScanInsert.setValue("bool1", new BooleanConstant(i % 2 == 0));
+                tableScanInsert.setValue("bool2", new BooleanConstant(i % 2 == 1));
+                tableScanInsert.setValue("bool3", new BooleanConstant(i % 2 == 0));
             }
         }
 
@@ -238,9 +242,9 @@ public class StatisticsMetadataManagerTests {
         try (tableScanInsert) {
             for (int i = 0; i < 10000; i++) {
                 tableScanInsert.insert();
-                tableScanInsert.setNull("int1");
-                tableScanInsert.setNull("int2");
-                tableScanInsert.setNull("int3");
+                tableScanInsert.setValue("int1", NullConstant.INSTANCE);
+                tableScanInsert.setValue("int2", NullConstant.INSTANCE);
+                tableScanInsert.setValue("int3", NullConstant.INSTANCE);
             }
         }
 

@@ -97,24 +97,6 @@ public class ProductScan extends BinaryScan {
         return diffSchemaJoinContextScan.hasField(fieldName);
     }
 
-    /// @return The integer value from the scan that has that field.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        return diffSchemaJoinContextScan.getInt(fieldName);
-    }
-
-    /// @return The string value from the scan that has that field.
-    @Override
-    protected String internalGetString(String fieldName) {
-        return diffSchemaJoinContextScan.getString(fieldName);
-    }
-
-    /// @return The boolean value from the scan that has that field.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        return diffSchemaJoinContextScan.getBoolean(fieldName);
-    }
-
     /// @return The constant from the scan that has that field.
     @Override
     protected Constant internalGetValue(String fieldName) {

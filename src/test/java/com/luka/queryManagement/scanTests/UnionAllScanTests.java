@@ -70,7 +70,7 @@ public class UnionAllScanTests {
             int count = 0;
             while (scan.next()) {
                 count++;
-                assertEquals(10, scan.getInt("t1_intField1"));
+                assertEquals(10, scan.getValue("t1_intField1").asInt());
             }
             assertEquals(2, count);
         }
@@ -89,13 +89,13 @@ public class UnionAllScanTests {
             scan.afterLast();
 
             assertTrue(scan.previous());
-            assertEquals(249, scan.getInt("t1_intField1"));
+            assertEquals(249, scan.getValue("t1_intField1").asInt());
 
             for (int i = 0; i < 300; i++) {
                 scan.previous();
             }
 
-            assertTrue(scan.getInt("t1_intField1") < 250);
+            assertTrue(scan.getValue("t1_intField1").asInt() < 250);
         }
     }
 
@@ -149,9 +149,9 @@ public class UnionAllScanTests {
 
             scan.beforeFirst();
             assertTrue(scan.next());
-            assertEquals(249, scan.getInt("t1_intField1"));
+            assertEquals(249, scan.getValue("t1_intField1").asInt());
             assertTrue(scan.next());
-            assertEquals(249, scan.getInt("t1_intField1"));
+            assertEquals(249, scan.getValue("t1_intField1").asInt());
             assertFalse(scan.next());
         }
     }

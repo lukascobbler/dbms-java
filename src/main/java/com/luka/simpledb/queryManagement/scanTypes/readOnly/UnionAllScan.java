@@ -78,36 +78,6 @@ public class UnionAllScan extends BinaryScan {
         return childScan1.hasField(fieldName);
     }
 
-    /// @return The integer value of the currently positioned scan.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        if (isFirstScanSelected) {
-            return childScan1.getInt(fieldName);
-        }
-
-        return childScan2.getInt(fieldName);
-    }
-
-    /// @return The string value of the currently positioned scan.
-    @Override
-    protected String internalGetString(String fieldName) {
-        if (isFirstScanSelected) {
-            return childScan1.getString(fieldName);
-        }
-
-        return childScan2.getString(fieldName);
-    }
-
-    /// @return The boolean value of the currently positioned scan.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        if (isFirstScanSelected) {
-            return childScan1.getBoolean(fieldName);
-        }
-
-        return childScan2.getBoolean(fieldName);
-    }
-
     /// @return The constant of the currently positioned scan.
     @Override
     protected Constant internalGetValue(String fieldName) {

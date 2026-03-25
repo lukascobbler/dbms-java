@@ -45,9 +45,9 @@ public class SelectScanTests {
             scan.beforeFirst();
 
             assertTrue(scan.next());
-            assertEquals(150, scan.getInt("t1_intField1"));
-            assertEquals(151, scan.getInt("t1_intField2"));
-            assertEquals("str150", scan.getString("t1_stringField1"));
+            assertEquals(150, scan.getValue("t1_intField1").asInt());
+            assertEquals(151, scan.getValue("t1_intField2").asInt());
+            assertEquals("str150", scan.getValue("t1_stringField1").asString());
 
             assertFalse(scan.next());
         }
@@ -77,7 +77,7 @@ public class SelectScanTests {
 
             int matchCount = 0;
             while (scan.next()) {
-                int val = scan.getInt("t1_intField1");
+                int val = scan.getValue("t1_intField1").asInt();
                 assertNotEquals(10, val);
                 assertNotEquals(20, val);
                 matchCount++;
@@ -111,8 +111,8 @@ public class SelectScanTests {
 
             int matchCount = 0;
             while (scan.next()) {
-                assertTrue(scan.getInt("t1_intField1") > 240);
-                assertTrue(scan.getInt("t1_intField2") > 245);
+                assertTrue(scan.getValue("t1_intField1").asInt() > 240);
+                assertTrue(scan.getValue("t1_intField2").asInt() > 245);
                 matchCount++;
             }
 
@@ -199,8 +199,8 @@ public class SelectScanTests {
             scan.beforeFirst();
             assertTrue(scan.next());
 
-            scan.setInt("t1_intField2", 9999);
-            assertEquals(9999, scan.getInt("t1_intField2"));
+            scan.setValue("t1_intField2", new IntConstant(9999));
+            assertEquals(9999, scan.getValue("t1_intField2").asInt());
 
             scan.delete();
 
@@ -208,16 +208,16 @@ public class SelectScanTests {
             assertFalse(scan.next());
 
             scan.insert();
-            scan.setInt("t1_intField1", 100);
-            scan.setInt("t1_intField2", 101);
-            scan.setString("t1_stringField1", "str100");
-            scan.setString("t1_stringField2", "str101");
-            scan.setBoolean("t1_boolField1", true);
-            scan.setBoolean("t1_boolField2", false);
+            scan.setValue("t1_intField1", new IntConstant(100));
+            scan.setValue("t1_intField2", new IntConstant(101));
+            scan.setValue("t1_stringField1", new StringConstant("str100"));
+            scan.setValue("t1_stringField2", new StringConstant("str101"));
+            scan.setValue("t1_boolField1", new BooleanConstant(true));
+            scan.setValue("t1_boolField2", new BooleanConstant(false));
 
             scan.beforeFirst();
             assertTrue(scan.next());
-            assertEquals("str100", scan.getString("t1_stringField1"));
+            assertEquals("str100", scan.getValue("t1_stringField1").asString());
         }
     }
 
@@ -268,8 +268,8 @@ public class SelectScanTests {
 
             scan.beforeFirst();
             assertTrue(scan.next());
-            assertEquals(20, scan.getInt("t1_intField1"));
-            assertEquals("str20", scan.getString("t1_stringField1"));
+            assertEquals(20, scan.getValue("t1_intField1").asInt());
+            assertEquals("str20", scan.getValue("t1_stringField1").asString());
             assertFalse(scan.next());
         }
     }

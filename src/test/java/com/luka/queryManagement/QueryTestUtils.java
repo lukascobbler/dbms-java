@@ -2,7 +2,10 @@ package com.luka.queryManagement;
 
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -46,14 +49,14 @@ public class QueryTestUtils {
             tableScan.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan.insert();
-                tableScan.setInt("t1_intField1", i);
-                tableScan.setInt("t1_intField2", i + 1);
+                tableScan.setValue("t1_intField1", new IntConstant(i));
+                tableScan.setValue("t1_intField2", new IntConstant(i + 1));
                 tableScan.setValue("t1_intField3", NullConstant.INSTANCE);
-                tableScan.setString("t1_stringField1", "str" + i);
-                tableScan.setString("t1_stringField2", "str" + i + 1);
+                tableScan.setValue("t1_stringField1", new StringConstant("str" + i));
+                tableScan.setValue("t1_stringField2", new StringConstant("str" + i + 1));
                 tableScan.setValue("t1_stringField3", NullConstant.INSTANCE);
-                tableScan.setBoolean("t1_boolField1", true);
-                tableScan.setBoolean("t1_boolField2", false);
+                tableScan.setValue("t1_boolField1", new BooleanConstant(true));
+                tableScan.setValue("t1_boolField2", new BooleanConstant(false));
                 tableScan.setValue("t1_boolField3", NullConstant.INSTANCE);
             }
         }
@@ -101,14 +104,14 @@ public class QueryTestUtils {
             tableScan1.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan1.insert();
-                tableScan1.setInt("t1_intField1", i);
-                tableScan1.setInt("t1_intField2", i + 1);
+                tableScan1.setValue("t1_intField1", new IntConstant(i));
+                tableScan1.setValue("t1_intField2", new IntConstant(i + 1));
                 tableScan1.setValue("t1_intField3", NullConstant.INSTANCE);
-                tableScan1.setString("t1_stringField1", "str" + i);
-                tableScan1.setString("t1_stringField2", "str" + i + 1);
+                tableScan1.setValue("t1_stringField1", new StringConstant("str" + i));
+                tableScan1.setValue("t1_stringField2", new StringConstant("str" + i + 1));
                 tableScan1.setValue("t1_stringField3", NullConstant.INSTANCE);
-                tableScan1.setBoolean("t1_boolField1", true);
-                tableScan1.setBoolean("t1_boolField2", false);
+                tableScan1.setValue("t1_boolField1", new BooleanConstant(true));
+                tableScan1.setValue("t1_boolField2", new BooleanConstant(false));
                 tableScan1.setValue("t1_boolField3", NullConstant.INSTANCE);
             }
         }
@@ -119,14 +122,14 @@ public class QueryTestUtils {
             tableScan2.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan2.insert();
-                tableScan2.setInt("t2_intField1", i);
-                tableScan2.setInt("t2_intField2", i + 1);
+                tableScan2.setValue("t2_intField1", new IntConstant(i));
+                tableScan2.setValue("t2_intField2", new IntConstant(i + 1));
                 tableScan2.setValue("t2_intField3", NullConstant.INSTANCE);
-                tableScan2.setString("t2_stringField1", "str" + i);
-                tableScan2.setString("t2_stringField2", "str" + i + 1);
+                tableScan2.setValue("t2_stringField1", new StringConstant("str" + i));
+                tableScan2.setValue("t2_stringField2", new StringConstant("str" + i + 1));
                 tableScan2.setValue("t2_stringField3", NullConstant.INSTANCE);
-                tableScan2.setBoolean("t2_boolField1", true);
-                tableScan2.setBoolean("t2_boolField2", false);
+                tableScan2.setValue("t2_boolField1", new BooleanConstant(true));
+                tableScan2.setValue("t2_boolField2", new BooleanConstant(false));
                 tableScan2.setValue("t2_boolField3", NullConstant.INSTANCE);
             }
         }

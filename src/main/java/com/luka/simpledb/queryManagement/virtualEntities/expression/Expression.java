@@ -3,7 +3,6 @@ package com.luka.simpledb.queryManagement.virtualEntities.expression;
 import com.luka.simpledb.queryManagement.exceptions.IncompatibleConstantTypeException;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
-import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.schema.Schema;
 
@@ -85,7 +84,7 @@ public sealed interface Expression permits
     /// @return True if any of the fields in the expression AST is nullable.
     default boolean isNullable(Schema schema) {
         return switch (this) {
-            case ConstantExpression c -> c.constant() == NullConstant.INSTANCE;
+            case ConstantExpression c -> c.constant().isNull();
             case FieldNameExpression f -> schema.isNullable(f.qualifiedName());
             case BinaryArithmeticExpression b -> b.left().isNullable(schema) || b.right().isNullable(schema);
             case UnaryArithmeticExpression u -> u.operand().isNullable(schema);

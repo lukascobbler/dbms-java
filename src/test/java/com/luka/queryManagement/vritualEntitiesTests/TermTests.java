@@ -204,7 +204,7 @@ public class TermTests {
             int matchCount = 0;
             while (ts.next()) {
                 boolean satisfied = term.isSatisfied(ts);
-                int actualVal = ts.getInt(targetField);
+                int actualVal = ts.getValue(targetField).asInt();
 
                 if (satisfied) {
                     assertEquals(targetVal.asInt(), actualVal);

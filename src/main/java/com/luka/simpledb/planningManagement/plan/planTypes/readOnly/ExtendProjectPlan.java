@@ -5,7 +5,6 @@ import com.luka.simpledb.planningManagement.plan.ExplainData;
 import com.luka.simpledb.planningManagement.plan.Plan;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanTypes.readOnly.ExtendProjectScan;
-import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
 import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.schema.Schema;
@@ -115,7 +114,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
         Set<String> referencedFields = expr.getFields();
 
         if (referencedFields.isEmpty()) {
-            return (expr.evaluate(null) == NullConstant.INSTANCE) ? childPlan.recordsOutput() : 0;
+            return (expr.evaluate(null).isNull()) ? childPlan.recordsOutput() : 0;
         }
 
         if (referencedFields.size() == 1) {

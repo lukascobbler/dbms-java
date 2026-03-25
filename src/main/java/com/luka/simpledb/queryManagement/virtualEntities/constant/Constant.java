@@ -57,6 +57,11 @@ public sealed interface Constant extends Comparable<Constant>
         throw new IncompatibleConstantTypeException();
     }
 
+    /// @return Whether this constant has the NULL value.
+    default boolean isNull() {
+        return this == NullConstant.INSTANCE;
+    }
+
     /// @return The SQL integer representing the type of this constant.
     default DatabaseType type() {
         return switch (this) {

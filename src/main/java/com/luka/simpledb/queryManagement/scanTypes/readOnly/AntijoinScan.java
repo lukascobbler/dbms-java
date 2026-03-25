@@ -98,24 +98,6 @@ public class AntijoinScan extends BinaryScan {
         return childScan1.hasField(fieldName);
     }
 
-    /// @return The integer value for the given field name in the outer scan.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        return childScan1.getInt(fieldName);
-    }
-
-    /// @return The string value for the given field name in the outer scan.
-    @Override
-    protected String internalGetString(String fieldName) {
-        return childScan1.getString(fieldName);
-    }
-
-    /// @return The boolean value for the given field name in the outer scan.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        return childScan1.getBoolean(fieldName);
-    }
-
     /// @return The constant for the given field name in the outer scan.
     @Override
     protected Constant internalGetValue(String fieldName) {

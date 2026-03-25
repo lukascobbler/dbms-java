@@ -13,7 +13,10 @@ import com.luka.simpledb.planningManagement.planner.plannerTypes.BetterQueryPlan
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.scanDefinitions.UpdateScan;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -203,18 +206,18 @@ public class PlanTestUtils {
             tableScan1.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan1.insert();
-                tableScan1.setInt("t1_intfield1", i);
-                tableScan1.setInt("t1_intfield2", i + 1);
+                tableScan1.setValue("t1_intfield1", new IntConstant(i));
+                tableScan1.setValue("t1_intfield2", new IntConstant(i + 1));
                 tableScan1.setValue("t1_intfield3", NullConstant.INSTANCE);
-                tableScan1.setInt("sameint", i + 50);
-                tableScan1.setString("t1_stringfield1", "str" + i);
-                tableScan1.setString("t1_stringfield2", "str" + i + 1);
+                tableScan1.setValue("sameint", new IntConstant(i + 50));
+                tableScan1.setValue("t1_stringfield1", new StringConstant("str" + i));
+                tableScan1.setValue("t1_stringfield2", new StringConstant("str" + i + 1));
                 tableScan1.setValue("t1_stringfield3", NullConstant.INSTANCE);
-                tableScan1.setString("samestring", "str" + i + 10);
-                tableScan1.setBoolean("t1_boolfield1", true);
-                tableScan1.setBoolean("t1_boolfield2", false);
+                tableScan1.setValue("samestring", new StringConstant("str" + i + 10));
+                tableScan1.setValue("t1_boolfield1", new BooleanConstant(true));
+                tableScan1.setValue("t1_boolfield2", new BooleanConstant(false));
                 tableScan1.setValue("t1_boolfield3", NullConstant.INSTANCE);
-                tableScan1.setBoolean("samebool", i < 50);
+                tableScan1.setValue("samebool", new BooleanConstant(i < 50));
             }
         }
 
@@ -225,18 +228,18 @@ public class PlanTestUtils {
             tableScan2.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan2.insert();
-                tableScan2.setInt("t2_intfield1", i);
-                tableScan2.setInt("t2_intfield2", i + 1);
+                tableScan2.setValue("t2_intfield1", new IntConstant(i));
+                tableScan2.setValue("t2_intfield2", new IntConstant(i + 1));
                 tableScan2.setValue("t2_intfield3", NullConstant.INSTANCE);
-                tableScan2.setInt("sameint", i);
-                tableScan2.setString("t2_stringfield1", "str" + i);
-                tableScan2.setString("t2_stringfield2", "str" + i + 1);
+                tableScan2.setValue("sameint", new IntConstant(i));
+                tableScan2.setValue("t2_stringfield1", new StringConstant("str" + i));
+                tableScan2.setValue("t2_stringfield2", new StringConstant("str" + i + 1));
                 tableScan2.setValue("t2_stringfield3", NullConstant.INSTANCE);
-                tableScan2.setString("samestring", "str" + i + 50);
-                tableScan2.setBoolean("t2_boolfield1", true);
-                tableScan2.setBoolean("t2_boolfield2", false);
+                tableScan2.setValue("samestring", new StringConstant("str" + i + 50));
+                tableScan2.setValue("t2_boolfield1", new BooleanConstant(true));
+                tableScan2.setValue("t2_boolfield2", new BooleanConstant(false));
                 tableScan2.setValue("t2_boolfield3", NullConstant.INSTANCE);
-                tableScan2.setBoolean("samebool", true);
+                tableScan2.setValue("samebool", new BooleanConstant(true));
             }
         }
 
@@ -247,7 +250,7 @@ public class PlanTestUtils {
             tableScan3.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 tableScan3.insert();
-                tableScan3.setInt("sameint", i);
+                tableScan3.setValue("sameint", new IntConstant(i));
             }
         }
 

@@ -36,48 +36,6 @@ public class ExtendProjectScan extends UnaryScan {
     /// scan and returned, and for every other field, the result is just
     /// the child scan's result.
     ///
-    /// @return The int for the corresponding named expression or any other field.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        if (projectionFields.containsKey(fieldName)) {
-            return projectionFields.get(fieldName).evaluate(childScan).asInt();
-        }
-
-        return super.internalGetInt(fieldName);
-    }
-
-    /// For the named expression, its result is calculated on the child
-    /// scan and returned, and for every other field, the result is just
-    /// the child scan's result.
-    ///
-    /// @return The string for the corresponding named expression or any other field.
-    @Override
-    protected String internalGetString(String fieldName) {
-        if (projectionFields.containsKey(fieldName)) {
-            return projectionFields.get(fieldName).evaluate(childScan).asString();
-        }
-
-        return super.internalGetString(fieldName);
-    }
-
-    /// For the named expression, its result is calculated on the child
-    /// scan and returned, and for every other field, the result is just
-    /// the child scan's result.
-    ///
-    /// @return The boolean for the corresponding named expression or any other field.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        if (projectionFields.containsKey(fieldName)) {
-            return projectionFields.get(fieldName).evaluate(childScan).asBoolean();
-        }
-
-        return super.internalGetBoolean(fieldName);
-    }
-
-    /// For the named expression, its result is calculated on the child
-    /// scan and returned, and for every other field, the result is just
-    /// the child scan's result.
-    ///
     /// @return The constant for the corresponding named expression or any other field.
     @Override
     protected Constant internalGetValue(String fieldName) {

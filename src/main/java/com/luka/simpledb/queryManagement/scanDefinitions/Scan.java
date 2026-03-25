@@ -50,50 +50,11 @@ public abstract class Scan implements AutoCloseable {
 
     // public API scan getters that concrete scans mustn't redefine
 
-    /// @return The int for the given field name.
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final int getInt(String fieldName) { validate(fieldName); return internalGetInt(fieldName); }
-
-    /// @return The string for the given field name.
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final String getString(String fieldName) { validate(fieldName); return internalGetString(fieldName); }
-
-    /// @return The boolean for the given field name.
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final boolean getBoolean(String fieldName) { validate(fieldName); return internalGetBoolean(fieldName); }
-
     /// @return The constant value for the given field name.
     /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
     public final Constant getValue(String fieldName) { validate(fieldName); return internalGetValue(fieldName); }
 
     // private API scan getters with no field exist that concrete scans must implement
-
-    /// A direct getter for integer values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    ///
-    /// @return The int for the given field name.
-    protected abstract int internalGetInt(String fieldName);
-
-    /// A direct getter for string values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    ///
-    /// @return The int for the given field name.
-    protected abstract String internalGetString(String fieldName);
-
-    /// A direct getter for boolean values that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    ///
-    /// @return The int for the given field name.
-    protected abstract boolean internalGetBoolean(String fieldName);
 
     /// A direct getter for constants that does not check
     /// for field name existence. Users do not call this function

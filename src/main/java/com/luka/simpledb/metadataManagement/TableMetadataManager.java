@@ -3,6 +3,9 @@ package com.luka.simpledb.metadataManagement;
 import com.luka.simpledb.metadataManagement.exceptions.TableDuplicateNameException;
 import com.luka.simpledb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.BooleanConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.DatabaseType;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
@@ -60,7 +63,7 @@ public class TableMetadataManager {
 
         try (tableCatalogDuplicateScan) {
             while (tableCatalogDuplicateScan.next()) {
-                if (tableCatalogDuplicateScan.getString("tablename").equals(tableName)) {
+                if (tableCatalogDuplicateScan.getValue("tablename").asString().equals(tableName)) {
                     throw new TableDuplicateNameException();
                 }
             }
@@ -72,21 +75,21 @@ public class TableMetadataManager {
         TableScan tableCatalogScan = new TableScan(transaction, "tablecatalog", tableCatalogLayout);
         try (tableCatalogScan) {
             tableCatalogScan.insert();
-            tableCatalogScan.setInt("tableid", tableIdNum);
-            tableCatalogScan.setString("tablename", tableName);
-            tableCatalogScan.setInt("slotsize", layout.recordLength());
+            tableCatalogScan.setValue("tableid", new IntConstant(tableIdNum));
+            tableCatalogScan.setValue("tablename", new StringConstant(tableName));
+            tableCatalogScan.setValue("slotsize", new IntConstant(layout.recordLength()));
         }
 
         TableScan fieldCatalogScan = new TableScan(transaction, "fieldcatalog", fieldCatalogLayout);
         try (fieldCatalogScan) {
             for (String fieldName : schema.getFields()) {
                 fieldCatalogScan.insert();
-                fieldCatalogScan.setInt("tableid", tableIdNum);
-                fieldCatalogScan.setString("fieldname", fieldName);
-                fieldCatalogScan.setBoolean("nullable", schema.isNullable(fieldName));
-                fieldCatalogScan.setInt("type", schema.type(fieldName).sqlType);
-                fieldCatalogScan.setInt("runtimeLength", schema.runtimeLength(fieldName));
-                fieldCatalogScan.setInt("offset", layout.getOffset(fieldName));
+                fieldCatalogScan.setValue("tableid", new IntConstant(tableIdNum));
+                fieldCatalogScan.setValue("fieldname", new StringConstant(fieldName));
+                fieldCatalogScan.setValue("nullable", new BooleanConstant(schema.isNullable(fieldName)));
+                fieldCatalogScan.setValue("type", new IntConstant(schema.type(fieldName).sqlType));
+                fieldCatalogScan.setValue("runtimeLength", new IntConstant(schema.runtimeLength(fieldName)));
+                fieldCatalogScan.setValue("offset", new IntConstant(layout.getOffset(fieldName)));
             }
         }
     }
@@ -104,9 +107,9 @@ public class TableMetadataManager {
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
-                if (tableCatalogScan.getString("tablename").equals(tableName)) {
-                    size = tableCatalogScan.getInt("slotsize");
-                    tableId = tableCatalogScan.getInt("tableid");
+                if (tableCatalogScan.getValue("tablename").asString().equals(tableName)) {
+                    size = tableCatalogScan.getValue("slotsize").asInt();
+                    tableId = tableCatalogScan.getValue("tableid").asInt();
                     break;
                 }
             }
@@ -123,12 +126,12 @@ public class TableMetadataManager {
 
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
-                if (fieldCatalogScan.getInt("tableid") == tableId) {
-                    String fieldName = fieldCatalogScan.getString("fieldname");
-                    int sqlType = fieldCatalogScan.getInt("type");
-                    int fieldLength = fieldCatalogScan.getInt("runtimeLength");
-                    int fieldOffset = fieldCatalogScan.getInt("offset");
-                    boolean fieldNullable = fieldCatalogScan.getBoolean("nullable");
+                if (fieldCatalogScan.getValue("tableid").asInt() == tableId) {
+                    String fieldName = fieldCatalogScan.getValue("fieldname").asString();
+                    int sqlType = fieldCatalogScan.getValue("type").asInt();
+                    int fieldLength = fieldCatalogScan.getValue("runtimeLength").asInt();
+                    int fieldOffset = fieldCatalogScan.getValue("offset").asInt();
+                    boolean fieldNullable = fieldCatalogScan.getValue("nullable").asBoolean();
                     offsets.put(fieldName, fieldOffset);
                     schema.addField(fieldName, DatabaseType.get(sqlType), fieldLength, fieldNullable);
                 }
@@ -146,8 +149,8 @@ public class TableMetadataManager {
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
-                if (tableCatalogScan.getString("tablename").equals(tableName)) {
-                    tableId = tableCatalogScan.getInt("tableid");
+                if (tableCatalogScan.getValue("tablename").asString().equals(tableName)) {
+                    tableId = tableCatalogScan.getValue("tableid").asInt();
                     break;
                 }
             }
@@ -162,8 +165,8 @@ public class TableMetadataManager {
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
                 if (
-                    fieldCatalogScan.getInt("tableid") == tableId &&
-                    fieldCatalogScan.getString("fieldname").equals(fieldName)
+                    fieldCatalogScan.getValue("tableid").asInt() == tableId &&
+                    fieldCatalogScan.getValue("fieldname").asString().equals(fieldName)
                 ) {
                     fieldCatalogScan.delete();
                     return;
@@ -180,7 +183,7 @@ public class TableMetadataManager {
 
         try (tableCatalogScan) {
             while (tableCatalogScan.next()) {
-                int currentTableId = tableCatalogScan.getInt("tableid");
+                int currentTableId = tableCatalogScan.getValue("tableid").asInt();
                 if (currentTableId > maxTableNumber) {
                     maxTableNumber = currentTableId;
                 }

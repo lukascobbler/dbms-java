@@ -4,6 +4,7 @@ import com.luka.simpledb.queryManagement.exceptions.NonNumericArithmeticCalculat
 import com.luka.simpledb.queryManagement.exceptions.ZeroDivisionException;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.*;
+import org.jetbrains.annotations.NotNull;
 
 /// Binary arithmetic expressions encapsulate logic for calculating the constant value
 /// a binary arithmetic AST can evaluate to. It has three components: the left sub-expression,
@@ -21,7 +22,7 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
         Constant lVal = left.evaluate(scan);
         Constant rVal = right.evaluate(scan);
 
-        if (lVal == NullConstant.INSTANCE || rVal == NullConstant.INSTANCE) {
+        if (lVal.isNull() || rVal.isNull()) {
             return NullConstant.INSTANCE;
         }
 
@@ -47,7 +48,7 @@ public record BinaryArithmeticExpression(Expression left, ArithmeticOperator op,
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "(%s %s %s)".formatted(left, op, right);
     }
 }

@@ -8,6 +8,8 @@ import com.luka.simpledb.metadataManagement.infoClasses.IndexType;
 import com.luka.simpledb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.simpledb.queryManagement.exceptions.FieldNotFoundInScanException;
 import com.luka.simpledb.queryManagement.scanTypes.update.TableScan;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.Layout;
 import com.luka.simpledb.recordManagement.schema.Schema;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -54,8 +56,8 @@ public class MetadataManagerTests {
         try (tableScan) {
             for (int i = 0; i < 50; i++) {
                 tableScan.insert();
-                tableScan.setInt("A", i);
-                tableScan.setString("B", "rec" + i);
+                tableScan.setValue("A", new IntConstant(i));
+                tableScan.setValue("B", new StringConstant("rec" + i));
             }
         }
 
@@ -105,11 +107,11 @@ public class MetadataManagerTests {
         try (tableScanInsert) {
             for (int i = 0; i < 1000; i++) {
                 tableScanInsert.insert();
-                tableScanInsert.setInt("not-removed1", 100);
-                tableScanInsert.setInt("removed1", 100);
-                tableScanInsert.setInt("not-removed2", 100);
-                tableScanInsert.setInt("removed2", 100);
-                tableScanInsert.setInt("not-removed3", 100);
+                tableScanInsert.setValue("not-removed1", new IntConstant(100));
+                tableScanInsert.setValue("removed1", new IntConstant(100));
+                tableScanInsert.setValue("not-removed2", new IntConstant(100));
+                tableScanInsert.setValue("removed2", new IntConstant(100));
+                tableScanInsert.setValue("not-removed3", new IntConstant(100));
             }
         }
 
@@ -122,13 +124,13 @@ public class MetadataManagerTests {
         try (tableScanGet) {
             tableScanGet.beforeFirst();
             while (tableScanGet.next()) {
-                assertEquals(100, tableScanGet.getInt("not-removed1"));
-                assertEquals(100, tableScanGet.getInt("not-removed2"));
-                assertEquals(100, tableScanGet.getInt("not-removed3"));
+                assertEquals(100, tableScanGet.getValue("not-removed1").asInt());
+                assertEquals(100, tableScanGet.getValue("not-removed2").asInt());
+                assertEquals(100, tableScanGet.getValue("not-removed3").asInt());
                 assertFalse(tableScanGet.hasField("removed1"));
                 assertFalse(tableScanGet.hasField("removed2"));
-                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getInt("removed1"));
-                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getInt("removed2"));
+                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getValue("removed1").asInt());
+                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getValue("removed2").asInt());
             }
         }
 
@@ -143,13 +145,13 @@ public class MetadataManagerTests {
         boolean removed1Found = false, removed2Found = false, removed3Found = false;
         try (fieldCatalogScan) {
             while (fieldCatalogScan.next()) {
-                if (fieldCatalogScan.getString("fieldname").equals("removed1")) {
+                if (fieldCatalogScan.getValue("fieldname").asString().equals("removed1")) {
                     removed1Found = true;
                 }
-                if (fieldCatalogScan.getString("fieldname").equals("removed2")) {
+                if (fieldCatalogScan.getValue("fieldname").asString().equals("removed2")) {
                     removed2Found = true;
                 }
-                if (fieldCatalogScan.getString("fieldname").equals("removed3")) {
+                if (fieldCatalogScan.getValue("fieldname").asString().equals("removed3")) {
                     removed3Found = true;
                 }
             }

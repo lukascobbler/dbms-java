@@ -5,6 +5,7 @@ import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.Constant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import org.jetbrains.annotations.NotNull;
 
 /// Unary arithmetic expressions encapsulate logic for calculating the constant value
 /// a unary arithmetic AST can evaluate to. It has two components: the sub-expression
@@ -17,7 +18,7 @@ public record UnaryArithmeticExpression(ArithmeticOperator op, Expression operan
     public Constant evaluate(Scan scan) {
         Constant val = operand.evaluate(scan);
 
-        if (val == NullConstant.INSTANCE) {
+        if (val.isNull()) {
             return NullConstant.INSTANCE;
         }
 
@@ -33,7 +34,7 @@ public record UnaryArithmeticExpression(ArithmeticOperator op, Expression operan
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "%s(%s)".formatted(op == ArithmeticOperator.SUB ? "-" : "+", operand);
     }
 }

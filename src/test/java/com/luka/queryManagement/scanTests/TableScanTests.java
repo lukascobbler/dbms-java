@@ -1,7 +1,9 @@
 package com.luka.queryManagement.scanTests;
 
 import com.luka.simpledb.fileManagement.FileManager;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.IntConstant;
 import com.luka.simpledb.queryManagement.virtualEntities.constant.NullConstant;
+import com.luka.simpledb.queryManagement.virtualEntities.constant.StringConstant;
 import com.luka.simpledb.recordManagement.RecordId;
 import com.luka.simpledb.recordManagement.exceptions.FieldCannotBeNullException;
 import com.luka.simpledb.simpleDB.SimpleDB;
@@ -41,15 +43,15 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 100; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
             int count = 0;
             ts.beforeFirst();
             while (ts.next()) {
-                int a = ts.getInt("A");
-                String b = ts.getString("B");
+                int a = ts.getValue("A").asInt();
+                String b = ts.getValue("B").asString();
                 if (a < 25 || a > 75) {
                     count++;
                     ts.delete();
@@ -66,8 +68,8 @@ public class TableScanTests {
 
             ts.beforeFirst();
             while (ts.next()) {
-                int a = ts.getInt("A");
-                String b = ts.getString("B");
+                int a = ts.getValue("A").asInt();
+                String b = ts.getValue("B").asString();
 
                 assertTrue(a >= 25);
                 assertTrue(a <= 75);
@@ -94,15 +96,15 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 1000; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
             ts.afterLast();
             for (int i = 1000; i >= 0; i--) {
                 ts.previous();
-                assertEquals(i, ts.getInt("A"));
-                assertEquals(String.format("rec%03d", i), ts.getString("B"));
+                assertEquals(i, ts.getValue("A").asInt());
+                assertEquals(String.format("rec%03d", i), ts.getValue("B").asString());
             }
         }
 
@@ -126,8 +128,8 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 100; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
             ts.beforeFirst();
@@ -135,15 +137,15 @@ public class TableScanTests {
 
             for (int i = 101; i <= 2000; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
             ts.afterLast();
             for (int i = 2000; i >= 0; i--) {
                 ts.previous();
-                assertEquals(i, ts.getInt("A"));
-                assertEquals(String.format("rec%03d", i), ts.getString("B"));
+                assertEquals(i, ts.getValue("A").asInt());
+                assertEquals(String.format("rec%03d", i), ts.getValue("B").asString());
             }
         }
 
@@ -167,20 +169,20 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 100; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
             ts.moveToRecordId(new RecordId(0, 50));
-            assertEquals(50, ts.getInt("A"));
+            assertEquals(50, ts.getValue("A").asInt());
 
             for (int i = 0; i < 10; i ++) {
-                assertEquals(50 + i, ts.getInt("A"));
+                assertEquals(50 + i, ts.getValue("A").asInt());
                 ts.next();
             }
 
             for (int i = 0; i < 10; i ++) {
-                assertEquals(50 + 10 - i, ts.getInt("A"));
+                assertEquals(50 + 10 - i, ts.getValue("A").asInt());
                 ts.previous();
             }
         }
@@ -209,8 +211,8 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 1000; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
         }
 
@@ -227,8 +229,8 @@ public class TableScanTests {
             ts2.beforeFirst();
             for (int i = 0; i <= 1000; i++) {
                 ts2.insert();
-                ts2.setInt("A", i);
-                ts2.setString("B", String.format("rec%03d", i));
+                ts2.setValue("A", new IntConstant(i));
+                ts2.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
         }
 
@@ -258,8 +260,8 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 1000; i++) {
                 ts.insert();
-                ts.setInt("A", i);
-                ts.setString("B", String.format("rec%03d", i));
+                ts.setValue("A", new IntConstant(i));
+                ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
         }
 
@@ -293,31 +295,29 @@ public class TableScanTests {
             ts.beforeFirst();
             for (int i = 0; i <= 100; i++) {
                 ts.insert();
-                ts.setInt("nullable", i);
-                ts.setInt("non-nullable", i);
+                ts.setValue("nullable", new IntConstant(i));
+                ts.setValue("non-nullable", new IntConstant(i));
             }
 
             for (int i = 0; i <= 100; i++) {
                 ts.moveToRecordId(new RecordId(0, i));
-                assertEquals(ts.getInt("nullable"), i);
-                assertEquals(ts.getInt("non-nullable"), i);
+                assertEquals(ts.getValue("nullable").asInt(), i);
+                assertEquals(ts.getValue("non-nullable").asInt(), i);
             }
 
             for (int i = 0; i <= 100; i++) {
                 ts.moveToRecordId(new RecordId(0, i));
-                ts.setNull("nullable");
+                ts.setValue("nullable", NullConstant.INSTANCE);
             }
 
             for (int i = 0; i <= 100; i++) {
                 ts.moveToRecordId(new RecordId(0, i));
-                assertTrue(ts.isNull("nullable"));
+                assertTrue(ts.getValue("nullable").isNull());
                 assertEquals(NullConstant.INSTANCE, ts.getValue("nullable"));
             }
 
             ts.moveToRecordId(new RecordId(0, 0));
-            assertThrowsExactly(FieldCannotBeNullException.class, () -> ts.setNull("non-nullable"));
-
-            assertEquals(0, ts.getInt("nullable"));
+            assertThrowsExactly(FieldCannotBeNullException.class, () -> ts.setValue("non-nullable", NullConstant.INSTANCE));
         }
 
         tx.commit();

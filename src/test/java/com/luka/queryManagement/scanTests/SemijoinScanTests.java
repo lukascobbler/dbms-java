@@ -124,7 +124,7 @@ public class SemijoinScanTests {
 
             scan.afterLast();
             assertTrue(scan.previous());
-            assertEquals(10, scan.getInt("t1_intField1"));
+            assertEquals(10, scan.getValue("t1_intField1").asInt());
             assertFalse(scan.previous());
         }
     }

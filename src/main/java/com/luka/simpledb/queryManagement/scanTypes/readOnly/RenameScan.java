@@ -37,39 +37,6 @@ public class RenameScan extends UnaryScan {
     /// for field rename, it does not retrieve the actual value in any
     /// other way.
     ///
-    /// @return The integer for the corresponding renamed or any other field.
-    @Override
-    protected int internalGetInt(String fieldName) {
-        return wrapGetMapping(fieldName, super::internalGetInt);
-    }
-
-    /// Maps the field name to the new one and calls the super class'
-    /// retrieval function because this operation only adds the logic
-    /// for field rename, it does not retrieve the actual value in any
-    /// other way.
-    ///
-    /// @return The string for the corresponding renamed or any other field.
-    @Override
-    protected String internalGetString(String fieldName) {
-        return wrapGetMapping(fieldName, super::internalGetString);
-    }
-
-    /// Maps the field name to the new one and calls the super class'
-    /// retrieval function because this operation only adds the logic
-    /// for field rename, it does not retrieve the actual value in any
-    /// other way.
-    ///
-    /// @return The boolean for the corresponding renamed or any other field.
-    @Override
-    protected boolean internalGetBoolean(String fieldName) {
-        return wrapGetMapping(fieldName, super::internalGetBoolean);
-    }
-
-    /// Maps the field name to the new one and calls the super class'
-    /// retrieval function because this operation only adds the logic
-    /// for field rename, it does not retrieve the actual value in any
-    /// other way.
-    ///
     /// @return The constant for the corresponding renamed or any other field.
     @Override
     protected Constant internalGetValue(String fieldName) {

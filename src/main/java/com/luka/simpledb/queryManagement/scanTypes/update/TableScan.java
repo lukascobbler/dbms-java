@@ -93,26 +93,6 @@ public class TableScan extends UpdateScan {
         return true;
     }
 
-    /// @return The integer for the current record, with the provided field name.
-    public int internalGetInt(String fieldName) {
-        return recordPage.getInt(currentRecord, fieldName);
-    }
-
-    /// @return The string for the current record, with the provided field name.
-    public String internalGetString(String fieldName) {
-        return recordPage.getString(currentRecord, fieldName);
-    }
-
-    /// @return The boolean for the current record, with the provided field name.
-    public boolean internalGetBoolean(String fieldName) {
-        return recordPage.getBoolean(currentRecord, fieldName);
-    }
-
-    /// @return Whether the field is currently null.
-    public boolean isNull(String fieldName) {
-        return recordPage.isNull(currentRecord, fieldName); // todo expose null api?
-    }
-
     /// Generic value getter. All representable states in the database
     /// are abstracted over the `Constant` record which can include special
     /// cases like null values. The caller does not need to know the type
@@ -127,9 +107,9 @@ public class TableScan extends UpdateScan {
             return NullConstant.INSTANCE;
         }
         switch (layout.getSchema().type(fieldName)) {
-            case DatabaseType.INT -> { return new IntConstant(getInt(fieldName)); }
-            case DatabaseType.BOOLEAN -> { return new BooleanConstant(getBoolean(fieldName)); }
-            case DatabaseType.VARCHAR -> { return new StringConstant(getString(fieldName)); }
+            case DatabaseType.INT -> { return new IntConstant(internalGetInt(fieldName)); }
+            case DatabaseType.BOOLEAN -> { return new BooleanConstant(internalGetBoolean(fieldName)); }
+            case DatabaseType.VARCHAR -> { return new StringConstant(internalGetString(fieldName)); }
             default -> throw new DatabaseTypeNotImplementedException();
         }
     }
@@ -139,8 +119,28 @@ public class TableScan extends UpdateScan {
         return layout.getSchema().hasField(fieldName);
     }
 
+    /// @return The integer for the current record, with the provided field name.
+    private int internalGetInt(String fieldName) {
+        return recordPage.getInt(currentRecord, fieldName);
+    }
+
+    /// @return The string for the current record, with the provided field name.
+    private String internalGetString(String fieldName) {
+        return recordPage.getString(currentRecord, fieldName);
+    }
+
+    /// @return The boolean for the current record, with the provided field name.
+    private boolean internalGetBoolean(String fieldName) {
+        return recordPage.getBoolean(currentRecord, fieldName);
+    }
+
+    /// @return Whether the field is currently null.
+    private boolean isNull(String fieldName) {
+        return recordPage.isNull(currentRecord, fieldName);
+    }
+
     /// Sets the integer field with the provided integer value.
-    public void internalSetInt(String fieldName, int value) {
+    private void internalSetInt(String fieldName, int value) {
         recordPage.setInt(currentRecord, fieldName, value);
     }
 
@@ -148,19 +148,19 @@ public class TableScan extends UpdateScan {
     ///
     /// @throws FieldLengthExceededException – if the runtimeLength of the passed values
     /// exceeds the maximum runtimeLength defined by the schema for that field.
-    public void internalSetString(String fieldName, String value) {
+    private void internalSetString(String fieldName, String value) {
         recordPage.setString(currentRecord, fieldName, value);
     }
 
     /// Sets the integer field with the provided integer value.
-    public void internalSetBoolean(String fieldName, boolean value) {
+    private void internalSetBoolean(String fieldName, boolean value) {
         recordPage.setBoolean(currentRecord, fieldName, value);
     }
 
     /// Sets the field to the null value.
     ///
     /// @throws FieldCannotBeNullException – if the field isn't nullable according to the schema.
-    public void setNull(String fieldName) {
+    private void setNull(String fieldName) {
         try {
             recordPage.setNull(currentRecord, fieldName);
         } catch (FieldNotFoundException e) {
@@ -181,9 +181,9 @@ public class TableScan extends UpdateScan {
             return;
         }
         switch (layout.getSchema().type(fieldName)) {
-            case DatabaseType.INT -> setInt(fieldName, value.asInt());
-            case DatabaseType.VARCHAR -> setString(fieldName, value.asString());
-            case DatabaseType.BOOLEAN -> setBoolean(fieldName, value.asBoolean());
+            case DatabaseType.INT -> internalSetInt(fieldName, value.asInt());
+            case DatabaseType.VARCHAR -> internalSetString(fieldName, value.asString());
+            case DatabaseType.BOOLEAN -> internalSetBoolean(fieldName, value.asBoolean());
             default -> throw new DatabaseTypeNotImplementedException();
         }
     }
