@@ -67,10 +67,6 @@ public class MetadataManagerTests {
         assertTrue(statisticsInfo.distinctValues("A") > 40);
         assertTrue(statisticsInfo.distinctValues("B") > 40);
 
-        String viewDefinition = "select B from MyTable where A = 1";
-        metadataManager.createView("TestView1", viewDefinition, transaction);
-        assertEquals(viewDefinition, metadataManager.getViewDefinition("TestView1", transaction));
-
         metadataManager.createIndex("TestIndex1", "TestTable1", "A", IndexType.BTREE, transaction);
         metadataManager.createIndex("TestIndex2", "TestTable1", "B", IndexType.HASH, transaction);
 

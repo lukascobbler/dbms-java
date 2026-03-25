@@ -1,6 +1,7 @@
 package com.luka.simpledb.parsingManagement.statement.select;
 
 import com.luka.simpledb.queryManagement.virtualEntities.expression.Expression;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -10,7 +11,7 @@ import java.util.Objects;
 /// projected field.
 public record ProjectionFieldInfo(String name, Expression expression) {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         String exprStr = expression.toString();
         if (exprStr.equals(name)) {
             return exprStr;

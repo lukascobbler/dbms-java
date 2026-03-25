@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /// code is organized in different files.
 public class MetadataManager {
     private final TableMetadataManager tableMetadataManager;
-    private final ViewMetadataManager viewMetadataManager;
     private final StatisticsMetadataManager statisticsMetadataManager;
     private final IndexMetadataManager indexMetadataManager;
 
@@ -24,7 +23,6 @@ public class MetadataManager {
     public MetadataManager(Transaction transaction, FileManager fileManager, AtomicInteger nextTableNum) {
         boolean isNew = fileManager.lengthInBlocks("tablecatalog.table") == 0;
         tableMetadataManager = new TableMetadataManager(isNew, transaction, nextTableNum);
-        viewMetadataManager = new ViewMetadataManager(isNew, tableMetadataManager, transaction);
         statisticsMetadataManager = new StatisticsMetadataManager(tableMetadataManager, transaction);
         indexMetadataManager = new IndexMetadataManager(isNew, tableMetadataManager, statisticsMetadataManager, transaction);
     }
@@ -46,17 +44,6 @@ public class MetadataManager {
     /// @throws TableNotFoundException if the table was not found.
     public Layout getLayout(String tableName, Transaction transaction) {
         return tableMetadataManager.getLayout(tableName, transaction);
-    }
-
-    /// Creates all metadata required for a view.
-    public void createView(String viewName, String viewDefinition, Transaction transaction) {
-        viewMetadataManager.createView(viewName, viewDefinition, transaction);
-    }
-
-    /// @return The view definition associated with the passed view name.
-    /// @throws ViewDefinitionNotFoundException – if the view name does not match any view definition.
-    public String getViewDefinition(String viewName, Transaction transaction) {
-        return viewMetadataManager.getViewDef(viewName, transaction);
     }
 
     /// Creates all metadata required for an index.

@@ -76,18 +76,6 @@ public class ParserTests {
     }
 
     @Test
-    public void testParseCreateView() {
-        String query = "CREATE VIEW active_users AS SELECT id, name FROM users WHERE active = TRUE;";
-        Parser parser = new Parser(query);
-        Statement stmt = parser.parse();
-
-        assertEquals(
-                "CREATE VIEW active_users AS SELECT id, name FROM users WHERE active = TRUE;",
-                stmt.toString()
-        );
-    }
-
-    @Test
     public void testParseCreateIndex() {
         String query = "CREATE INDEX idx_user_name ON users (name);";
         Parser parser = new Parser(query);

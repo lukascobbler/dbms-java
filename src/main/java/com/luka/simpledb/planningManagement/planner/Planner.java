@@ -41,8 +41,6 @@ public class Planner {
                 updatePlanner.executeCreateIndexValidated(createIndexStatement, transaction);
             case CreateTableStatement createTableStatement ->
                 updatePlanner.executeCreateTableValidated(createTableStatement, transaction);
-            case CreateViewStatement createViewStatement ->
-                updatePlanner.executeCreateViewValidated(createViewStatement, transaction);
             case DeleteStatement deleteStatement ->
                 updatePlanner.executeDeleteValidated(deleteStatement, transaction);
             case InsertStatement insertStatement ->

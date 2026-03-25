@@ -154,11 +154,6 @@ public abstract class UpdatePlanner {
         return executeDelete(deleteStatement, transaction);
     }
 
-    public int executeCreateViewValidated(CreateViewStatement createViewStatement, Transaction transaction) {
-        // todo check
-        return executeCreateView(createViewStatement, transaction);
-    }
-
     /// Validates every aspect of a create table statement.
     /// Checks for:
     /// - table already existing
@@ -235,11 +230,6 @@ public abstract class UpdatePlanner {
     ///
     /// @return The number of rows affected after the statement execution.
     protected abstract int executeDelete(DeleteStatement deleteStatement, Transaction transaction);
-
-    /// Knows for sure that the create view statement is valid and executes it without any check.
-    ///
-    /// @return The number of rows affected after the statement execution.
-    protected abstract int executeCreateView(CreateViewStatement createViewStatement, Transaction transaction);
 
     /// Knows for sure that the create table statement is valid and executes it without any check.
     ///

@@ -106,19 +106,6 @@ public class BasicUpdatePlanner extends UpdatePlanner {
         return 0;
     }
 
-    /// Puts the new view's metadata in the system - its name and definition.
-    ///
-    /// @return 0, because no rows were changed.
-    @Override
-    protected int executeCreateView(CreateViewStatement createViewStatement, Transaction transaction) {
-        metadataManager.createView(
-                createViewStatement.viewName(),
-                createViewStatement.selectStatement().toString(),
-                transaction
-        );
-        return 0;
-    }
-
     /// Puts the new index's metadata in the system - its name, table, field and type.
     ///
     /// @return 0, because no rows were changed.

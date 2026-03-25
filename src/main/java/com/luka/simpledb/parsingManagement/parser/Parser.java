@@ -47,7 +47,6 @@ public class Parser {
                 ctx.advance();
                 yield switch (ctx.current()) {
                     case KeywordToken.TABLE -> new ParseCreateTable(ctx).parse();
-                    case KeywordToken.VIEW -> new ParseCreateView(ctx).parse();
                     case KeywordToken.INDEX -> new ParseCreateIndex(ctx).parse();
                     default -> throw new ParsingException("Invalid CREATE target: " + ctx.current());
                 };

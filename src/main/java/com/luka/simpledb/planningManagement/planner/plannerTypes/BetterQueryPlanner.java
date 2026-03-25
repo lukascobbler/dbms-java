@@ -1,8 +1,6 @@
 package com.luka.simpledb.planningManagement.planner.plannerTypes;
 
 import com.luka.simpledb.metadataManagement.MetadataManager;
-import com.luka.simpledb.metadataManagement.exceptions.ViewDefinitionNotFoundException;
-import com.luka.simpledb.parsingManagement.parser.Parser;
 import com.luka.simpledb.parsingManagement.statement.SelectStatement;
 import com.luka.simpledb.parsingManagement.statement.select.SingleSelection;
 import com.luka.simpledb.parsingManagement.statement.select.TableInfo;
@@ -11,6 +9,7 @@ import com.luka.simpledb.planningManagement.plan.planTypes.readOnly.*;
 import com.luka.simpledb.planningManagement.planner.plannerDefinitions.QueryPlanner;
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.transactionManagement.Transaction;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,30 +54,8 @@ public class BetterQueryPlanner extends QueryPlanner {
         List<Plan<Scan>> differentTablePlans = new ArrayList<>();
 
         for (TableInfo tableInfo : singleSelection.tables()) {
-            String tableOrViewName = tableInfo.tableName();
-            Plan<Scan> initialPlan;
-            try {
-                String viewDefinition = metadataManager.getViewDefinition(tableOrViewName, transaction);
-                Parser parser = new Parser(viewDefinition);
-
-                SelectStatement viewSelectStatement = (SelectStatement) parser.parse();
-                differentTablePlans.add(createPlan(viewSelectStatement, transaction)); // todo what to do with views
-            } catch (ViewDefinitionNotFoundException e) {
-                initialPlan = new TableReadOnlyPlan(transaction, tableOrViewName, metadataManager);
-
-                String tableQualifier = tableInfo.qualifier();
-                Map<String, String> fieldNameMapping = new HashMap<>();
-
-                // renaming all table scan's fields to be fully qualified
-                // because they are fully qualified in the statement
-                for (String noQualificationFieldName : initialPlan.outputSchema().getFields()) {
-                    String fullyQualifiedFieldName = tableQualifier + "." + noQualificationFieldName;
-                    fieldNameMapping.put(fullyQualifiedFieldName, noQualificationFieldName);
-                }
-
-                initialPlan = new RenamePlan(initialPlan, fieldNameMapping);
-                differentTablePlans.add(initialPlan);
-            }
+            Plan<Scan> initialPlan = fullyQualifiedTablePlan(transaction, tableInfo);
+            differentTablePlans.add(initialPlan);
         }
 
         Plan<Scan> plan = differentTablePlans.removeFirst();
@@ -94,5 +71,23 @@ public class BetterQueryPlanner extends QueryPlanner {
         }
 
         return new ExtendProjectPlan(plan, singleSelection.projectionFields());
+    }
+
+    private @NotNull Plan<Scan> fullyQualifiedTablePlan(Transaction transaction, TableInfo tableInfo) {
+        String tableName = tableInfo.tableName();
+        Plan<Scan> initialPlan = new TableReadOnlyPlan(transaction, tableName, metadataManager);
+
+        String tableQualifier = tableInfo.qualifier();
+        Map<String, String> fieldNameMapping = new HashMap<>();
+
+        // renaming all table scan's fields to be fully qualified
+        // because they are fully qualified in the statement
+        for (String noQualificationFieldName : initialPlan.outputSchema().getFields()) {
+            String fullyQualifiedFieldName = tableQualifier + "." + noQualificationFieldName;
+            fieldNameMapping.put(fullyQualifiedFieldName, noQualificationFieldName);
+        }
+
+        initialPlan = new RenamePlan(initialPlan, fieldNameMapping);
+        return initialPlan;
     }
 }

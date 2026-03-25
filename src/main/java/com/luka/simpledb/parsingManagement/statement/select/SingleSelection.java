@@ -1,6 +1,7 @@
 package com.luka.simpledb.parsingManagement.statement.select;
 
 import com.luka.simpledb.queryManagement.virtualEntities.Predicate;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Objects;
 /// data to match.
 public record SingleSelection(List<ProjectionFieldInfo> projectionFields, List<TableInfo> tables, Predicate predicate) {
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         StringBuilder result = new StringBuilder("SELECT ");
         for (var projectionField : projectionFields) {
             result.append(projectionField.toString());
