@@ -1,0 +1,20 @@
+package com.luka.lbdb.parsing.statement;
+
+import com.luka.lbdb.metadataManagement.infoClasses.IndexType;
+import org.jetbrains.annotations.NotNull;
+
+/// Represents the parsed data of `CREATE INDEX` queries.
+/// `CREATE INDEX` queries need the index name, the table
+/// that index is created for and the field that index is
+/// created for.
+public record CreateIndexStatement(String indexName, String tableName, String fieldName, IndexType type)
+        implements Statement {
+    @Override
+    public @NotNull String toString() {
+        return "CREATE INDEX " + indexName + " ON " +
+                tableName + " (" +
+                fieldName + ") TYPE " +
+                type.name() +
+                ";";
+    }
+}

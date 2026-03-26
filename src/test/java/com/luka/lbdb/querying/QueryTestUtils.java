@@ -1,0 +1,139 @@
+package com.luka.lbdb.querying;
+
+import com.luka.lbdb.querying.scanDefinitions.UpdateScan;
+import com.luka.lbdb.querying.scanTypes.update.TableScan;
+import com.luka.lbdb.querying.virtualEntities.constant.BooleanConstant;
+import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
+import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
+import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
+import com.luka.lbdb.records.Layout;
+import com.luka.lbdb.records.schema.Schema;
+import com.luka.lbdb.db.LBDB;
+import com.luka.lbdb.transactions.Transaction;
+
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/// Initialization methods that encapsulate data needed for query tests.
+public class QueryTestUtils {
+
+    /// Helper record for test initialization functions.
+    public record QueryTestData(LBDB db, Transaction tx, List<Layout> layouts) { }
+
+    /// Creates one table "table1", with three fields of each type where
+    /// the third field of each type is nullable and set to null.
+    public static QueryTestData initializeOneFullTable(Path tmpDir) {
+        LBDB LBDB = new LBDB(tmpDir);
+        Transaction tx = LBDB.newTransaction();
+
+        Schema sch = new Schema();
+        sch.addIntField("t1_intField1", false);
+        sch.addIntField("t1_intField2", false);
+        sch.addIntField("t1_intField3", true);
+        sch.addStringField("t1_stringField1", 100, false);
+        sch.addStringField("t1_stringField2", 100, false);
+        sch.addStringField("t1_stringField3", 100, true);
+        sch.addBooleanField("t1_boolField1", false);
+        sch.addBooleanField("t1_boolField2", false);
+        sch.addBooleanField("t1_boolField3", true);
+
+        LBDB.getMetadataManager().createTable("table1", sch, tx);
+
+        Layout layout = LBDB.getMetadataManager().getLayout("table1", tx);
+
+        UpdateScan tableScan = new TableScan(tx, "table1", layout);
+
+        try (tableScan) {
+            tableScan.beforeFirst();
+            for (int i = 0; i < 250; i++) {
+                tableScan.insert();
+                tableScan.setValue("t1_intField1", new IntConstant(i));
+                tableScan.setValue("t1_intField2", new IntConstant(i + 1));
+                tableScan.setValue("t1_intField3", NullConstant.INSTANCE);
+                tableScan.setValue("t1_stringField1", new StringConstant("str" + i));
+                tableScan.setValue("t1_stringField2", new StringConstant("str" + i + 1));
+                tableScan.setValue("t1_stringField3", NullConstant.INSTANCE);
+                tableScan.setValue("t1_boolField1", new BooleanConstant(true));
+                tableScan.setValue("t1_boolField2", new BooleanConstant(false));
+                tableScan.setValue("t1_boolField3", NullConstant.INSTANCE);
+            }
+        }
+
+        return new QueryTestData(LBDB, tx, Collections.singletonList(layout));
+    }
+
+    /// Creates two tables "table1" and "table2", with three fields of each type where
+    /// the third field of each type is nullable and set to null.
+    public static QueryTestData initializeTwoFullTables(Path tmpDir) {
+        LBDB LBDB = new LBDB(tmpDir);
+        Transaction tx = LBDB.newTransaction();
+
+        Schema sch1 = new Schema();
+        sch1.addIntField("t1_intField1", false);
+        sch1.addIntField("t1_intField2", false);
+        sch1.addIntField("t1_intField3", true);
+        sch1.addStringField("t1_stringField1", 100, false);
+        sch1.addStringField("t1_stringField2", 100, false);
+        sch1.addStringField("t1_stringField3", 100, true);
+        sch1.addBooleanField("t1_boolField1", false);
+        sch1.addBooleanField("t1_boolField2", false);
+        sch1.addBooleanField("t1_boolField3", true);
+
+        Schema sch2 = new Schema();
+        sch2.addIntField("t2_intField1", false);
+        sch2.addIntField("t2_intField2", false);
+        sch2.addIntField("t2_intField3", true);
+        sch2.addStringField("t2_stringField1", 100, false);
+        sch2.addStringField("t2_stringField2", 100, false);
+        sch2.addStringField("t2_stringField3", 100, true);
+        sch2.addBooleanField("t2_boolField1", false);
+        sch2.addBooleanField("t2_boolField2", false);
+        sch2.addBooleanField("t2_boolField3", true);
+
+        LBDB.getMetadataManager().createTable("table1", sch1, tx);
+        LBDB.getMetadataManager().createTable("table2", sch2, tx);
+
+        Layout layout1 = LBDB.getMetadataManager().getLayout("table1", tx);
+        Layout layout2 = LBDB.getMetadataManager().getLayout("table2", tx);
+
+        UpdateScan tableScan1 = new TableScan(tx, "table1", layout1);
+
+        try (tableScan1) {
+            tableScan1.beforeFirst();
+            for (int i = 0; i < 250; i++) {
+                tableScan1.insert();
+                tableScan1.setValue("t1_intField1", new IntConstant(i));
+                tableScan1.setValue("t1_intField2", new IntConstant(i + 1));
+                tableScan1.setValue("t1_intField3", NullConstant.INSTANCE);
+                tableScan1.setValue("t1_stringField1", new StringConstant("str" + i));
+                tableScan1.setValue("t1_stringField2", new StringConstant("str" + i + 1));
+                tableScan1.setValue("t1_stringField3", NullConstant.INSTANCE);
+                tableScan1.setValue("t1_boolField1", new BooleanConstant(true));
+                tableScan1.setValue("t1_boolField2", new BooleanConstant(false));
+                tableScan1.setValue("t1_boolField3", NullConstant.INSTANCE);
+            }
+        }
+
+        UpdateScan tableScan2 = new TableScan(tx, "table2", layout2);
+
+        try (tableScan2) {
+            tableScan2.beforeFirst();
+            for (int i = 0; i < 250; i++) {
+                tableScan2.insert();
+                tableScan2.setValue("t2_intField1", new IntConstant(i));
+                tableScan2.setValue("t2_intField2", new IntConstant(i + 1));
+                tableScan2.setValue("t2_intField3", NullConstant.INSTANCE);
+                tableScan2.setValue("t2_stringField1", new StringConstant("str" + i));
+                tableScan2.setValue("t2_stringField2", new StringConstant("str" + i + 1));
+                tableScan2.setValue("t2_stringField3", NullConstant.INSTANCE);
+                tableScan2.setValue("t2_boolField1", new BooleanConstant(true));
+                tableScan2.setValue("t2_boolField2", new BooleanConstant(false));
+                tableScan2.setValue("t2_boolField3", NullConstant.INSTANCE);
+            }
+        }
+
+        return new QueryTestData(LBDB, tx, Arrays.asList(layout1, layout2));
+    }
+}
