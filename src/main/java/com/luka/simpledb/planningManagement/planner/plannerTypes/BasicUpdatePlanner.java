@@ -16,10 +16,16 @@ import com.luka.simpledb.transactionManagement.Transaction;
 import java.util.Map;
 import java.util.Optional;
 
-// todo docs
+/// Concrete implementation of an update planner, that creates
+/// plans that modify data, and executes them on the spot. As the
+/// name implies, the planner is pretty basic, ensuring only correctness
+/// and no optimizations.
 public class BasicUpdatePlanner extends UpdatePlanner {
     private final Map<String, RecordId> lastInsertions;
 
+    /// An update planner needs a metadata manager for direct table
+    /// access, and a map of where is the last insertion for a given
+    /// table.
     public BasicUpdatePlanner(MetadataManager metadataManager, Map<String, RecordId> lastInsertions) {
         super(metadataManager);
         this.lastInsertions = lastInsertions;

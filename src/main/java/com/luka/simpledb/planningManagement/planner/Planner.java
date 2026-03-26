@@ -9,15 +9,23 @@ import com.luka.simpledb.planningManagement.planner.plannerDefinitions.UpdatePla
 import com.luka.simpledb.queryManagement.scanDefinitions.Scan;
 import com.luka.simpledb.transactionManagement.Transaction;
 
+/// The main entry point class for executing / creating plans. Does not
+/// have any special logic, it is just a wrapper over the system's query and
+/// update planners.
 public class Planner {
     private final QueryPlanner queryPlanner;
     private final UpdatePlanner updatePlanner;
 
+    /// A planner needs some concrete implementation of the query and update
+    /// planners.
     public Planner(QueryPlanner queryPlanner, UpdatePlanner updatePlanner) {
         this.queryPlanner = queryPlanner;
         this.updatePlanner = updatePlanner;
     }
 
+    /// Creates a query plan, but does not execute or process it.
+    ///
+    /// @return The plan for a `SELECT` query.
     public Plan<Scan> createQueryPlan(String query, Transaction transaction) throws PlanValidationException {
         Parser parser = new Parser(query);
 
@@ -31,6 +39,9 @@ public class Planner {
         }
     }
 
+    /// Creates a plan for any modification query and executes it.
+    ///
+    /// @return The number of rows affected.
     public int executeUpdate(String updateQuery, Transaction transaction) throws PlanValidationException {
         Parser parser = new Parser(updateQuery);
 
@@ -51,6 +62,7 @@ public class Planner {
         };
     }
 
+    /// @return The string that explains some `SELECT` query.
     public String explainStatement(String query, Transaction transaction) {
         Parser parser = new Parser(query);
 
