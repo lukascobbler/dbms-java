@@ -2,13 +2,11 @@ package com.luka.lbdb.records;
 
 import com.luka.lbdb.fileManagement.Page;
 import com.luka.lbdb.records.exceptions.DatabaseTypeNotImplementedException;
-import com.luka.lbdb.records.exceptions.FieldNotFoundException;
 import com.luka.lbdb.records.exceptions.RecordTooLongException;
 import com.luka.lbdb.records.schema.Schema;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /// A `Layout` represents a physical description of some table's records. It
 /// contains information about where can fields be found, the current size of the record,
@@ -85,17 +83,13 @@ public class Layout {
     }
 
     /// @return The offset of the field i.e. where the field starts.
-    /// @throws FieldNotFoundException if the field does not exist on this layout.
     public int getOffset(String fieldName) {
-        return Optional.ofNullable(offsets.get(fieldName))
-                .orElseThrow(FieldNotFoundException::new);
+        return offsets.get(fieldName);
     }
 
     /// @return The ordered position of the field.
-    /// @throws FieldNotFoundException if the field does not exist on this layout.
     public int fieldOrderPosition(String fieldName) {
-        return Optional.ofNullable(fieldPositions.get(fieldName))
-                .orElseThrow(FieldNotFoundException::new);
+        return fieldPositions.get(fieldName);
     }
 
     /// @return Length value padded to nearest 4-byte multiple.

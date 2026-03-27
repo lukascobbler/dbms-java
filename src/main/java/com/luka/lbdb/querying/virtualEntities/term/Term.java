@@ -1,7 +1,6 @@
 package com.luka.lbdb.querying.virtualEntities.term;
 
 import com.luka.lbdb.planning.plan.Plan;
-import com.luka.lbdb.querying.exceptions.TermOperatorNotSupportedException;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
@@ -34,8 +33,6 @@ public class Term {
     ///
     /// @return Whether two expressions satisfy the operator defined between
     /// them for a given scan.
-    /// @throws TermOperatorNotSupportedException if a comparison operator
-    /// is used that isn't supported by the database.
     public boolean isSatisfied(Scan scan) {
         Constant rhsValue;
         Constant lhsValue;
@@ -61,7 +58,7 @@ public class Term {
             case LESS_THAN -> lhsValue.compareTo(rhsValue) < 0;
             case GREATER_OR_EQUAL -> lhsValue.compareTo(rhsValue) >= 0;
             case LESS_OR_EQUAL -> lhsValue.compareTo(rhsValue) <= 0;
-            default -> throw new TermOperatorNotSupportedException();
+            default -> throw new IllegalStateException("unreachable code");
         };
     }
 

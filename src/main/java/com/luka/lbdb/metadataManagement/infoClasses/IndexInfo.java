@@ -28,21 +28,19 @@ public class IndexInfo {
 
 // todo implement when indexes are done
 //    public Index open() {
-//        switch (indexType) {
-//            case HASH -> { return new HashIndex(transaction, indexName, indexLayout); }
-//            case B_TREE -> { return new BTreeIndex(transaction, indexName, indexLayout); }
-//            default -> throw new IndexNotImplementedException();
-//        }
+//        return switch (indexType) {
+//            case HASH -> { new HashIndex(transaction, indexName, indexLayout); }
+//            case BTREE -> { new BTreeIndex(transaction, indexName, indexLayout); }
+//        };
 //    }
 
 // todo implement when indexes are done
 //    public int blocksAccessed() {
 //        int recordsPerBlock = transaction.blockSize() / indexLayout.getSlotSize();
 //        int numBlocks = statisticsInfo.numBlocks() / recordsPerBlock;
-//        switch (indexType) {
-//            case HASH -> { return HashIndex.searchCost(numBlocks, recordsPerBlock); }
-//            case B_TREE -> { return BTreeIndex.searchCost(numBlocks, recordsPerBlock); }
-//            default -> throw new IndexNotImplementedException();
+//        return switch (indexType) {
+//            case HASH -> { HashIndex.searchCost(numBlocks, recordsPerBlock); }
+//            case B_TREE -> { BTreeIndex.searchCost(numBlocks, recordsPerBlock); }
 //        }
 //    }
 

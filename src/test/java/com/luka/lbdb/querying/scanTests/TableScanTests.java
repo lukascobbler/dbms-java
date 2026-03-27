@@ -5,7 +5,6 @@ import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 import com.luka.lbdb.records.RecordId;
-import com.luka.lbdb.records.exceptions.FieldCannotBeNullException;
 import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.fileManagement.Page;
 import com.luka.lbdb.querying.scanTypes.update.TableScan;
@@ -317,7 +316,6 @@ public class TableScanTests {
             }
 
             ts.moveToRecordId(new RecordId(0, 0));
-            assertThrowsExactly(FieldCannotBeNullException.class, () -> ts.setValue("non-nullable", NullConstant.INSTANCE));
         }
 
         tx.commit();

@@ -20,5 +20,5 @@ public abstract class UnaryScan extends Scan {
     @Override public void close() { childScan.close(); }
 
     // default getter implementations
-    @Override protected Constant internalGetValue(String fieldName) { return childScan.getValue(fieldName); }
+    @Override public Constant getValue(String fieldName) { return childScan.getValue(fieldName); }
 }

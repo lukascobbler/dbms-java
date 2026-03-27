@@ -39,8 +39,8 @@ public class RenameScan extends UnaryScan {
     ///
     /// @return The constant for the corresponding renamed or any other field.
     @Override
-    protected Constant internalGetValue(String fieldName) {
-        return wrapGetMapping(fieldName, super::internalGetValue);
+    public Constant getValue(String fieldName) {
+        return wrapGetMapping(fieldName, super::getValue);
     }
 
     /// Does the actual mapping from the new field name to the old field name.

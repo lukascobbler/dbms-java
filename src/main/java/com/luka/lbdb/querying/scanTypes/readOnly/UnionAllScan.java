@@ -80,7 +80,7 @@ public class UnionAllScan extends BinaryScan {
 
     /// @return The constant of the currently positioned scan.
     @Override
-    protected Constant internalGetValue(String fieldName) {
+    public Constant getValue(String fieldName) {
         if (isFirstScanSelected) {
             return childScan1.getValue(fieldName);
         }

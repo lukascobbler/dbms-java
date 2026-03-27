@@ -3,7 +3,6 @@ package com.luka.lbdb.metadataManagement;
 import com.luka.lbdb.metadataManagement.infoClasses.IndexInfo;
 import com.luka.lbdb.metadataManagement.infoClasses.IndexType;
 import com.luka.lbdb.metadataManagement.infoClasses.StatisticsInfo;
-import com.luka.lbdb.querying.exceptions.FieldNotFoundInScanException;
 import com.luka.lbdb.querying.scanTypes.update.TableScan;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
@@ -126,8 +125,6 @@ public class MetadataManagerTests {
                 assertEquals(100, tableScanGet.getValue("not-removed3").asInt());
                 assertFalse(tableScanGet.hasField("removed1"));
                 assertFalse(tableScanGet.hasField("removed2"));
-                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getValue("removed1").asInt());
-                assertThrowsExactly(FieldNotFoundInScanException.class, () -> tableScanGet.getValue("removed2").asInt());
             }
         }
 

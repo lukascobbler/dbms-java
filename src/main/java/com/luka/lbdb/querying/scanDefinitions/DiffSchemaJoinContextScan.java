@@ -42,7 +42,7 @@ public class DiffSchemaJoinContextScan extends BinaryScan {
 
     /// @return The constant from the scan that has that field.
     @Override
-    protected Constant internalGetValue(String fieldName) {
+    public Constant getValue(String fieldName) {
         if (childScan1.hasField(fieldName)) {
             return childScan1.getValue(fieldName);
         }

@@ -99,7 +99,7 @@ public class ProductScan extends BinaryScan {
 
     /// @return The constant from the scan that has that field.
     @Override
-    protected Constant internalGetValue(String fieldName) {
+    public Constant getValue(String fieldName) {
         return diffSchemaJoinContextScan.getValue(fieldName);
     }
 }

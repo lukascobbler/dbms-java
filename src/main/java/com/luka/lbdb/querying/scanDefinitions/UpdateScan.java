@@ -1,6 +1,5 @@
 package com.luka.lbdb.querying.scanDefinitions;
 
-import com.luka.lbdb.querying.exceptions.FieldNotFoundInScanException;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.records.RecordId;
 
@@ -38,19 +37,8 @@ public abstract class UpdateScan extends Scan {
     /// record ids may be disingenuous.
     public abstract void moveToRecordId(RecordId rid);
 
-    // public API scan setters that concrete scans mustn't redefine
+    // public API scan setters
 
     /// Sets a constant value for the field name.
-    ///
-    /// @throws FieldNotFoundInScanException if the field doesn't exist for this scan.
-    public final void setValue(String fieldName, Constant value) { validate(fieldName); internalSetValue(fieldName, value); }
-
-    // private API scan setters with no field exist that concrete scans must implement
-
-    /// A direct setter for constants that does not check
-    /// for field name existence. Users do not call this function
-    /// directly, they use the public API. It exists to prevent field
-    /// checking at every step in the scan hierarchy and is the function
-    /// with actual logic for retrieving a value.
-    protected abstract void internalSetValue(String fieldName, Constant value);
+    public abstract void setValue(String fieldName, Constant value);
 }

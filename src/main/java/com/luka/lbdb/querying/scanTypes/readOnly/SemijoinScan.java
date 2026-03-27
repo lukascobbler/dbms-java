@@ -85,7 +85,7 @@ public class SemijoinScan extends BinaryScan {
 
     /// @return The constant for the given field name in the outer scan.
     @Override
-    protected Constant internalGetValue(String fieldName) {
+    public Constant getValue(String fieldName) {
         return childScan1.getValue(fieldName);
     }
 }

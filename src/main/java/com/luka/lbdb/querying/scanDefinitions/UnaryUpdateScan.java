@@ -27,8 +27,8 @@ public abstract class UnaryUpdateScan extends UpdateScan {
     @Override public void moveToRecordId(RecordId rid) { childScan.moveToRecordId(rid); }
 
     // default getter implementations
-    @Override protected Constant internalGetValue(String fieldName) { return childScan.getValue(fieldName); }
+    @Override public Constant getValue(String fieldName) { return childScan.getValue(fieldName); }
 
     // default setter implementations
-    @Override protected void internalSetValue(String fieldName, Constant v) { childScan.setValue(fieldName, v); }
+    @Override public void setValue(String fieldName, Constant value) { childScan.setValue(fieldName, value); }
 }

@@ -2,9 +2,6 @@ package com.luka.lbdb.records;
 
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.records.exceptions.DatabaseTypeNotImplementedException;
-import com.luka.lbdb.records.exceptions.FieldCannotBeNullException;
-import com.luka.lbdb.records.exceptions.FieldIncorrectTypeException;
-import com.luka.lbdb.records.exceptions.FieldLengthExceededException;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.transactionManagement.Transaction;
 
@@ -31,10 +28,6 @@ public class RecordPage {
 
     /// @return Whether the field currently has a null value.
     public boolean isNull(int slot, String fieldName) {
-        if (!layout.getSchema().isNullable(fieldName)) {
-            return false;
-        }
-
         int nullBitPosition = layout.fieldOrderPosition(fieldName) + 1;
         int isNullMask = 1 << nullBitPosition;
         int slotPosition = offset(slot);
@@ -48,12 +41,7 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return An integer in the field described by its name, in some slot.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this get method.
     public int getInt(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.INT) {
-            throw new FieldIncorrectTypeException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getInt(blockId, fieldPosition);
     }
@@ -62,12 +50,7 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return A string in the field described by its name, in some slot.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this get method.
     public String getString(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.VARCHAR) {
-            throw new FieldIncorrectTypeException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getString(blockId, fieldPosition);
     }
@@ -76,24 +59,13 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// @return A boolean in the field described by its name, in some slot.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this get method.
     public boolean getBoolean(int slot, String fieldName) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.BOOLEAN) {
-            throw new FieldIncorrectTypeException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         return transaction.getBoolean(blockId, fieldPosition);
     }
 
     /// Sets the field name null bit to 1, meaning the value for that field is null.
-    ///
-    /// @throws FieldCannotBeNullException if the field isn't nullable according to the schema.
     public void setNull(int slot, String fieldName) {
-        if (!layout.getSchema().isNullable(fieldName)) {
-            throw new FieldCannotBeNullException();
-        }
-
         int nullBitPosition = layout.fieldOrderPosition(fieldName) + 1;
         int setNotNullMask = 1 << nullBitPosition;
         int slotPosition = offset(slot);
@@ -107,12 +79,7 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets an integer in some slot, in some field with some value.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this set method.
     public void setInt(int slot, String fieldName, int value) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.INT) {
-            throw new FieldIncorrectTypeException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.setInt(blockId, fieldPosition, value, true);
         setNonNull(slot, fieldName);
@@ -122,18 +89,7 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets a string in some slot, in some field with some value.
-    ///
-    /// @throws FieldLengthExceededException if the runtimeLength of the passed values exceeds
-    /// the maximum runtimeLength defined by the schema for that field.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this set method.
     public void setString(int slot, String fieldName, String value) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.VARCHAR) {
-            throw new FieldIncorrectTypeException();
-        }
-        if (value.length() > layout.getSchema().runtimeLength(fieldName)) {
-            throw new FieldLengthExceededException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.setString(blockId, fieldPosition, value, true);
         setNonNull(slot, fieldName);
@@ -143,12 +99,7 @@ public class RecordPage {
     /// the offset of the field in that record.
     ///
     /// Sets a boolean in some slot, in some field with some value.
-    /// @throws FieldIncorrectTypeException if the field name defined in the schema
-    /// isn't of the type of this set method.
     public void setBoolean(int slot, String fieldName, boolean value) {
-        if (layout.getSchema().type(fieldName) != DatabaseType.BOOLEAN) {
-            throw new FieldIncorrectTypeException();
-        }
         int fieldPosition = offset(slot) + layout.getOffset(fieldName);
         transaction.setBoolean(blockId, fieldPosition, value, true);
         setNonNull(slot, fieldName);

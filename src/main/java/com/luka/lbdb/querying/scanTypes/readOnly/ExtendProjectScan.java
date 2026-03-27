@@ -38,11 +38,11 @@ public class ExtendProjectScan extends UnaryScan {
     ///
     /// @return The constant for the corresponding named expression or any other field.
     @Override
-    protected Constant internalGetValue(String fieldName) {
+    public Constant getValue(String fieldName) {
         if (projectionFields.containsKey(fieldName)) {
             return projectionFields.get(fieldName).evaluate(childScan);
         }
 
-        return super.internalGetValue(fieldName);
+        return super.getValue(fieldName);
     }
 }
