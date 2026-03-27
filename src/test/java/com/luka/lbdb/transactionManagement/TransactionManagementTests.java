@@ -1,4 +1,4 @@
-package com.luka.lbdb.transactions;
+package com.luka.lbdb.transactionManagement;
 
 import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.bufferManagement.BufferManager;
@@ -6,7 +6,7 @@ import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.logManagement.LogManager;
 import com.luka.lbdb.db.settings.LBDBSettings;
-import com.luka.lbdb.transactions.concurrencyManagement.LockTable;
+import com.luka.lbdb.transactionManagement.concurrencyManagement.LockTable;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -28,8 +28,8 @@ public class TransactionManagementTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
         LBDB LBDB = new LBDB(tmpDir, settings);
 
-        Transaction transaction1 = LBDB.newTransaction();
-        Transaction transaction2 = LBDB.newTransaction();
+        Transaction transaction1 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
+        Transaction transaction2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -54,8 +54,8 @@ public class TransactionManagementTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
         LBDB LBDB = new LBDB(tmpDir, settings);
 
-        Transaction transaction1 = LBDB.newTransaction();
-        Transaction transaction2 = LBDB.newTransaction();
+        Transaction transaction1 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
+        Transaction transaction2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -82,9 +82,9 @@ public class TransactionManagementTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
         LBDB LBDB = new LBDB(tmpDir, settings);
 
-        Transaction transaction0 = LBDB.newTransaction();
-        Transaction transaction1 = LBDB.newTransaction();
-        Transaction transaction2 = LBDB.newTransaction();
+        Transaction transaction0 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
+        Transaction transaction1 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
+        Transaction transaction2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -113,13 +113,13 @@ public class TransactionManagementTests {
 
         LBDB LBDB = new LBDB(tmpDir);
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
-        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB, "nextTransactionNum");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
+        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB.getTransactionManager(), "nextTransactionNum");
 
-        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction0.appendEmptyBlock("file1", true);
         transaction0.appendEmptyBlock("file1", true);
@@ -145,18 +145,18 @@ public class TransactionManagementTests {
         String setString = "test";
         boolean setBoolean = true;
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
-        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB, "nextTransactionNum");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
+        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB.getTransactionManager(), "nextTransactionNum");
 
-        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setString(b0, 100, setString, true);
@@ -165,9 +165,9 @@ public class TransactionManagementTests {
 
         // simulating system crash by manager reinstantiation
         LBDB = new LBDB(tmpDir);
-        fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
-        Transaction transaction2 = LBDB.newTransaction();
+        Transaction transaction2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         transaction2.recover();
 
         assertEquals(1, fm.lengthInBlocks("file1"));
@@ -196,18 +196,18 @@ public class TransactionManagementTests {
         String setString = "test";
         boolean setBoolean = true;
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
-        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB, "nextTransactionNum");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
+        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB.getTransactionManager(), "nextTransactionNum");
 
-        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, setInt, true);
         transaction1.setString(b0, 100, setString, true);
@@ -221,12 +221,12 @@ public class TransactionManagementTests {
 
         // simulating system crash by manager reinstantiation
         LBDB = new LBDB(tmpDir);
-        fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
+        fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
 
-        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction2.recover();
 
         assertEquals(1, fm.lengthInBlocks("file1"));
@@ -251,52 +251,52 @@ public class TransactionManagementTests {
 
         LBDB LBDB = new LBDB(tmpDir, recoverySettings);
 
-        Field field = LBDB.class.getDeclaredField("nextTransactionNum");
+        Field field = TransactionManager.class.getDeclaredField("nextTransactionNum");
         field.setAccessible(true);
 
         BlockId b0 = new BlockId("file1", 0);
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
-        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB, "nextTransactionNum");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
+        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB.getTransactionManager(), "nextTransactionNum");
 
-        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction0 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction0.appendEmptyBlock("file1", true);
         transaction0.commit();
 
-        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, 1, true);
         transaction1.commit();
 
-        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction2.pin(b0);
         transaction2.setInt(b0, 0, 2, true);
         transaction2.commit();
 
-        Transaction transaction3 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction3 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction3.pin(b0);
         transaction3.setInt(b0, 0, 3, true);
         transaction3.commit();
 
-        Transaction transaction4 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction4 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction4.pin(b0);
         transaction4.setInt(b0, 0, 4, true);
         transaction4.commit();
 
         // simulating system crash by manager reinstantiation
-        field.set(LBDB, new AtomicInteger(0));
+        field.set(LBDB.getTransactionManager(), new AtomicInteger(0));
         LBDB = new LBDB(tmpDir, recoverySettings);
-        fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
+        fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
 
         // first test without quiescent checkpointing
-        Transaction transaction5 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction5 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         assertEquals(1, fm.lengthInBlocks("file1"));
 
@@ -318,13 +318,13 @@ public class TransactionManagementTests {
 
         LBDB LBDB = new LBDB(tmpDir, recoverySettings);
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
-        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB, "nextTransactionNum");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        LogManager lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        BufferManager bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        LockTable lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
+        AtomicInteger nextTxNum = (AtomicInteger) TestUtils.getPrivateField(LBDB.getTransactionManager(), "nextTransactionNum");
 
-        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         BlockId b0 = new BlockId("file1", 0);
         int setInt = 5;
@@ -338,12 +338,12 @@ public class TransactionManagementTests {
 
         // simulating system crash by manager reinstantiation
         LBDB = new LBDB(tmpDir, recoverySettings);
-        fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
-        lm = (LogManager) TestUtils.getPrivateField(LBDB, "logManager");
-        bm = (BufferManager) TestUtils.getPrivateField(LBDB, "bufferManager");
-        lt = (LockTable) TestUtils.getPrivateField(LBDB, "lockTable");
+        fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
+        lm = (LogManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "logManager");
+        bm = (BufferManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "bufferManager");
+        lt = (LockTable) TestUtils.getPrivateField(LBDB.getTransactionManager(), "lockTable");
 
-        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction2.pin(b0);
         int retunedInt = transaction2.getInt(b0, 0);
@@ -366,7 +366,7 @@ public class TransactionManagementTests {
         LockTable lt = new LockTable();
         AtomicInteger nextTxNum = new AtomicInteger(0);
 
-        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
 
         transaction1.appendEmptyBlock("file1", true);
 
@@ -375,7 +375,7 @@ public class TransactionManagementTests {
         bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE);
         lt = new LockTable();
 
-        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum);
+        Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction2.recover();
 
         assertFalse(TestUtils.fileExists(tmpDir, "file1"));
@@ -397,7 +397,7 @@ public class TransactionManagementTests {
 
         BlockId b0 = new BlockId("file1", 0);
 
-        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery, nextTxNum);
+        Transaction transaction1 = new Transaction(fileManager, logManager, bufferManager, lockTable, undoOnlyRecovery, nextTxNum, (t) -> {});
         transaction1.appendEmptyBlock("file1", true);
         transaction1.pin(b0);
         transaction1.setInt(b0, 0, 100, true);

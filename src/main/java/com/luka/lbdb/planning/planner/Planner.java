@@ -13,10 +13,8 @@ import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.planner.plannerDefinitions.QueryPlanner;
 import com.luka.lbdb.planning.planner.plannerDefinitions.UpdatePlanner;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
-import com.luka.lbdb.transactions.Transaction;
-import com.luka.lbdb.transactions.TransactionManager;
-
-import java.util.Optional;
+import com.luka.lbdb.transactionManagement.Transaction;
+import com.luka.lbdb.transactionManagement.TransactionManager;
 
 /// The main entry point class for executing / creating plans. Does not
 /// have any special logic, it is just a wrapper over the system's query and
@@ -41,27 +39,34 @@ public class Planner {
     /// @return A response of the executed query, containing all data that the
     /// user needs, like the error, the number of rows affected or the actual
     /// table data.
-    public Response execute(String queryOrUpdateQuery, long sessionId) {
-        Parser parser = new Parser(queryOrUpdateQuery);
-
-        Optional<Transaction> manualCommitTransaction = transactionManager.getManualCommitTransaction(sessionId);
-        boolean autoCommit = manualCommitTransaction.isEmpty();
-        Transaction t = manualCommitTransaction.orElseGet(transactionManager::getAutoCommitTransaction);
+    public Response execute(String queryOrUpdateQuery, int sessionId) {
+        boolean isAutoCommit = !transactionManager.isManual(sessionId);
+        Transaction t = transactionManager.getOrCreateTransaction(sessionId);
 
         try {
             Response r = switch (new Parser(queryOrUpdateQuery).parse()) {
                 case TransactionStatement(TransactionAction action) -> switch (action) {
                     case START_TRANSACTION -> {
-                        if (manualCommitTransaction.isEmpty()) {
-                            transactionManager.putNewManualTransaction(sessionId);
+                        if (isAutoCommit) {
+                            transactionManager.promoteToManual(sessionId, t);
+                            isAutoCommit = false;
                             yield new EmptySet(0);
-                        }
-                        else yield new ErrorResponse("Transaction already started");
+                        } else yield new ErrorResponse("Transaction already started");
                     }
-                    case COMMIT -> transactionManager.commitManualTransaction(sessionId) ?
-                        new EmptySet(0) : new ErrorResponse("Transaction not started");
-                    case ROLLBACK -> transactionManager.rollbackManualTransaction(sessionId) ?
-                        new EmptySet(0) : new ErrorResponse("Transaction not started");
+                    case COMMIT -> {
+                        if (!isAutoCommit) {
+                            t.commit();
+                            transactionManager.clearSession(sessionId);
+                            yield new EmptySet(0);
+                        } else yield new ErrorResponse("Transaction not started");
+                    }
+                    case ROLLBACK -> {
+                        if (!isAutoCommit) {
+                            t.rollback();
+                            transactionManager.clearSession(sessionId);
+                            yield new EmptySet(0);
+                        } else yield new ErrorResponse("Transaction not started");
+                    }
                 };
                 case CreateIndexStatement ci -> new EmptySet(updatePlanner.executeCreateIndexValidated(ci, t));
                 case CreateTableStatement ct -> new EmptySet(updatePlanner.executeCreateTableValidated(ct, t));
@@ -69,7 +74,7 @@ public class Planner {
                 case DeleteStatement d -> new EmptySet(updatePlanner.executeDeleteValidated(d, t));
                 case InsertStatement i -> new EmptySet(updatePlanner.executeInsertValidated(i, t));
                 case ExplainStatement e when e.explainingStatement() instanceof SelectStatement s ->
-                    new QuerySet(ExplainStatement.ExplainStatementSchema(), queryPlanner.createValidatedPlan(s, t).explainTuples());
+                        new QuerySet(ExplainStatement.ExplainStatementSchema(), queryPlanner.createValidatedPlan(s, t).explainTuples());
                 case ExplainStatement e -> new ErrorResponse("Explaining of non-select statements sadly isn't supported.");
                 case SelectStatement s -> {
                     var plan = queryPlanner.createValidatedPlan(s, t);
@@ -77,10 +82,10 @@ public class Planner {
                 }
             };
 
-            if (autoCommit) t.commit();
+            if (isAutoCommit) t.commit();
             return r;
         } catch (ParseException | PlanValidationException e) {
-            if (autoCommit) t.rollback();
+            if (isAutoCommit) t.rollback();
             return new ErrorResponse(e.getMessage());
         }
     }

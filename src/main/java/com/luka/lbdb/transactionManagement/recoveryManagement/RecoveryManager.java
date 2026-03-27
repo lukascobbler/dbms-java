@@ -1,11 +1,11 @@
-package com.luka.lbdb.transactions.recoveryManagement;
+package com.luka.lbdb.transactionManagement.recoveryManagement;
 
 import com.luka.lbdb.bufferManagement.Buffer;
 import com.luka.lbdb.bufferManagement.BufferManager;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.logManagement.LogManager;
-import com.luka.lbdb.transactions.Transaction;
-import com.luka.lbdb.transactions.recoveryManagement.logRecordTypes.*;
+import com.luka.lbdb.transactionManagement.Transaction;
+import com.luka.lbdb.transactionManagement.recoveryManagement.logRecordTypes.*;
 
 import java.util.*;
 

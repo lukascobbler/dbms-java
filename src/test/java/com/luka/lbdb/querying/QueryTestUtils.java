@@ -9,7 +9,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.LBDB;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,7 +26,7 @@ public class QueryTestUtils {
     /// the third field of each type is nullable and set to null.
     public static QueryTestData initializeOneFullTable(Path tmpDir) {
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("t1_intField1", false);
@@ -68,7 +68,7 @@ public class QueryTestUtils {
     /// the third field of each type is nullable and set to null.
     public static QueryTestData initializeTwoFullTables(Path tmpDir) {
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch1 = new Schema();
         sch1.addIntField("t1_intField1", false);

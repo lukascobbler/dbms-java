@@ -1,15 +1,14 @@
-package com.luka.lbdb.transactions.recoveryManagement.logRecordTypes;
+package com.luka.lbdb.transactionManagement.recoveryManagement.logRecordTypes;
 
 import com.luka.lbdb.fileManagement.Page;
 import com.luka.lbdb.logManagement.LogManager;
-import com.luka.lbdb.transactions.Transaction;
-import com.luka.lbdb.transactions.recoveryManagement.LogRecord;
-import com.luka.lbdb.transactions.recoveryManagement.LogRecordType;
+import com.luka.lbdb.transactionManagement.Transaction;
+import com.luka.lbdb.transactionManagement.recoveryManagement.LogRecord;
+import com.luka.lbdb.transactionManagement.recoveryManagement.LogRecordType;
 
 /// Helper class for representing a quiescent checkpoint log record type.
-/// Has a default constructor since it doesn't have any internal state.
 ///
-/// Structure of the transaction start log record type
+/// Structure of the quiescent checkpoint log record type
 /// `<QUIESCENT_CHECKPOINT lastTransactionNumber>`
 ///
 /// Example: `<QUIESCENT_CHECKPOINT 20>`

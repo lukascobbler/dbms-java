@@ -1,4 +1,4 @@
-package com.luka.lbdb.transactions.concurrencyManagement;
+package com.luka.lbdb.transactionManagement.concurrencyManagement;
 
 import com.luka.lbdb.fileManagement.BlockId;
 

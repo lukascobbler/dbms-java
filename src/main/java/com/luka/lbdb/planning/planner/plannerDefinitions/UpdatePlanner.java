@@ -15,7 +15,7 @@ import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.records.exceptions.RecordTooLongException;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashSet;

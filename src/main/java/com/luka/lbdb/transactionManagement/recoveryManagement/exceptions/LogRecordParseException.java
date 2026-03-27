@@ -1,4 +1,4 @@
-package com.luka.lbdb.transactions.recoveryManagement.exceptions;
+package com.luka.lbdb.transactionManagement.recoveryManagement.exceptions;
 
 public class LogRecordParseException extends RuntimeException {
     public LogRecordParseException(String message) {

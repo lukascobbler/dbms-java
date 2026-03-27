@@ -3,7 +3,7 @@ package com.luka.lbdb.records;
 import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ public class RecordManagementTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -79,7 +79,7 @@ public class RecordManagementTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", true);

@@ -1,13 +1,10 @@
 package com.luka.lbdb.network.protocol;
 
+import com.luka.lbdb.network.protocol.response.*;
 import com.luka.lbdb.querying.virtualEntities.constant.*;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.network.exceptions.ProtocolException;
-import com.luka.lbdb.network.protocol.response.EmptySet;
-import com.luka.lbdb.network.protocol.response.ErrorResponse;
-import com.luka.lbdb.network.protocol.response.QuerySet;
-import com.luka.lbdb.network.protocol.response.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -20,7 +20,7 @@ import com.luka.lbdb.querying.virtualEntities.expression.WildcardExpression;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.*;
 

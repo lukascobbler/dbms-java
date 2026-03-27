@@ -6,7 +6,7 @@ import com.luka.lbdb.metadataManagement.exceptions.TableNotFoundException;
 import com.luka.lbdb.metadataManagement.infoClasses.IndexType;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.LBDB;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ public class IndexMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         Schema schema = new Schema();
@@ -41,7 +41,7 @@ public class IndexMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         Schema schema = new Schema();

@@ -37,8 +37,14 @@ public class Term {
     /// @throws TermOperatorNotSupportedException if a comparison operator
     /// is used that isn't supported by the database.
     public boolean isSatisfied(Scan scan) {
-        Constant rhsValue = rhs.evaluate(scan);
-        Constant lhsValue = lhs.evaluate(scan);
+        Constant rhsValue;
+        Constant lhsValue;
+        try {
+            rhsValue = rhs.evaluate(scan);
+            lhsValue = lhs.evaluate(scan);
+        } catch (Exception e) {
+            throw new RuntimeException(); // todo run exceptions like division by zero and overflows
+        }
 
         if (termOperator == TermOperator.IS) {
             return lhsValue.equals(rhsValue);

@@ -2,6 +2,7 @@ package com.luka.lbdb.network;
 
 import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.network.protocol.Protocol;
+import com.luka.lbdb.network.protocol.response.ErrorResponse;
 import com.luka.lbdb.network.protocol.response.Response;
 
 import java.io.DataInputStream;
@@ -10,13 +11,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /// The main entry point for receiving packets from a client.
 /// Handles each client in a separate thread. Threads are managed
@@ -24,10 +25,14 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("InfiniteLoopStatement")
 public class Server {
     private final LBDB db;
-    private boolean isShutdown = false;
+    private volatile boolean isShutdown = false;
+    private volatile boolean isDraining = false;
     private final int port;
+    private ServerSocket serverSocket;
 
     private final ExecutorService threadPool;
+    private final ScheduledExecutorService checkpointScheduler;
+    private final Set<OutputStream> activeClients = ConcurrentHashMap.newKeySet();
 
     /// A LBDB server needs a port to work on (host is localhost), and the path
     /// representing a directory where the database will operate.
@@ -35,42 +40,72 @@ public class Server {
         db = new LBDB(dbPath);
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(8);
+        this.checkpointScheduler = Executors.newSingleThreadScheduledExecutor();
     }
 
     /// Starts an infinite loop of accepting user connections, and
     /// sends their packets to a handler thread that is chosen from the
-    /// thread pool.
+    /// thread pool. Starts the checkpoint scheduler, that runs every so
+    /// often.
     public void start() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+
+        checkpointScheduler.scheduleAtFixedRate(
+                () -> db.getTransactionManager().writeCheckpoint(),
+                10, 10, TimeUnit.MINUTES
+        );
+
+        try {
+            serverSocket = new ServerSocket(port);
             System.out.println("LBDB Server started on port " + port);
+
             while (!isShutdown) {
-                Socket clientSocket = serverSocket.accept();
-                threadPool.submit(() -> handleClient(clientSocket));
+                try {
+                    Socket clientSocket = serverSocket.accept();
+                    threadPool.submit(() -> handleClient(clientSocket));
+                } catch (SocketException e) {
+                    if (isShutdown || isDraining) break;
+                }
             }
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
         }
     }
 
+    /// Shuts down the server by allowing unfinished transactions to commit or
+    /// rollback. Disallows new clients to connect to the database. Writes a
+    /// checkpoint.
     public void shutdown() {
-        if (isShutdown) return;
+        if (isDraining || isShutdown) return;
+        System.out.println("\nEntering drain mode... stopping new queries but allowing COMMIT/ROLLBACK.");
+        isDraining = true;
 
-        System.out.println("Shutting down DBMS server...");
+        db.getTransactionManager().prepareForShutdown();
+
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException ignored) {}
+
+        checkpointScheduler.shutdownNow();
+
+        System.out.println("Waiting for existing transactions to be explicitly closed by clients...");
+        db.getTransactionManager().writeCheckpoint();
+
+        System.out.println("All transactions cleared. Shutting down.");
         isShutdown = true;
 
         threadPool.shutdown();
-
         try {
-            if (!threadPool.awaitTermination(30, TimeUnit.SECONDS)) {
-                System.err.println("Queries took too long, forcing shutdown.");
-                threadPool.shutdownNow(); // todo will this safely shutdown
+            if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
             }
         } catch (InterruptedException e) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
         }
 
-        db.shutdown();
         System.out.println("Server stopped safely.");
     }
 
@@ -81,7 +116,7 @@ public class Server {
     private void handleClient(Socket socket) {
         try (socket; DataInputStream in = new DataInputStream(socket.getInputStream());
              OutputStream out = socket.getOutputStream()) {
-            long sessionId = socket.getRemoteSocketAddress().hashCode();
+            int sessionId = socket.getRemoteSocketAddress().hashCode();
             try {
                 while (true) {
                     byte[] header = new byte[4];
@@ -93,9 +128,14 @@ public class Server {
 
                     String queryOrCommand = new String(payload, StandardCharsets.UTF_8);
 
-                    if (queryOrCommand.equals("SHUTDOWN;")) {
-                        shutdown();
-                        break; // todo shutdown callbacks
+                    if (isDraining) {
+                        String upperCmd = queryOrCommand.toUpperCase();
+                        if (!upperCmd.startsWith("COMMIT") && !upperCmd.startsWith("ROLLBACK")) {
+                            Response error = new ErrorResponse("Server is set to shut down. Only COMMIT or ROLLBACK accepted.");
+                            out.write(Protocol.serialize(error));
+                            out.flush();
+                            continue;
+                        }
                     }
 
                     Response response = db.getPlanner().execute(queryOrCommand, sessionId);
@@ -105,10 +145,14 @@ public class Server {
                     out.flush();
                 }
             } catch (EOFException e) {
-                db.getTransactionManager().rollbackManualTransaction(sessionId);
+                if (db.getTransactionManager().isManual(sessionId)) {
+                    db.getTransactionManager().getOrCreateTransaction(sessionId).rollback();
+                }
                 System.out.println("Client disconnected.");
             } catch (IOException e) {
-                db.getTransactionManager().rollbackManualTransaction(sessionId);
+                if (db.getTransactionManager().isManual(sessionId)) {
+                    db.getTransactionManager().getOrCreateTransaction(sessionId).rollback();
+                }
                 System.err.println("Client handler error: " + e.getMessage());
             }
         } catch (IOException ignored) {

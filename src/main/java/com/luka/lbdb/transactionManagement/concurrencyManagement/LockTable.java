@@ -1,7 +1,7 @@
-package com.luka.lbdb.transactions.concurrencyManagement;
+package com.luka.lbdb.transactionManagement.concurrencyManagement;
 
 import com.luka.lbdb.fileManagement.BlockId;
-import com.luka.lbdb.transactions.concurrencyManagement.exceptions.LockAbortException;
+import com.luka.lbdb.transactionManagement.concurrencyManagement.exceptions.LockAbortException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

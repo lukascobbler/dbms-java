@@ -1,10 +1,10 @@
-package com.luka.lbdb.transactions.recoveryManagement.logRecordTypes;
+package com.luka.lbdb.transactionManagement.recoveryManagement.logRecordTypes;
 
 import com.luka.lbdb.fileManagement.Page;
 import com.luka.lbdb.logManagement.LogManager;
-import com.luka.lbdb.transactions.Transaction;
-import com.luka.lbdb.transactions.recoveryManagement.LogRecord;
-import com.luka.lbdb.transactions.recoveryManagement.LogRecordType;
+import com.luka.lbdb.transactionManagement.Transaction;
+import com.luka.lbdb.transactionManagement.recoveryManagement.LogRecord;
+import com.luka.lbdb.transactionManagement.recoveryManagement.LogRecordType;
 
 /// Helper class for representing a transaction rollback log record type.
 ///

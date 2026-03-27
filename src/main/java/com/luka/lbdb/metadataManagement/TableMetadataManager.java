@@ -9,7 +9,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;

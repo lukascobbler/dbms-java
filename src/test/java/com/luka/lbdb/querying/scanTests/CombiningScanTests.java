@@ -16,7 +16,7 @@ import com.luka.lbdb.querying.virtualEntities.term.TermOperator;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.LBDB;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -255,7 +255,7 @@ public class CombiningScanTests {
     public void profileHasFieldValidationChecks() throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         String baseFieldName = "t1_intField1";

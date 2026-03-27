@@ -1,4 +1,4 @@
-package com.luka.lbdb.transactions.concurrencyManagement.exceptions;
+package com.luka.lbdb.transactionManagement.concurrencyManagement.exceptions;
 
 public class LockAbortException extends RuntimeException {
     public LockAbortException(String message) {

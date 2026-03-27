@@ -8,7 +8,7 @@ import com.luka.lbdb.querying.scanDefinitions.UpdateScan;
 import com.luka.lbdb.querying.scanTypes.update.TableScan;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.List;
 

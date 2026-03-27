@@ -4,7 +4,7 @@ import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.records.exceptions.DatabaseTypeNotImplementedException;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 // todo comment class once indexes are implemented
 public class IndexInfo {

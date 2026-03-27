@@ -9,7 +9,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.LBDB;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ public class StatisticsMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         StatisticsMetadataManager sm = (StatisticsMetadataManager)
@@ -85,7 +85,7 @@ public class StatisticsMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         StatisticsMetadataManager sm = (StatisticsMetadataManager)
@@ -146,7 +146,7 @@ public class StatisticsMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         StatisticsMetadataManager sm = (StatisticsMetadataManager)
@@ -219,7 +219,7 @@ public class StatisticsMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         StatisticsMetadataManager sm = (StatisticsMetadataManager)

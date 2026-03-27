@@ -6,7 +6,7 @@ import com.luka.lbdb.records.exceptions.FieldCannotBeNullException;
 import com.luka.lbdb.records.exceptions.FieldIncorrectTypeException;
 import com.luka.lbdb.records.exceptions.FieldLengthExceededException;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 /// A `RecordPage` object represents an interface to the records of some block.
 /// It is an abstraction over getters and setters of fields, but leaves the

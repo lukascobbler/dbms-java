@@ -8,7 +8,7 @@ import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.plan.planTypes.readOnly.*;
 import com.luka.lbdb.planning.planner.plannerDefinitions.QueryPlanner;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;

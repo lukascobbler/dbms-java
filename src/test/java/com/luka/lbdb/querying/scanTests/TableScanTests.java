@@ -13,7 +13,7 @@ import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.settings.LBDBSettings;
 import com.luka.lbdb.testUtils.TestUtils;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,7 +31,7 @@ public class TableScanTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -84,7 +84,7 @@ public class TableScanTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -116,7 +116,7 @@ public class TableScanTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -157,7 +157,7 @@ public class TableScanTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -199,7 +199,7 @@ public class TableScanTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
         LBDB LBDB = new LBDB(tmpDir, settings);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -218,11 +218,11 @@ public class TableScanTests {
 
         tx.commit();
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
         assertEquals(10, fm.lengthInBlocks("B.table"));
 
-        Transaction tx2 = LBDB.newTransaction();
+        Transaction tx2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         TableScan ts2 = new TableScan(tx2, "B", layout);
 
         try (ts2) {
@@ -248,7 +248,7 @@ public class TableScanTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
         LBDB LBDB = new LBDB(tmpDir, settings);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -267,12 +267,12 @@ public class TableScanTests {
 
         tx.commit();
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
         assertEquals(10, fm.lengthInBlocks("B.table"));
 
         LBDB = new LBDB(tmpDir, settings);
-        fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
         assertEquals(10, fm.lengthInBlocks("B.table"));
     }
@@ -282,7 +282,7 @@ public class TableScanTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("nullable", true);

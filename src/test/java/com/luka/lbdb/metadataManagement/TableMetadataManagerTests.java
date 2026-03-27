@@ -9,7 +9,7 @@ import com.luka.lbdb.querying.scanTypes.update.TableScan;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.settings.LBDBSettings;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +28,7 @@ public class TableMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch = new Schema();
         sch.addIntField("A", false);
@@ -49,7 +49,7 @@ public class TableMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Layout layout = LBDB.getMetadataManager().getLayout("tablecatalog", tx);
         TableScan tableCatalogScan = new TableScan(tx, "tablecatalog", layout);
@@ -85,7 +85,7 @@ public class TableMetadataManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
 
         LBDB LBDB = new LBDB(tmpDir);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
         Schema schema = new Schema();
@@ -106,10 +106,10 @@ public class TableMetadataManagerTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
         LBDB LBDB = new LBDB(tmpDir, settings);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
         Schema schema = new Schema();
         schema.addIntField("field", false);
@@ -128,7 +128,7 @@ public class TableMetadataManagerTests {
 
         tx.rollback();
 
-        Transaction tx2 = LBDB.newTransaction();
+        Transaction tx2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         assertThrowsExactly(TableNotFoundException.class, () -> metadataManager.getLayout("tbl1", tx2));
         assertFalse(TestUtils.fileExists(tmpDir, "tbl1.table"));
@@ -143,10 +143,10 @@ public class TableMetadataManagerTests {
         settings.UNDO_ONLY_RECOVERY = undoOnlyRecovery;
 
         LBDB LBDB = new LBDB(tmpDir, settings);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
         MetadataManager metadataManager = LBDB.getMetadataManager();
 
-        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB, "fileManager");
+        FileManager fm = (FileManager) TestUtils.getPrivateField(LBDB.getTransactionManager(), "fileManager");
 
         Schema schema = new Schema();
         schema.addIntField("field", false);
@@ -165,7 +165,7 @@ public class TableMetadataManagerTests {
 
         tx.rollback();
 
-        Transaction tx2 = LBDB.newTransaction();
+        Transaction tx2 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         assertThrowsExactly(TableNotFoundException.class, () -> metadataManager.getLayout("tbl1", tx2));
         assertFalse(TestUtils.fileExists(tmpDir, "tbl1.table"));
@@ -193,7 +193,7 @@ public class TableMetadataManagerTests {
 
         tx2.commit();
 
-        Transaction tx3 = LBDB.newTransaction();
+        Transaction tx3 = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         TableScan tableScanNewRead = new TableScan(tx3, "tbl1", tableLayout);
 

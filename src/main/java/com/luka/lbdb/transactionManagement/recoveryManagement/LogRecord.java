@@ -1,9 +1,9 @@
-package com.luka.lbdb.transactions.recoveryManagement;
+package com.luka.lbdb.transactionManagement.recoveryManagement;
 
 import com.luka.lbdb.fileManagement.Page;
-import com.luka.lbdb.transactions.Transaction;
-import com.luka.lbdb.transactions.recoveryManagement.exceptions.LogRecordParseException;
-import com.luka.lbdb.transactions.recoveryManagement.logRecordTypes.*;
+import com.luka.lbdb.transactionManagement.Transaction;
+import com.luka.lbdb.transactionManagement.recoveryManagement.exceptions.LogRecordParseException;
+import com.luka.lbdb.transactionManagement.recoveryManagement.logRecordTypes.*;
 
 /// The log file will consist of log records. Different log records
 /// exist for different purposes. The `LogRecord` interface defines

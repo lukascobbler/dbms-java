@@ -1,4 +1,4 @@
-package com.luka.lbdb.transactions.recoveryManagement;
+package com.luka.lbdb.transactionManagement.recoveryManagement;
 
 /// Different types of log records that can be found in the log file.
 public enum LogRecordType {

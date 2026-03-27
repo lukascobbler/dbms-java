@@ -7,7 +7,7 @@ import com.luka.lbdb.metadataManagement.infoClasses.StatisticsInfo;
 import com.luka.lbdb.metadataManagement.exceptions.*;
 import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;

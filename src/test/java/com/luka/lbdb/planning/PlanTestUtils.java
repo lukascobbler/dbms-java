@@ -21,9 +21,8 @@ import com.luka.lbdb.records.Layout;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.db.settings.LBDBSettings;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
-import com.luka.lbdb.transactions.TransactionManager;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -106,7 +105,7 @@ public class PlanTestUtils {
     public static PlanTestData newTransaction(PlanTestData oldTransaction) {
         return new PlanTestData(
                 oldTransaction.db(),
-                oldTransaction.db().newTransaction(),
+                oldTransaction.db().getTransactionManager().getOrCreateTransaction(-1),
                 oldTransaction.layouts()
         );
     }
@@ -118,7 +117,7 @@ public class PlanTestUtils {
         Planner p = new Planner(
                 new BetterQueryPlanner(testData.db().getMetadataManager()),
                 new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>()),
-                new TransactionManager(testData.db::newTransaction)
+                testData.db.getTransactionManager()
         );
 
         return p.executeUpdate(query, testData.tx());
@@ -131,7 +130,7 @@ public class PlanTestUtils {
         Planner p = new Planner(
                 new BetterQueryPlanner(testData.db().getMetadataManager()),
                 new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>()),
-                new TransactionManager(testData.db::newTransaction)
+                testData.db.getTransactionManager()
         );
 
         return p.createQueryPlan(query, testData.tx());
@@ -147,7 +146,7 @@ public class PlanTestUtils {
     /// For the third table, only one duplicate exists.
     public static PlanTestData initializeThreeEmptyTables(Path tmpDir, LBDBSettings settings) {
         LBDB LBDB = new LBDB(tmpDir, settings);
-        Transaction tx = LBDB.newTransaction();
+        Transaction tx = LBDB.getTransactionManager().getOrCreateTransaction(-1);
 
         Schema sch1 = new Schema();
         sch1.addIntField("t1_intfield1", false);

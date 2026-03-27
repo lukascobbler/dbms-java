@@ -1,10 +1,7 @@
 package com.luka.lbdbclient;
 
 import com.luka.lbdb.network.protocol.Protocol;
-import com.luka.lbdb.network.protocol.response.EmptySet;
-import com.luka.lbdb.network.protocol.response.ErrorResponse;
-import com.luka.lbdb.network.protocol.response.QuerySet;
-import com.luka.lbdb.network.protocol.response.Response;
+import com.luka.lbdb.network.protocol.response.*;
 import com.luka.lbdb.parsing.tokenizer.token.KeywordToken;
 import org.jline.reader.*;
 import org.jline.reader.impl.completer.StringsCompleter;

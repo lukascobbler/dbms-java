@@ -1,9 +1,9 @@
-package com.luka.lbdb.transactions;
+package com.luka.lbdb.transactionManagement;
 
 import com.luka.lbdb.bufferManagement.Buffer;
 import com.luka.lbdb.bufferManagement.BufferManager;
 import com.luka.lbdb.fileManagement.BlockId;
-import com.luka.lbdb.transactions.exceptions.BufferNotPinnedByThisTransactionException;
+import com.luka.lbdb.transactionManagement.exceptions.BufferNotPinnedByThisTransactionException;
 
 import java.util.ArrayList;
 import java.util.HashMap;

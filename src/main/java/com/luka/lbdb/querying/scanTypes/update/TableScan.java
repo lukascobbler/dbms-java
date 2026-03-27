@@ -12,7 +12,7 @@ import com.luka.lbdb.records.exceptions.DatabaseTypeNotImplementedException;
 import com.luka.lbdb.records.exceptions.FieldCannotBeNullException;
 import com.luka.lbdb.records.exceptions.FieldLengthExceededException;
 import com.luka.lbdb.records.exceptions.FieldNotFoundException;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 /// A table scan is a special type of update scan because it has
 /// no child scans, and is always at the bottom of the scan evaluation

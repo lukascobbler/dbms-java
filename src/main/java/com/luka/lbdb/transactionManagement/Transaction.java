@@ -1,15 +1,16 @@
-package com.luka.lbdb.transactions;
+package com.luka.lbdb.transactionManagement;
 
 import com.luka.lbdb.bufferManagement.Buffer;
 import com.luka.lbdb.bufferManagement.BufferManager;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.logManagement.LogManager;
-import com.luka.lbdb.transactions.concurrencyManagement.ConcurrencyManager;
-import com.luka.lbdb.transactions.concurrencyManagement.LockTable;
-import com.luka.lbdb.transactions.recoveryManagement.RecoveryManager;
+import com.luka.lbdb.transactionManagement.concurrencyManagement.ConcurrencyManager;
+import com.luka.lbdb.transactionManagement.concurrencyManagement.LockTable;
+import com.luka.lbdb.transactionManagement.recoveryManagement.RecoveryManager;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /// A transaction represents one unit of work in the database.
 /// All operations must be performed transactionally, even if they
@@ -26,24 +27,26 @@ public class Transaction {
     private final FileManager fileManager;
 
     private int transactionNumber;
-    private TransactionState transactionState;
     private final BufferList myBuffers;
+
+    private final Consumer<Transaction> onFinish;
 
     /// Initializes a transaction with a transaction id that is pooled
     /// from a global number that all transactions share. Creates a
     /// concurrency manager and a recovery manager tied to this transaction.
-    /// Recovery type is chosen, but should be uniform for every transaction in
+    /// Recovery type is chosen, but should be the same for every transaction in
     /// the system.
     public Transaction(FileManager fileManager, LogManager logManager,
                        BufferManager bufferManager, LockTable lockTable,
-                       boolean undoOnlyRecovery, AtomicInteger nextTransactionNum) {
+                       boolean undoOnlyRecovery, AtomicInteger nextTransactionNum,
+                       Consumer<Transaction> onFinish) {
         this.nextTransactionNum = nextTransactionNum;
         this.bufferManager = bufferManager;
         this.fileManager = fileManager;
         this.concurrencyManager = new ConcurrencyManager(lockTable);
+        this.onFinish = onFinish;
 
         transactionNumber = nextTransactionNumber();
-        transactionState = TransactionState.IN_PROGRESS;
         myBuffers = new BufferList(bufferManager);
 
         this.recoveryManager = new RecoveryManager(
@@ -57,7 +60,7 @@ public class Transaction {
         recoveryManager.commit();
         concurrencyManager.release();
         myBuffers.unpinAll();
-        transactionState = TransactionState.COMMITED;
+        onFinish.accept(this);
     }
 
     /// Rolls back the transaction by rolling back from the recovery file,
@@ -67,7 +70,7 @@ public class Transaction {
         recoveryManager.rollback();
         concurrencyManager.release();
         myBuffers.unpinAll();
-        transactionState = TransactionState.ROLLED_BACK;
+        onFinish.accept(this);
     }
 
     /// Recovers the whole system including this transaction. Sets the transaction id

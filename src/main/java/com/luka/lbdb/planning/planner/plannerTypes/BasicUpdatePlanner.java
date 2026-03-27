@@ -11,7 +11,7 @@ import com.luka.lbdb.planning.planner.plannerDefinitions.UpdatePlanner;
 import com.luka.lbdb.querying.scanDefinitions.UpdateScan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.records.RecordId;
-import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.Map;
 import java.util.Optional;
