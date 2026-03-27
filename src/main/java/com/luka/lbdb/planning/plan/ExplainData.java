@@ -1,8 +1,10 @@
 package com.luka.lbdb.planning.plan;
 
-import java.util.List;
+import com.luka.lbdb.querying.virtualEntities.constant.Constant;
+import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 
-// todo the logic for table generation may be moved to a different file and reused across every table print
+import java.util.ArrayList;
+import java.util.List;
 
 /// Contains all data required for explaining a plan.
 public record ExplainData(
@@ -12,16 +14,12 @@ public record ExplainData(
         int records,
         String specifics
 ) {
-    public static String explainAllPlans(List<ExplainData> dataList) {
-        if (dataList.isEmpty()) return "";
-
-        String[] treeLines = new String[dataList.size()];
-        String[] truncatedDetails = new String[dataList.size()];
-
-        int maxScanWidth = "Scan".length();
-        int maxBWidth = "Block est.".length();
-        int maxRWidth = "Record est.".length();
-        int maxDetWidth = "Details".length();
+    /// Converts a full list of ExplainData nodes into database tuples, so that
+    /// unified table printing logic can be used in the client.
+    ///
+    /// @return A list of tuples of the explain statement.
+    public static List<List<Constant>> toTuples(List<ExplainData> dataList) {
+        List<List<Constant>> tuples = new ArrayList<>(dataList.size());
 
         for (int i = 0; i < dataList.size(); i++) {
             ExplainData current = dataList.get(i);
@@ -33,47 +31,28 @@ public record ExplainData(
                 }
                 prefix.append(isLastChild(dataList, i) ? "└─ " : "├─ ");
             }
-            treeLines[i] = prefix + current.planName().replace("ReadOnly", "").replace("Plan", "Scan");
-            maxScanWidth = Math.max(maxScanWidth, treeLines[i].length());
+
+            String formattedScanName = prefix + current.planName()
+                    .replace("ReadOnly", "")
+                    .replace("Plan", "Scan");
 
             String detail = current.specifics() == null ? "" : current.specifics();
             if (detail.length() > 50) {
                 detail = detail.substring(0, 40) + "...";
             }
-            truncatedDetails[i] = detail;
-            maxDetWidth = Math.max(maxDetWidth, detail.length());
 
-            maxBWidth = Math.max(maxBWidth, String.valueOf(current.blocks()).length());
-            maxRWidth = Math.max(maxRWidth, String.valueOf(current.records()).length());
+            tuples.add(List.of(
+                    new StringConstant(formattedScanName),
+                    new StringConstant(String.valueOf(current.blocks())),
+                    new StringConstant(String.valueOf(current.records())),
+                    new StringConstant(detail)
+            ));
         }
 
-        String top    = "┌" + "─".repeat(maxScanWidth + 2) + "┬" + "─".repeat(maxBWidth + 2) + "┬" + "─".repeat(maxRWidth + 2) + "┬" + "─".repeat(maxDetWidth + 2) + "┐\n";
-        String headSep = "├" + "─".repeat(maxScanWidth + 2) + "┼" + "─".repeat(maxBWidth + 2) + "┼" + "─".repeat(maxRWidth + 2) + "┼" + "─".repeat(maxDetWidth + 2) + "┤\n";
-        String bottom = "└" + "─".repeat(maxScanWidth + 2) + "┴" + "─".repeat(maxBWidth + 2) + "┴" + "─".repeat(maxRWidth + 2) + "┴" + "─".repeat(maxDetWidth + 2) + "┘\n";
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(top);
-        sb.append(String.format("│ %-" + maxScanWidth + "s │ %" + maxBWidth + "s │ %" + maxRWidth + "s │ %-" + maxDetWidth + "s │\n",
-                "Scan", "Block est.", "Record est.", "Details"));
-        sb.append(headSep);
-
-        for (int i = 0; i < dataList.size(); i++) {
-            ExplainData d = dataList.get(i);
-            sb.append(String.format("│ %-" + maxScanWidth + "s │ %" + maxBWidth + "d │ %" + maxRWidth + "d │ %-" + maxDetWidth + "s │\n",
-                    treeLines[i], d.blocks(), d.records(), truncatedDetails[i]));
-        }
-
-        sb.append(bottom);
-        return sb.toString();
+        return tuples;
     }
 
-    private static String center(String text, int width) {
-        if (text.length() >= width) return text;
-        int padding = (width - text.length()) / 2;
-        return " ".repeat(padding) + text + " ".repeat(width - text.length() - padding);
-    }
-
+    /// @return True if the current plan has more children at the provided depth.
     private static boolean hasMoreChildrenAtDepth(List<ExplainData> list, int currentIndex, int depth) {
         for (int i = currentIndex + 1; i < list.size(); i++) {
             if (list.get(i).indentation() == depth) return true;
@@ -82,6 +61,7 @@ public record ExplainData(
         return false;
     }
 
+    /// @return True if the current plan is the last subplan.
     private static boolean isLastChild(List<ExplainData> list, int index) {
         int currentDepth = list.get(index).indentation();
         for (int i = index + 1; i < list.size(); i++) {

@@ -43,5 +43,6 @@ build/
 **/*.log
 
 **/db_*/**
+**/lbdbclient_history.txt
 .obsidian/*
 .obsidian/

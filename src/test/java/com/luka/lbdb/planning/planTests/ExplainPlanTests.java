@@ -1,9 +1,11 @@
 package com.luka.lbdb.planning.planTests;
 
+import com.luka.lbdb.parsing.statement.ExplainStatement;
 import com.luka.lbdb.planning.PlanTestUtils;
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.testUtils.TestUtils;
+import com.luka.lbdbclient.TablePrinter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -31,7 +33,7 @@ public class ExplainPlanTests {
         Plan<Scan> plan = PlanTestUtils.createQueryPlan(testData, query);
 
         System.out.println(query);
-        System.out.println(plan.explainedPlan());
+        System.out.println(TablePrinter.print(ExplainStatement.ExplainStatementSchema(), plan.explainTuples()));
     }
 
     @Test
@@ -45,7 +47,7 @@ public class ExplainPlanTests {
         Plan<Scan> plan = PlanTestUtils.createQueryPlan(testData, query);
 
         System.out.println(query);
-        System.out.println(plan.explainedPlan());
+        System.out.println(TablePrinter.print(ExplainStatement.ExplainStatementSchema(), plan.explainTuples()));
     }
 
     @Test
@@ -59,6 +61,6 @@ public class ExplainPlanTests {
         Plan<Scan> plan = PlanTestUtils.createQueryPlan(testData, query);
 
         System.out.println(query);
-        System.out.println(plan.explainedPlan());
+        System.out.println(TablePrinter.print(ExplainStatement.ExplainStatementSchema(), plan.explainTuples()));
     }
 }

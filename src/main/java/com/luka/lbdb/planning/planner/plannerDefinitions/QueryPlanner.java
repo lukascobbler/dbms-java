@@ -12,6 +12,7 @@ import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
 import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
+import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.querying.virtualEntities.expression.FieldNameExpression;
 import com.luka.lbdb.querying.virtualEntities.expression.PartialEvaluator;
@@ -59,6 +60,25 @@ public abstract class QueryPlanner {
         SelectStatement checkedStatement = checkStatement(foldedExpressionsStatement, transaction);
 
         return createPlan(checkedStatement, transaction);
+    }
+
+    /// Executes a query plan, returning the list of tuples in the final query.
+    ///
+    /// @return The list of tuples for a given query plan.
+    public List<List<Constant>> executePlan(Plan<Scan> queryPlan, Transaction transaction)
+            throws PlanValidationException {
+        List<List<Constant>> tuples = new ArrayList<>();
+        List<String> fields = queryPlan.outputSchema().getFields();
+
+        try (Scan scan = queryPlan.open()) {
+            scan.beforeFirst();
+
+            while (scan.next()) {
+                tuples.add(fields.stream().map(scan::getValue).toList());
+            }
+        }
+
+        return tuples;
     }
 
     // Internal API, that runs actual plan creations
@@ -116,7 +136,7 @@ public abstract class QueryPlanner {
             }
 
             try {
-                Schema tableSchema = metadataManager.getLayout(tableInfo.tableName(), transaction).getSchema(); // todo create view layouts on initialization
+                Schema tableSchema = metadataManager.getLayout(tableInfo.tableName(), transaction).getSchema();
                 ctx.tableSchemas.put(qualifier, tableSchema);
 
                 for (String field : tableSchema.getFields()) {

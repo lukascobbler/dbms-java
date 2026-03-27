@@ -8,6 +8,7 @@ import com.luka.lbdb.planning.planner.Planner;
 import com.luka.lbdb.records.RecordId;
 import com.luka.lbdb.db.settings.LBDBSettings;
 import com.luka.lbdb.transactions.Transaction;
+import com.luka.lbdb.transactions.TransactionManager;
 import com.luka.lbdb.transactions.concurrencyManagement.LockTable;
 
 import java.nio.file.Path;
@@ -26,6 +27,7 @@ public class LBDB {
     private final Planner planner;
     private final LBDBSettings settings;
     private final AtomicInteger nextTransactionNum = new AtomicInteger(0);
+    private final TransactionManager transactionManager;
 
     /// Initializes the whole system, given the directory name.
     /// Uses default configuration.
@@ -62,9 +64,11 @@ public class LBDB {
         metadataManager = new MetadataManager(transaction, fileManager, nextTableIdNum);
 
         Map<String, RecordId> lastInsertions = new HashMap<>();
+        transactionManager = new TransactionManager(this::newTransaction);
         planner = new Planner(
                 settings.getQueryPlanner(metadataManager),
-                settings.getUpdatePlanner(metadataManager, lastInsertions)
+                settings.getUpdatePlanner(metadataManager, lastInsertions),
+                transactionManager
         );
 
         transaction.commit();
@@ -85,5 +89,14 @@ public class LBDB {
     /// @return The planner that is the part of this system object.
     public Planner getPlanner() {
         return planner;
+    }
+
+    /// @return The transaction manager that is the part of this system.
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public void shutdown() {
+        // todo
     }
 }

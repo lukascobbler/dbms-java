@@ -26,6 +26,7 @@ public class Transaction {
     private final FileManager fileManager;
 
     private int transactionNumber;
+    private TransactionState transactionState;
     private final BufferList myBuffers;
 
     /// Initializes a transaction with a transaction id that is pooled
@@ -42,6 +43,7 @@ public class Transaction {
         this.concurrencyManager = new ConcurrencyManager(lockTable);
 
         transactionNumber = nextTransactionNumber();
+        transactionState = TransactionState.IN_PROGRESS;
         myBuffers = new BufferList(bufferManager);
 
         this.recoveryManager = new RecoveryManager(
@@ -55,6 +57,7 @@ public class Transaction {
         recoveryManager.commit();
         concurrencyManager.release();
         myBuffers.unpinAll();
+        transactionState = TransactionState.COMMITED;
     }
 
     /// Rolls back the transaction by rolling back from the recovery file,
@@ -64,6 +67,7 @@ public class Transaction {
         recoveryManager.rollback();
         concurrencyManager.release();
         myBuffers.unpinAll();
+        transactionState = TransactionState.ROLLED_BACK;
     }
 
     /// Recovers the whole system including this transaction. Sets the transaction id

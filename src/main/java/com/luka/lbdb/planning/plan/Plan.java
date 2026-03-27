@@ -1,6 +1,7 @@
 package com.luka.lbdb.planning.plan;
 
 import com.luka.lbdb.querying.scanDefinitions.Scan;
+import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.records.schema.Schema;
 
 import java.util.ArrayList;
@@ -79,13 +80,14 @@ public interface Plan<T extends Scan> {
     /// data, it will probably return the subplan's output schema.
     Schema outputSchema();
 
-    /// @return The string representing a table with all subplan explanations.
-    default String explainedPlan() {
+    /// @return The list of tuples that the explaining of the plan
+    /// consists of.
+    default List<List<Constant>> explainTuples() {
         List<ExplainData> explainData = new ArrayList<>();
 
         this.explainPlan(explainData, 0);
 
-        return ExplainData.explainAllPlans(explainData);
+        return ExplainData.toTuples(explainData);
     }
 
     /// Populates the plan recursively with correct indentations.

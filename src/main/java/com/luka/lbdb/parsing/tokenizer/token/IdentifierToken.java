@@ -6,5 +6,5 @@ import org.jetbrains.annotations.NotNull;
 /// tokens, used for table names, field names , ...
 public record IdentifierToken(String name) implements Token {
     @Override
-    public @NotNull String toString() { return "identifier(" + name + ")"; }
+    public @NotNull String toString() { return "IDENTIFIER('" + name + "')"; }
 }

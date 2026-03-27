@@ -10,7 +10,7 @@ package com.luka.lbdb.parsing.statement;
 public sealed interface Statement permits
         SelectStatement, UpdateStatement, DeleteStatement,
         InsertStatement, CreateTableStatement, CreateIndexStatement,
-        ExplainStatement {
+        ExplainStatement, TransactionStatement {
     /// Unparses a statement into its original string form. May produce
     /// some differences because of how expressions and predicate order
     /// is handled during the parsing process.

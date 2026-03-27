@@ -4,6 +4,8 @@ import com.luka.lbdb.parsing.exceptions.ParsingException;
 import com.luka.lbdb.parsing.parser.parseTypes.*;
 import com.luka.lbdb.parsing.statement.ExplainStatement;
 import com.luka.lbdb.parsing.statement.Statement;
+import com.luka.lbdb.parsing.statement.TransactionStatement;
+import com.luka.lbdb.parsing.statement.transaction.TransactionAction;
 import com.luka.lbdb.parsing.tokenizer.token.*;
 
 /// The parsing system's grammar, which corresponds to the operations that
@@ -12,7 +14,7 @@ import com.luka.lbdb.parsing.tokenizer.token.*;
 /// ```
 /// <Parse>     := <ParseSelect> | <ParseInsert> | <ParseUpdate> | <ParseDelete> |
 ///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex> |
-///                EXPLAIN <Parse>
+///                START TRANSACTION | COMMIT | ROLLBACK | EXPLAIN <Parse>
 /// ```
 ///
 /// Each syntactic category is defined within its own class, for maintainability
@@ -50,6 +52,19 @@ public class Parser {
                     case KeywordToken.INDEX -> new ParseCreateIndex(ctx).parse();
                     default -> throw new ParsingException("Invalid CREATE target: " + ctx.current());
                 };
+            }
+            case KeywordToken.START -> {
+                ctx.advance();
+                ctx.eat(KeywordToken.TRANSACTION);
+                yield new TransactionStatement(TransactionAction.START_TRANSACTION);
+            }
+            case KeywordToken.COMMIT -> {
+                ctx.advance();
+                yield new TransactionStatement(TransactionAction.COMMIT);
+            }
+            case KeywordToken.ROLLBACK -> {
+                ctx.advance();
+                yield new TransactionStatement(TransactionAction.ROLLBACK);
             }
             case KeywordToken.EXPLAIN -> {
                 ctx.advance();

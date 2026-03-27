@@ -23,6 +23,7 @@ import com.luka.lbdb.db.LBDB;
 import com.luka.lbdb.db.settings.LBDBSettings;
 import com.luka.lbdb.transactions.Transaction;
 import com.luka.lbdb.testUtils.TestUtils;
+import com.luka.lbdb.transactions.TransactionManager;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -43,7 +44,7 @@ public class PlanTestUtils {
     /// Executes only the checks for a given update statement.
     ///
     /// @return 0 because the statement won't be run.
-    public static int checkUpdateStatement(PlanTestUtils.PlanTestData testData, String query, String checkMethodName)
+    public static int checkUpdateStatement(PlanTestData testData, String query, String checkMethodName)
             throws Throwable {
         QueryPlanner dummyQueryPlanner = new QueryPlanner(testData.db().getMetadataManager()) {
             @Override protected Plan<Scan> createPlan(SelectStatement selectStatement, Transaction transaction) { return null; }
@@ -73,6 +74,7 @@ public class PlanTestUtils {
                     checkMethodName, SelectStatement.class, Transaction.class);
             case UpdateStatement us -> UpdatePlanner.class.getDeclaredMethod(
                     checkMethodName, UpdateStatement.class, Transaction.class);
+            default -> throw new IllegalStateException("Unexpected value: " + updateStatement);
         };
 
         relMethod.setAccessible(true);
@@ -84,7 +86,7 @@ public class PlanTestUtils {
     /// Executes only the checks for a given statement.
     ///
     /// @return The checked and expanded select statement.
-    public static SelectStatement resultingCheckedSelectStatement(PlanTestUtils.PlanTestData testData, String query)
+    public static SelectStatement resultingCheckedSelectStatement(PlanTestData testData, String query)
             throws Throwable {
         QueryPlanner dummyPlanner = new QueryPlanner(testData.db().getMetadataManager()) {
             /// Unused for check tests.
@@ -101,8 +103,8 @@ public class PlanTestUtils {
     }
 
     /// @return The same data with a new transaction.
-    public static PlanTestUtils.PlanTestData newTransaction(PlanTestUtils.PlanTestData oldTransaction) {
-        return new PlanTestUtils.PlanTestData(
+    public static PlanTestData newTransaction(PlanTestData oldTransaction) {
+        return new PlanTestData(
                 oldTransaction.db(),
                 oldTransaction.db().newTransaction(),
                 oldTransaction.layouts()
@@ -112,10 +114,11 @@ public class PlanTestUtils {
     /// Executes the statement.
     ///
     /// @return The number of rows affected.
-    public static int executeUpdate(PlanTestUtils.PlanTestData testData, String query) {
+    public static int executeUpdate(PlanTestData testData, String query) {
         Planner p = new Planner(
                 new BetterQueryPlanner(testData.db().getMetadataManager()),
-                new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>())
+                new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>()),
+                new TransactionManager(testData.db::newTransaction)
         );
 
         return p.executeUpdate(query, testData.tx());
@@ -124,10 +127,11 @@ public class PlanTestUtils {
     /// Creates a plan for the statement.
     ///
     /// @return The checked and expanded select statement.
-    public static Plan<Scan> createQueryPlan(PlanTestUtils.PlanTestData testData, String query) {
+    public static Plan<Scan> createQueryPlan(PlanTestData testData, String query) {
         Planner p = new Planner(
                 new BetterQueryPlanner(testData.db().getMetadataManager()),
-                new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>())
+                new BasicUpdatePlanner(testData.db().getMetadataManager(), new HashMap<>()),
+                new TransactionManager(testData.db::newTransaction)
         );
 
         return p.createQueryPlan(query, testData.tx());

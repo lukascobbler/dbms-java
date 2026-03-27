@@ -150,7 +150,6 @@ public class RecoveryManager {
         private int lastTransactionNumber = 0;
         public final boolean undoOnly;
 
-
         /// When `undoOnly` is set to `false`, the algorithm
         /// used is the 'Undo-Redo' algorithm.
         public RecoveryAlgorithm(boolean undoOnly) {
