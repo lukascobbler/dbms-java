@@ -8,6 +8,7 @@ import com.luka.lbdb.parsing.statement.update.NewFieldExpressionAssignment;
 import com.luka.lbdb.planning.exceptions.PlanValidationException;
 import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
+import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.querying.virtualEntities.expression.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
@@ -112,11 +113,35 @@ public abstract class UpdatePlanner {
     public int executeInsertValidated(InsertStatement insertStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(insertStatement.tableName(), transaction);
 
-        if (insertStatement.newFieldValues().size() != tableLayout.getSchema().getFields().size()) {
+        List<NewFieldValueInfo> filledValueInfos;
+
+        if (insertStatement.implicitFieldNames()) {
+            filledValueInfos = new ArrayList<>();
+            Schema tableSchema = tableLayout.getSchema();
+
+            if (tableSchema.getFields().size() != insertStatement.newFieldValues().size()) {
+                throw new PlanValidationException("Incorrect number of fields in statement");
+            }
+
+            for (int i = 0; i < tableSchema.getFields().size(); i++) {
+                String fieldName = tableSchema.getFields().get(i);
+                Constant newValue = insertStatement.newFieldValues().get(i).newValue();
+
+                filledValueInfos.add(new NewFieldValueInfo(fieldName, newValue));
+            }
+        } else {
+            filledValueInfos = insertStatement.newFieldValues();
+        }
+
+        InsertStatement filledInsertStatement = new InsertStatement(
+            insertStatement.tableName(), filledValueInfos, false
+        );
+
+        if (filledInsertStatement.newFieldValues().size() != tableLayout.getSchema().getFields().size()) {
             throw new PlanValidationException("Incorrect number of fields in statement");
         }
 
-        for (NewFieldValueInfo newFieldValue : insertStatement.newFieldValues()) {
+        for (NewFieldValueInfo newFieldValue : filledInsertStatement.newFieldValues()) {
             if (!tableLayout.getSchema().hasField(newFieldValue.fieldName())) {
                 throw new PlanValidationException(
                         String.format("Field '%s' doesn't exist in the table", newFieldValue.fieldName())
@@ -138,7 +163,7 @@ public abstract class UpdatePlanner {
             }
         }
 
-        return executeInsert(insertStatement, transaction);
+        return executeInsert(filledInsertStatement, transaction);
     }
 
     /// Validates every aspect of a delete statement and folds constant expressions.

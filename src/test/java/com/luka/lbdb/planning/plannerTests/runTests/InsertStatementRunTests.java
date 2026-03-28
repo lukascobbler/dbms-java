@@ -11,7 +11,6 @@ import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.db.settings.LBDBSettings;
 import com.luka.lbdb.testUtils.TestUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -28,7 +27,7 @@ public class InsertStatementRunTests {
     private record InsertTestData(String insertQuery, Map<String, Constant> generatedData) { }
 
     /// @return Correct insert statement with all fields and random data.
-    private InsertTestData buildInsertQueryWithRandomData(Schema currentSchema) {
+    private InsertTestData buildInsertQueryWithRandomData(Schema currentSchema, boolean implicitFields) {
         StringBuilder fieldsBuilder = new StringBuilder();
         StringBuilder valuesBuilder = new StringBuilder();
         Map<String, Constant> actualData = new HashMap<>();
@@ -65,18 +64,25 @@ public class InsertStatementRunTests {
         fieldsBuilder = new StringBuilder(fieldsBuilder.substring(0, fieldsBuilder.length() - 2));
         valuesBuilder = new StringBuilder(valuesBuilder.substring(0, valuesBuilder.length() - 2));
 
-        String finalQuery = String.format("INSERT INTO table1 (%s) VALUES (%s);", fieldsBuilder, valuesBuilder);
+        String finalQuery = String.format(
+                "INSERT INTO table1 %s VALUES (%s);",
+                implicitFields ? "" : "(" + fieldsBuilder + ")",
+                valuesBuilder
+        );
 
         return new InsertTestData(finalQuery, actualData);
     }
 
-    @Test
-    public void testInsertionSuccessful() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testInsertionSuccessful(boolean implicitFields) throws IOException {
         Path tmpDir = TestUtils.setUpTempDirectory();
         var testDataThreeTablesTransaction = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
 
         InsertTestData insertData = buildInsertQueryWithRandomData(
-                testDataThreeTablesTransaction.layouts().getFirst().getSchema());
+                testDataThreeTablesTransaction.layouts().getFirst().getSchema(),
+                implicitFields
+        );
 
         int totalRowsAffected = 0;
         for (int i = 0; i < 1000; i++) {
@@ -116,7 +122,7 @@ public class InsertStatementRunTests {
         var testDataThreeTablesInsertionTransaction = PlanTestUtils.newTransaction(testDataThreeTablesTransaction);
 
         InsertTestData insertData = buildInsertQueryWithRandomData(
-                testDataThreeTablesInsertionTransaction.layouts().getFirst().getSchema());
+                testDataThreeTablesInsertionTransaction.layouts().getFirst().getSchema(), false);
 
         int totalRowsAffected = 0;
         for (int i = 0; i < 1000; i++) {

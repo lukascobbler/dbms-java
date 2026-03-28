@@ -54,6 +54,14 @@ public class ParseInsertTests {
     }
 
     @Test
+    public void parseInsertWithVariousDataTypesNoFieldList() {
+        String query = "INSERT INTO flags VALUES (TRUE, 'OK', 1)";
+        String expected = "INSERT INTO flags VALUES (TRUE, 'OK', 1);";
+
+        assertEquals(expected, parse(query).toString());
+    }
+
+    @Test
     public void parseFailNonConstantExpression() {
         String query = "INSERT INTO users (id, age) VALUES (1, age + 1)";
 

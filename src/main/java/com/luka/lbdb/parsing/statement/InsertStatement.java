@@ -9,19 +9,22 @@ import java.util.List;
 /// `INSERT` queries need the table they are inserting into,
 /// a list of fields, and a list of constant values that these
 /// fields should be set to in the new row.
-public record InsertStatement(String tableName, List<NewFieldValueInfo> newFieldValues) implements Statement {
+public record InsertStatement(String tableName, List<NewFieldValueInfo> newFieldValues,
+                              boolean implicitFieldNames) implements Statement {
     @Override
     public @NotNull String toString() {
         StringBuilder result = new StringBuilder("INSERT INTO ");
         result.append(tableName).append(" ");
 
-        result.append('(');
-        for (NewFieldValueInfo field : newFieldValues)
-            result.append(field.fieldName()).append(", ");
-        result = new StringBuilder(result.substring(0, result.length() - 2));
-        result.append(')');
+        if (!implicitFieldNames) {
+            result.append('(');
+            for (NewFieldValueInfo field : newFieldValues)
+                result.append(field.fieldName()).append(", ");
+            result = new StringBuilder(result.substring(0, result.length() - 2));
+            result.append(") ");
+        }
 
-        result.append(" VALUES (");
+        result.append("VALUES (");
         for (NewFieldValueInfo field : newFieldValues)
             result.append(field.newValue().toString()).append(", ");
         result = new StringBuilder(result.substring(0, result.length() - 2));

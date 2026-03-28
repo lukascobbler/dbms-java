@@ -20,14 +20,16 @@ import java.util.List;
 /// ```
 /// <TableName>         := IdentificationToken
 /// <FieldName>         := IdentificationToken
-/// <ParseInsert>       := INSERT INTO <TableName> (<FieldList>) VALUES (<ConstantList>)
+/// <ParseInsert>       := INSERT INTO <TableName> [(<FieldList>)] VALUES (<ConstantList>)
 /// <FieldList>         := <FieldName> [, <FieldList>]
 /// <ConstantList>      := <Constant> [, <ConstantList>]
 /// ```
 ///
 /// For INSERT commands, putting expressions as insert values is technically
 /// valid SQL, but these expressions must be constant and will be evaluated in
-/// the parser instead of in the scan.
+/// the parser instead of in the scan. If the field list is not present, it must
+/// be inferred by the planner in the order of the create table statement used
+/// to create this table.
 public class ParseInsert {
     private final ParserContext ctx;
 
@@ -47,9 +49,11 @@ public class ParseInsert {
 
         String tableName = tableName();
 
-        ctx.eat(SymbolToken.LEFT_PAREN);
-        List<String> fields = fieldList();
-        ctx.eat(SymbolToken.RIGHT_PAREN);
+        List<String> fields = new ArrayList<>();
+        if (ctx.eatIfMatches(SymbolToken.LEFT_PAREN)) {
+            fields.addAll(fieldList());
+            ctx.eat(SymbolToken.RIGHT_PAREN);
+        }
 
         ctx.eat(KeywordToken.VALUES);
 
@@ -57,16 +61,23 @@ public class ParseInsert {
         List<Constant> values = constantList();
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        if (fields.size() != values.size()) {
+        if (fields.size() != values.size() && !fields.isEmpty()) {
             throw new ParsingException("Field list not same size as constant list");
         }
 
         List<NewFieldValueInfo> newFieldValues = new ArrayList<>();
-        for (int i = 0; i < fields.size(); i++) {
-            newFieldValues.add(new NewFieldValueInfo(fields.get(i), values.get(i)));
+
+        if (fields.isEmpty()) {
+            for (Constant value : values) {
+                newFieldValues.add(new NewFieldValueInfo("", value));
+            }
+        } else {
+            for (int i = 0; i < fields.size(); i++) {
+                newFieldValues.add(new NewFieldValueInfo(fields.get(i), values.get(i)));
+            }
         }
 
-        return new InsertStatement(tableName, newFieldValues);
+        return new InsertStatement(tableName, newFieldValues, fields.isEmpty());
     }
 
     /// Parses a list of expressions and evaluates them to constants.

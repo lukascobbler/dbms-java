@@ -28,7 +28,23 @@ public class InsertStatementCheckTests {
                     "1234, 'test', false" +
                 ");";
 
-        assertDoesNotThrow(() -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+        assertDoesNotThrow(
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testSuccessfulInsertImplicitFieldNames() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "INSERT INTO table1 VALUES (" +
+                    "1, 2, NULL, 3, " +
+                    "'test1', 'test2', NULL, 'test3', " +
+                    "true, TRUE, NULL, False" +
+                ");";
+
+        assertDoesNotThrow(
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
     }
 
     @Test
@@ -48,7 +64,8 @@ public class InsertStatementCheckTests {
                 "1234, 'test', false" +
             ");";
 
-        assertDoesNotThrow(() -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+        assertDoesNotThrow(
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
     }
 
     @Test
@@ -68,7 +85,53 @@ public class InsertStatementCheckTests {
                 "1234, 'test', false" +
             ");";
 
-        assertThrowsExactly(PlanValidationException.class, () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testFailWrongImplicitFieldType() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "INSERT INTO table1 VALUES (" +
+                "1, 2, 'a', 3, " +
+                "'test1', 'test2', NULL, 'test3', " +
+                "true, TRUE, NULL, False" +
+                ");";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testFailWrongImplicitNumberLess() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "INSERT INTO table1 VALUES (" +
+                "1, 2, 'a', 3, " +
+                "'test1', 'test2', NULL, 'test3', " +
+                "true, TRUE, NULL" +
+                ");";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testFailWrongImplicitNumberMore() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "INSERT INTO table1 VALUES (" +
+                "1, 2, 'a', 3, " +
+                "'test1', 'test2', NULL, 'test3', " +
+                "true, TRUE, NULL, TRUE, TRUE" +
+                ");";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
     }
 
     @Test
