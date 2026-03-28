@@ -108,9 +108,21 @@ public class ParseSelect {
     private List<JoinSpec> joinSpecs() {
         List<JoinSpec> joinSpecList = new ArrayList<>();
 
+        boolean hasMoreJoins;
+        boolean nextIsExplicitJoin = false;
         do {
-            joinSpecList.add(joinSpec());
-        } while (ctx.eatIfMatches(SymbolToken.COMMA));
+            joinSpecList.add(joinSpec(nextIsExplicitJoin));
+
+            if (ctx.eatIfMatches(SymbolToken.COMMA)) {
+                hasMoreJoins = true;
+                nextIsExplicitJoin = false;
+            } else if (ctx.eatIfMatches(KeywordToken.JOIN)) {
+                hasMoreJoins = true;
+                nextIsExplicitJoin = true;
+            } else {
+                hasMoreJoins = false;
+            }
+        } while (hasMoreJoins);
 
         return joinSpecList;
     }
@@ -119,14 +131,13 @@ public class ParseSelect {
     /// one predicate.
     ///
     /// @return The parsed join operation result.
-    private JoinSpec joinSpec() {
+    private JoinSpec joinSpec(boolean nextIsExplicitJoin) {
         Predicate joinPredicate = new Predicate();
 
         List<TableInfo> tables = new ArrayList<>();
         tables.add(tableName());
 
-        if (ctx.eatIfMatches(KeywordToken.JOIN)) {
-            tables.add(tableName());
+        if (nextIsExplicitJoin) {
             ctx.eat(KeywordToken.ON);
             joinPredicate.conjoinWith(new ParsePredicate(ctx).parse());
         }

@@ -59,6 +59,30 @@ public class ParseSelectTests {
     }
 
     @Test
+    public void parseWithJoinSpecMultiple() {
+        SelectStatement selectStatement1 = parse(
+    "SELECT SName, DName FROM STUDENT, DEPT, COURSE WHERE MajorId = Did AND Did = CourseId"
+        );
+        SelectStatement selectStatement2 = parse(
+    "SELECT DName, SName FROM STUDENT JOIN DEPT ON MajorId = Did JOIN COURSE ON Did = CourseId"
+        );
+
+        assertEquals(selectStatement1, selectStatement2);
+    }
+
+    @Test
+    public void parseWithJoinSpecMultipleMixed() {
+        SelectStatement selectStatement1 = parse(
+                "SELECT SName, DName FROM STUDENT, DEPT, COURSE, ENROLLMENT WHERE MajorId = Did AND Did = CourseId"
+        );
+        SelectStatement selectStatement2 = parse(
+                "SELECT DName, SName FROM STUDENT JOIN DEPT ON MajorId = Did JOIN COURSE ON Did = CourseId, ENROLLMENT"
+        );
+
+        assertEquals(selectStatement1, selectStatement2);
+    }
+
+    @Test
     public void parseWithJoinSpecFailNoOnKeyword() {
         assertThrows(ParsingException.class, () -> parse(
                 "SELECT DName, SName FROM STUDENT JOIN DEPT MajorId = Did WHERE GradYear = 2020"));

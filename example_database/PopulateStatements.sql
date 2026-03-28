@@ -1,0 +1,105 @@
+CREATE TABLE Department (DeptID INT, DeptName VARCHAR(50));
+CREATE TABLE Professor (ProfID INT, DeptID INT, ProfName VARCHAR(50), Salary INT, IsTenured BOOLEAN);
+CREATE TABLE Student (StudentID INT, StudentName VARCHAR(50), MajorDeptID INT, EnrollmentYear INT, IsActive BOOLEAN);
+CREATE TABLE Course (CourseID INT, CourseTitle VARCHAR(50), ProfID INT, Credits INT);
+CREATE TABLE Enrollment (EnrollmentID INT, StudentID INT, CourseID INT, Points INT);
+
+INSERT INTO Department (DeptID, DeptName) VALUES
+(1, 'Dept1'), (2, 'Dept2'), (3, 'Dept3'), (4, 'Dept4'), (5, 'Dept5'), (6, 'Dept6'), (7, 'Dept7'), (8, 'Dept8'), (9, 'Dept9'), (10, 'Dept10'),
+(11, 'Dept11'), (12, 'Dept12'), (13, 'Dept13'), (14, 'Dept14'), (15, 'Dept15'), (16, 'Dept16'), (17, 'Dept17'), (18, 'Dept18'), (19, 'Dept19'), (20, 'Dept20'),
+(21, 'Dept21'), (22, 'Dept22'), (23, 'Dept23'), (24, 'Dept24'), (25, 'Dept25'), (26, 'Dept26'), (27, 'Dept27'), (28, 'Dept28'), (29, 'Dept29'), (30, 'Dept30'),
+(31, 'Dept31'), (32, 'Dept32'), (33, 'Dept33'), (34, 'Dept34'), (35, 'Dept35'), (36, 'Dept36'), (37, 'Dept37'), (38, 'Dept38'), (39, 'Dept39'), (40, 'Dept40'),
+(41, 'Dept41'), (42, 'Dept42'), (43, 'Dept43'), (44, 'Dept44'), (45, 'Dept45'), (46, 'Dept46'), (47, 'Dept47'), (48, 'Dept48'), (49, 'Dept49'), (50, 'Dept50'),
+(51, 'Dept51'), (52, 'Dept52'), (53, 'Dept53'), (54, 'Dept54'), (55, 'Dept55'), (56, 'Dept56'), (57, 'Dept57'), (58, 'Dept58'), (59, 'Dept59'), (60, 'Dept60'),
+(61, 'Dept61'), (62, 'Dept62'), (63, 'Dept63'), (64, 'Dept64'), (65, 'Dept65'), (66, 'Dept66'), (67, 'Dept67'), (68, 'Dept68'), (69, 'Dept69'), (70, 'Dept70'),
+(71, 'Dept71'), (72, 'Dept72'), (73, 'Dept73'), (74, 'Dept74'), (75, 'Dept75'), (76, 'Dept76'), (77, 'Dept77'), (78, 'Dept78'), (79, 'Dept79'), (80, 'Dept80'),
+(81, 'Dept81'), (82, 'Dept82'), (83, 'Dept83'), (84, 'Dept84'), (85, 'Dept85'), (86, 'Dept86'), (87, 'Dept87'), (88, 'Dept88'), (89, 'Dept89'), (90, 'Dept90'),
+(91, 'Dept91'), (92, 'Dept92'), (93, 'Dept93'), (94, 'Dept94'), (95, 'Dept95'), (96, 'Dept96'), (97, 'Dept97'), (98, 'Dept98'), (99, 'Dept99'), (100, 'Dept100');
+
+INSERT INTO Professor (ProfID, DeptID, ProfName, Salary, IsTenured) VALUES
+(1, 1, 'Prof1', 60000, true), (2, 2, 'Prof2', 55000, false), (3, 3, 'Prof3', 70000, true), (4, 4, 'Prof4', 45000, false), (5, 5, 'Prof5', 80000, true),
+(6, 6, 'Prof6', 62000, true), (7, 7, 'Prof7', 59000, false), (8, 8, 'Prof8', 61000, true), (9, 9, 'Prof9', 48000, false), (10, 10, 'Prof10', 90000, true),
+(11, 11, 'Prof11', 65000, true), (12, 12, 'Prof12', 54000, false), (13, 13, 'Prof13', 72000, true), (14, 14, 'Prof14', 46000, false), (15, 15, 'Prof15', 81000, true),
+(16, 16, 'Prof16', 63000, true), (17, 17, 'Prof17', 58000, false), (18, 18, 'Prof18', 64000, true), (19, 19, 'Prof19', 49000, false), (20, 20, 'Prof20', 91000, true),
+(21, 21, 'Prof21', 66000, true), (22, 22, 'Prof22', 53000, false), (23, 23, 'Prof23', 74000, true), (24, 24, 'Prof24', 47000, false), (25, 25, 'Prof25', 82000, true),
+(26, 26, 'Prof26', 67000, true), (27, 27, 'Prof27', 57000, false), (28, 28, 'Prof28', 68000, true), (29, 29, 'Prof29', 50000, false), (30, 30, 'Prof30', 92000, true),
+(31, 31, 'Prof31', 68000, true), (32, 32, 'Prof32', 52000, false), (33, 33, 'Prof33', 75000, true), (34, 34, 'Prof34', 51000, false), (35, 35, 'Prof35', 83000, true),
+(36, 36, 'Prof36', 69000, true), (37, 37, 'Prof37', 56000, false), (38, 38, 'Prof38', 70000, true), (39, 39, 'Prof39', 52000, false), (40, 40, 'Prof40', 93000, true),
+(41, 41, 'Prof41', 70000, true), (42, 42, 'Prof42', 51000, false), (43, 43, 'Prof43', 76000, true), (44, 44, 'Prof44', 53000, false), (45, 45, 'Prof45', 84000, true),
+(46, 46, 'Prof46', 71000, true), (47, 47, 'Prof47', 55000, false), (48, 48, 'Prof48', 72000, true), (49, 49, 'Prof49', 54000, false), (50, 50, 'Prof50', 94000, true),
+(51, 51, 'Prof51', 72000, true), (52, 52, 'Prof52', 50000, false), (53, 53, 'Prof53', 77000, true), (54, 54, 'Prof54', 55000, false), (55, 55, 'Prof55', 85000, true),
+(56, 56, 'Prof56', 73000, true), (57, 57, 'Prof57', 54000, false), (58, 58, 'Prof58', 74000, true), (59, 59, 'Prof59', 56000, false), (60, 60, 'Prof60', 95000, true),
+(61, 61, 'Prof61', 74000, true), (62, 62, 'Prof62', 49000, false), (63, 63, 'Prof63', 78000, true), (64, 64, 'Prof64', 57000, false), (65, 65, 'Prof65', 86000, true),
+(66, 66, 'Prof66', 75000, true), (67, 67, 'Prof67', 53000, false), (68, 68, 'Prof68', 76000, true), (69, 69, 'Prof69', 58000, false), (70, 70, 'Prof70', 96000, true),
+(71, 71, 'Prof71', 76000, true), (72, 72, 'Prof72', 48000, false), (73, 73, 'Prof73', 79000, true), (74, 74, 'Prof74', 59000, false), (75, 75, 'Prof75', 87000, true),
+(76, 76, 'Prof76', 77000, true), (77, 77, 'Prof77', 52000, false), (78, 78, 'Prof78', 78000, true), (79, 79, 'Prof79', 60000, false), (80, 80, 'Prof80', 97000, true),
+(81, 81, 'Prof81', 78000, true), (82, 82, 'Prof82', 47000, false), (83, 83, 'Prof83', 80000, true), (84, 84, 'Prof84', 61000, false), (85, 85, 'Prof85', 88000, true),
+(86, 86, 'Prof86', 79000, true), (87, 87, 'Prof87', 51000, false), (88, 88, 'Prof88', 80000, true), (89, 89, 'Prof89', 62000, false), (90, 90, 'Prof90', 98000, true),
+(91, 91, 'Prof91', 80000, true), (92, 92, 'Prof92', 46000, false), (93, 93, 'Prof93', 81000, true), (94, 94, 'Prof94', 63000, false), (95, 95, 'Prof95', 89000, true),
+(96, 96, 'Prof96', 81000, true), (97, 97, 'Prof97', 50000, false), (98, 98, 'Prof98', 82000, true), (99, 99, 'Prof99', 64000, false), (100, 100, 'Prof100', 99000, true);
+
+INSERT INTO Student (StudentID, StudentName, MajorDeptID, EnrollmentYear, IsActive) VALUES
+(1, 'Student1', 1, 2020, true), (2, 'Student2', 2, 2021, false), (3, 'Student3', 3, 2019, true), (4, 'Student4', 4, 2022, true), (5, 'Student5', 5, 2018, false),
+(6, 'Student6', 6, 2020, true), (7, 'Student7', 7, 2021, true), (8, 'Student8', 8, 2023, true), (9, 'Student9', 9, 2019, false), (10, 'Student10', 10, 2020, true),
+(11, 'Student11', 11, 2022, true), (12, 'Student12', 12, 2021, false), (13, 'Student13', 13, 2020, true), (14, 'Student14', 14, 2023, true), (15, 'Student15', 15, 2018, false),
+(16, 'Student16', 16, 2021, true), (17, 'Student17', 17, 2022, true), (18, 'Student18', 18, 2019, true), (19, 'Student19', 19, 2020, false), (20, 'Student20', 20, 2023, true),
+(21, 'Student21', 21, 2020, true), (22, 'Student22', 22, 2021, false), (23, 'Student23', 23, 2019, true), (24, 'Student24', 24, 2022, true), (25, 'Student25', 25, 2018, false),
+(26, 'Student26', 26, 2020, true), (27, 'Student27', 27, 2021, true), (28, 'Student28', 28, 2023, true), (29, 'Student29', 29, 2019, false), (30, 'Student30', 30, 2020, true),
+(31, 'Student31', 31, 2022, true), (32, 'Student32', 32, 2021, false), (33, 'Student33', 33, 2020, true), (34, 'Student34', 34, 2023, true), (35, 'Student35', 35, 2018, false),
+(36, 'Student36', 36, 2021, true), (37, 'Student37', 37, 2022, true), (38, 'Student38', 38, 2019, true), (39, 'Student39', 39, 2020, false), (40, 'Student40', 40, 2023, true),
+(41, 'Student41', 41, 2020, true), (42, 'Student42', 42, 2021, false), (43, 'Student43', 43, 2019, true), (44, 'Student44', 44, 2022, true), (45, 'Student45', 45, 2018, false),
+(46, 'Student46', 46, 2020, true), (47, 'Student47', 47, 2021, true), (48, 'Student48', 48, 2023, true), (49, 'Student49', 49, 2019, false), (50, 'Student50', 50, 2020, true),
+(51, 'Student51', 51, 2022, true), (52, 'Student52', 52, 2021, false), (53, 'Student53', 53, 2020, true), (54, 'Student54', 54, 2023, true), (55, 'Student55', 55, 2018, false),
+(56, 'Student56', 56, 2021, true), (57, 'Student57', 57, 2022, true), (58, 'Student58', 58, 2019, true), (59, 'Student59', 59, 2020, false), (60, 'Student60', 60, 2023, true),
+(61, 'Student61', 61, 2020, true), (62, 'Student62', 62, 2021, false), (63, 'Student63', 63, 2019, true), (64, 'Student64', 64, 2022, true), (65, 'Student65', 65, 2018, false),
+(66, 'Student66', 66, 2020, true), (67, 'Student67', 67, 2021, true), (68, 'Student68', 68, 2023, true), (69, 'Student69', 69, 2019, false), (70, 'Student70', 70, 2020, true),
+(71, 'Student71', 71, 2022, true), (72, 'Student72', 72, 2021, false), (73, 'Student73', 73, 2020, true), (74, 'Student74', 74, 2023, true), (75, 'Student75', 75, 2018, false),
+(76, 'Student76', 76, 2021, true), (77, 'Student77', 77, 2022, true), (78, 'Student78', 78, 2019, true), (79, 'Student79', 79, 2020, false), (80, 'Student80', 80, 2023, true),
+(81, 'Student81', 81, 2020, true), (82, 'Student82', 82, 2021, false), (83, 'Student83', 83, 2019, true), (84, 'Student84', 84, 2022, true), (85, 'Student85', 85, 2018, false),
+(86, 'Student86', 86, 2020, true), (87, 'Student87', 87, 2021, true), (88, 'Student88', 88, 2023, true), (89, 'Student89', 89, 2019, false), (90, 'Student90', 90, 2020, true),
+(91, 'Student91', 91, 2022, true), (92, 'Student92', 92, 2021, false), (93, 'Student93', 93, 2020, true), (94, 'Student94', 94, 2023, true), (95, 'Student95', 95, 2018, false),
+(96, 'Student96', 96, 2021, true), (97, 'Student97', 97, 2022, true), (98, 'Student98', 98, 2019, true), (99, 'Student99', 99, 2020, false), (100, 'Student100', 100, 2023, true);
+
+INSERT INTO Course (CourseID, CourseTitle, ProfID, Credits) VALUES
+(1, 'Course1', 1, 3), (2, 'Course2', 2, 4), (3, 'Course3', 3, 3), (4, 'Course4', 4, 2), (5, 'Course5', 5, 4),
+(6, 'Course6', 6, 3), (7, 'Course7', 7, 3), (8, 'Course8', 8, 4), (9, 'Course9', 9, 2), (10, 'Course10', 10, 4),
+(11, 'Course11', 11, 3), (12, 'Course12', 12, 4), (13, 'Course13', 13, 3), (14, 'Course14', 14, 2), (15, 'Course15', 15, 4),
+(16, 'Course16', 16, 3), (17, 'Course17', 17, 3), (18, 'Course18', 18, 4), (19, 'Course19', 19, 2), (20, 'Course20', 20, 4),
+(21, 'Course21', 21, 3), (22, 'Course22', 22, 4), (23, 'Course23', 23, 3), (24, 'Course24', 24, 2), (25, 'Course25', 25, 4),
+(26, 'Course26', 26, 3), (27, 'Course27', 27, 3), (28, 'Course28', 28, 4), (29, 'Course29', 29, 2), (30, 'Course30', 30, 4),
+(31, 'Course31', 31, 3), (32, 'Course32', 32, 4), (33, 'Course33', 33, 3), (34, 'Course34', 34, 2), (35, 'Course35', 35, 4),
+(36, 'Course36', 36, 3), (37, 'Course37', 37, 3), (38, 'Course38', 38, 4), (39, 'Course39', 39, 2), (40, 'Course40', 40, 4),
+(41, 'Course41', 41, 3), (42, 'Course42', 42, 4), (43, 'Course43', 43, 3), (44, 'Course44', 44, 2), (45, 'Course45', 45, 4),
+(46, 'Course46', 46, 3), (47, 'Course47', 47, 3), (48, 'Course48', 48, 4), (49, 'Course49', 49, 2), (50, 'Course50', 50, 4),
+(51, 'Course51', 51, 3), (52, 'Course52', 52, 4), (53, 'Course53', 53, 3), (54, 'Course54', 54, 2), (55, 'Course55', 55, 4),
+(56, 'Course56', 56, 3), (57, 'Course57', 57, 3), (58, 'Course58', 58, 4), (59, 'Course59', 59, 2), (60, 'Course60', 60, 4),
+(61, 'Course61', 61, 3), (62, 'Course62', 62, 4), (63, 'Course63', 63, 3), (64, 'Course64', 64, 2), (65, 'Course65', 65, 4),
+(66, 'Course66', 66, 3), (67, 'Course67', 67, 3), (68, 'Course68', 68, 4), (69, 'Course69', 69, 2), (70, 'Course70', 70, 4),
+(71, 'Course71', 71, 3), (72, 'Course72', 72, 4), (73, 'Course73', 73, 3), (74, 'Course74', 74, 2), (75, 'Course75', 75, 4),
+(76, 'Course76', 76, 3), (77, 'Course77', 77, 3), (78, 'Course78', 78, 4), (79, 'Course79', 79, 2), (80, 'Course80', 80, 4),
+(81, 'Course81', 81, 3), (82, 'Course82', 82, 4), (83, 'Course83', 83, 3), (84, 'Course84', 84, 2), (85, 'Course85', 85, 4),
+(86, 'Course86', 86, 3), (87, 'Course87', 87, 3), (88, 'Course88', 88, 4), (89, 'Course89', 89, 2), (90, 'Course90', 90, 4),
+(91, 'Course91', 91, 3), (92, 'Course92', 92, 4), (93, 'Course93', 93, 3), (94, 'Course94', 94, 2), (95, 'Course95', 95, 4),
+(96, 'Course96', 96, 3), (97, 'Course97', 97, 3), (98, 'Course98', 98, 4), (99, 'Course99', 99, 2), (100, 'Course100', 100, 4);
+
+INSERT INTO Enrollment (EnrollmentID, StudentID, CourseID, Points) VALUES
+(1, 1, 1, 85), (2, 2, 2, 90), (3, 3, 3, 78), (4, 4, 4, 92), (5, 5, 5, 88),
+(6, 6, 6, 76), (7, 7, 7, 95), (8, 8, 8, 89), (9, 9, 9, 82), (10, 10, 10, 91),
+(11, 11, 11, 85), (12, 12, 12, 90), (13, 13, 13, 78), (14, 14, 14, 92), (15, 15, 15, 88),
+(16, 16, 16, 76), (17, 17, 17, 95), (18, 18, 18, 89), (19, 19, 19, 82), (20, 20, 20, 91),
+(21, 21, 21, 85), (22, 22, 22, 90), (23, 23, 23, 78), (24, 24, 24, 92), (25, 25, 25, 88),
+(26, 26, 26, 76), (27, 27, 27, 95), (28, 28, 28, 89), (29, 29, 29, 82), (30, 30, 30, 91),
+(31, 31, 31, 85), (32, 32, 32, 90), (33, 33, 33, 78), (34, 34, 34, 92), (35, 35, 35, 88),
+(36, 36, 36, 76), (37, 37, 37, 95), (38, 38, 38, 89), (39, 39, 39, 82), (40, 40, 40, 91),
+(41, 41, 41, 85), (42, 42, 42, 90), (43, 43, 43, 78), (44, 44, 44, 92), (45, 45, 45, 88),
+(46, 46, 46, 76), (47, 47, 47, 95), (48, 48, 48, 89), (49, 49, 49, 82), (50, 50, 50, 91),
+(51, 51, 51, 85), (52, 52, 52, 90), (53, 53, 53, 78), (54, 54, 54, 92), (55, 55, 55, 88),
+(56, 56, 56, 76), (57, 57, 57, 95), (58, 58, 58, 89), (59, 59, 59, 82), (60, 60, 60, 91),
+(61, 61, 61, 85), (62, 62, 62, 90), (63, 63, 63, 78), (64, 64, 64, 92), (65, 65, 65, 88),
+(66, 66, 66, 76), (67, 67, 67, 95), (68, 68, 68, 89), (69, 69, 69, 82), (70, 70, 70, 91),
+(71, 71, 71, 85), (72, 72, 72, 90), (73, 73, 73, 78), (74, 74, 74, 92), (75, 75, 75, 88),
+(76, 76, 76, 76), (77, 77, 77, 95), (78, 78, 78, 89), (79, 79, 79, 82), (80, 80, 80, 91),
+(81, 81, 81, 85), (82, 82, 82, 90), (83, 83, 83, 78), (84, 84, 84, 92), (85, 85, 85, 88),
+(86, 86, 86, 76), (87, 87, 87, 95), (88, 88, 88, 89), (89, 89, 89, 82), (90, 90, 90, 91),
+(91, 91, 91, 85), (92, 92, 92, 90), (93, 93, 93, 78), (94, 94, 94, 92), (95, 95, 95, 88),
+(96, 96, 96, 76), (97, 97, 97, 95), (98, 98, 98, 89), (99, 99, 99, 82), (100, 100, 100, 91);
