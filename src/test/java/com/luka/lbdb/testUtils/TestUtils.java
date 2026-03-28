@@ -76,7 +76,8 @@ public abstract class TestUtils {
     /// @return The full directory path of the temporary directory.
     private static Path setUpTempInMemoryDirectory() throws IOException {
         String uniqueFolderName = "run_" + counter.incrementAndGet();
-        Path path = memoryFileSystem.getPath("/", "lbdb", uniqueFolderName);
+        Path root = memoryFileSystem.getRootDirectories().iterator().next();
+        Path path = root.resolve("lbdb").resolve(uniqueFolderName);
         Files.createDirectories(path);
         return path.toAbsolutePath();
     }
