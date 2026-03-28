@@ -67,7 +67,7 @@ public class FileManager {
 
             if (fc.size() <= (long) blockId.blockNum() * blockSize) {
                 throw new FileException("cannot write to block with index " +
-                        "greater than runtimeLength of blocks for file " + blockId.filename());
+                        "greater than length of blocks for file " + blockId.filename());
             }
 
             return fc.write(page.contents(), (long) blockId.blockNum() * blockSize);
@@ -144,6 +144,27 @@ public class FileManager {
         } catch (IOException e) {
             throw new FileException("Failed to delete file: " + filename);
         }
+    }
+
+    /// Closes a file managed by this database.
+    /// @throws FileException if the file couldn't be closed or is not managed by this database.
+    public synchronized void closeFile(String filename) {
+        FileChannel fc = openFiles.remove(filename);
+
+        if (fc == null) {
+            throw new FileException("Cannot close file not managed by this database: " + filename);
+        }
+
+        try {
+            fc.close();
+        } catch (IOException e) {
+            throw new FileException("Failed to close file: " + filename);
+        }
+    }
+
+    /// @return The main directory of the system.
+    public Path getDbDirectory() {
+        return dbDirectory;
     }
 
     /// @return Block size of the file manager.

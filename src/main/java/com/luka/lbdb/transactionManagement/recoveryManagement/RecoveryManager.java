@@ -76,6 +76,8 @@ public class RecoveryManager {
         int lsn = QuiescentCheckpointRecord.writeToLog(logManager, biggestTransactionNumber);
         logManager.flush(lsn);
 
+        logManager.archiveLogFile();
+
         return biggestTransactionNumber;
     }
 

@@ -3,8 +3,14 @@ package com.luka.lbdb.logManagement;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.fileManagement.Page;
+import com.luka.lbdb.fileManagement.exceptions.FileException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /// The `LogManager` object is used for writing logs
 /// to the log file when necessary. It is responsible for
@@ -103,6 +109,32 @@ public class LogManager {
         logPage.setInt(0, recordPosition);
         latestLSN += 1;
         return latestLSN;
+    }
+
+    public void archiveLogFile() {
+        Path dbDir = fileManager.getDbDirectory();
+        Path archiveDir = dbDir.resolve("log_archive");
+
+        try {
+            if (!Files.exists(archiveDir)) {
+                Files.createDirectories(archiveDir);
+            }
+        } catch (IOException e) {
+            throw new FileException("Couldn't initialize archive directory");
+        }
+
+        try (Stream<Path> archiveDirFiles = Files.list(archiveDir)) {
+            fileManager.closeFile(logFile);
+
+            int fileCount = archiveDirFiles.toList().size();
+            Path newLogFileName = archiveDir.resolve("log_file_" + fileCount);
+
+            Files.move(dbDir.resolve(logFile), newLogFileName, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new FileException("Couldn't move old log file to the archive");
+        }
+
+        currentBlockId = appendNewBlock();
     }
 
     /// Appends an empty block to the log file. Puts an integer at the
