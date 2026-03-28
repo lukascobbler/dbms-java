@@ -1,6 +1,5 @@
 package com.luka.lbdb.bufferManagement;
 
-import com.luka.lbdb.bufferManagement.exceptions.BufferAbortException;
 import com.luka.lbdb.bufferManagement.exceptions.BufferPinException;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
