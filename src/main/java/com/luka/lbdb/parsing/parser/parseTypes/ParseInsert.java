@@ -3,7 +3,7 @@ package com.luka.lbdb.parsing.parser.parseTypes;
 import com.luka.lbdb.parsing.exceptions.ParsingException;
 import com.luka.lbdb.parsing.statement.InsertStatement;
 import com.luka.lbdb.parsing.parser.ParserContext;
-import com.luka.lbdb.parsing.statement.insert.NewFieldValueInfo;
+import com.luka.lbdb.parsing.statement.insert.AllTuplesValueInfo;
 import com.luka.lbdb.parsing.tokenizer.token.KeywordToken;
 import com.luka.lbdb.parsing.tokenizer.token.SymbolToken;
 import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
@@ -20,8 +20,9 @@ import java.util.List;
 /// ```
 /// <TableName>         := IdentificationToken
 /// <FieldName>         := IdentificationToken
-/// <ParseInsert>       := INSERT INTO <TableName> [(<FieldList>)] VALUES (<ConstantList>)
+/// <ParseInsert>       := INSERT INTO <TableName> [(<FieldList>)] VALUES <TuplesList>
 /// <FieldList>         := <FieldName> [, <FieldList>]
+/// <TuplesList>        := (<ConstantList>) [, (<ConstantList>)]
 /// <ConstantList>      := <Constant> [, <ConstantList>]
 /// ```
 ///
@@ -57,27 +58,31 @@ public class ParseInsert {
 
         ctx.eat(KeywordToken.VALUES);
 
-        ctx.eat(SymbolToken.LEFT_PAREN);
-        List<Constant> values = constantList();
-        ctx.eat(SymbolToken.RIGHT_PAREN);
+        List<List<Constant>> tuples = tuplesList();
 
-        if (fields.size() != values.size() && !fields.isEmpty()) {
+        int tupleSize = tuples.getFirst().size();
+
+        if (tuples.stream().anyMatch(t -> t.size() != tupleSize)) {
+            throw new ParsingException("Not all new values have the same length");
+        }
+
+        if (fields.size() != tupleSize && !fields.isEmpty()) {
             throw new ParsingException("Field list not same size as constant list");
         }
 
-        List<NewFieldValueInfo> newFieldValues = new ArrayList<>();
+        return new InsertStatement(tableName, new AllTuplesValueInfo(fields, tuples, fields.isEmpty()));
+    }
 
-        if (fields.isEmpty()) {
-            for (Constant value : values) {
-                newFieldValues.add(new NewFieldValueInfo("", value));
-            }
-        } else {
-            for (int i = 0; i < fields.size(); i++) {
-                newFieldValues.add(new NewFieldValueInfo(fields.get(i), values.get(i)));
-            }
-        }
+    private List<List<Constant>> tuplesList() {
+        List<List<Constant>> tuplesList = new ArrayList<>();
 
-        return new InsertStatement(tableName, newFieldValues, fields.isEmpty());
+        do {
+            ctx.eat(SymbolToken.LEFT_PAREN);
+            tuplesList.add(constantList());
+            ctx.eat(SymbolToken.RIGHT_PAREN);
+        } while (ctx.eatIfMatches(SymbolToken.COMMA));
+
+        return tuplesList;
     }
 
     /// Parses a list of expressions and evaluates them to constants.

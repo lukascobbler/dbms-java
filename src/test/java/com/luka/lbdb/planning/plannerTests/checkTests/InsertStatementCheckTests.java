@@ -135,6 +135,52 @@ public class InsertStatementCheckTests {
     }
 
     @Test
+    public void testMultipleTuplesSuccess() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String tuple = "(1, 2, NULL, 3, 'test1', 'test2', NULL, 'test3', true, TRUE, NULL, False)";
+
+        String query = "INSERT INTO table1 VALUES " + tuple + ", " + tuple + ", " + tuple + ";";
+
+        assertDoesNotThrow(
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testMultipleTuplesOneWrongType() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String correctTuple = "(1, 2, NULL, 3, 'test1', 'test2', NULL, 'test3', true, TRUE, NULL, False)";
+        String incorrectTuple = "(1, 2, 'a', 3, 'test1', 'test2', 123, 'test3', true, TRUE, NULL, False)";
+
+        String query = "INSERT INTO table1 VALUES " + correctTuple + ", " + incorrectTuple + ", " + correctTuple + ";";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
+    public void testMultipleTuplesExplicitFieldNamesCorrect() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String fieldNames = "(" +
+                "t1_intfield1, t1_intfield2, t1_intfield3, " +
+                "t1_stringField1, t1_stringField2, t1_stringField3, " +
+                "t1_boolField1, t1_boolField2, t1_boolField3, " +
+                "sameint, samestring, samebool" +
+            ")";
+        String correctTuple = "(1, 2, NULL, 'test1', 'test2', NULL, true, TRUE, NULL, 3, 'test3', False)";
+
+        String query = "INSERT INTO table1 " + fieldNames + " VALUES " + correctTuple + ", " + correctTuple + ", " + correctTuple + ";";
+
+        assertDoesNotThrow(
+                () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeInsertValidated"));
+    }
+
+    @Test
     public void testFailIncorrectNumberOfFieldsTooFew() throws Exception {
         Path tmpDir = TestUtils.setUpTempDirectory();
         var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);

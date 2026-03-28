@@ -3,7 +3,7 @@ package com.luka.lbdb.planning.planner.plannerDefinitions;
 import com.luka.lbdb.metadataManagement.MetadataManager;
 import com.luka.lbdb.metadataManagement.exceptions.*;
 import com.luka.lbdb.parsing.statement.*;
-import com.luka.lbdb.parsing.statement.insert.NewFieldValueInfo;
+import com.luka.lbdb.parsing.statement.insert.AllTuplesValueInfo;
 import com.luka.lbdb.parsing.statement.update.NewFieldExpressionAssignment;
 import com.luka.lbdb.planning.exceptions.PlanValidationException;
 import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
@@ -102,7 +102,7 @@ public abstract class UpdatePlanner {
     }
 
     /// Validates every aspect of an insert statement and folds constant expressions.
-    /// Checks for:
+    /// Checks for (for all tuples):
     /// - tables and fields existing
     /// - correct number of fields existing
     /// - nullability of fields
@@ -112,58 +112,59 @@ public abstract class UpdatePlanner {
     /// @throws PlanValidationException on various failed checks.
     public int executeInsertValidated(InsertStatement insertStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(insertStatement.tableName(), transaction);
+        Schema tableSchema = tableLayout.getSchema();
 
-        List<NewFieldValueInfo> filledValueInfos;
+        List<String> fields;
+        if (insertStatement.allTuplesValueInfo().implicitFieldNames()) fields = tableSchema.getFields();
+        else fields = insertStatement.allTuplesValueInfo().fieldNames();
 
-        if (insertStatement.implicitFieldNames()) {
-            filledValueInfos = new ArrayList<>();
-            Schema tableSchema = tableLayout.getSchema();
-
-            if (tableSchema.getFields().size() != insertStatement.newFieldValues().size()) {
-                throw new PlanValidationException("Incorrect number of fields in statement");
-            }
-
-            for (int i = 0; i < tableSchema.getFields().size(); i++) {
-                String fieldName = tableSchema.getFields().get(i);
-                Constant newValue = insertStatement.newFieldValues().get(i).newValue();
-
-                filledValueInfos.add(new NewFieldValueInfo(fieldName, newValue));
-            }
-        } else {
-            filledValueInfos = insertStatement.newFieldValues();
+        Set<String> fieldSet = new HashSet<>(fields);
+        if (fieldSet.size() != fields.size()) {
+            throw new PlanValidationException("Duplicate fields in insert statement");
         }
 
-        InsertStatement filledInsertStatement = new InsertStatement(
-            insertStatement.tableName(), filledValueInfos, false
+        Set<String> schemaFields = new HashSet<>(tableSchema.getFields());
+        if (!fieldSet.equals(schemaFields)) {
+            throw new PlanValidationException("Every table field must be present");
+        }
+
+        for (String field : fields) {
+            if (!tableLayout.getSchema().hasField(field)) {
+                throw new PlanValidationException(
+                        String.format("Field '%s' doesn't exist in the table", field)
+                );
+            }
+        }
+
+        List<List<Constant>> newTuples = insertStatement.allTuplesValueInfo().newTuples();
+
+        for (List<Constant> tuple : newTuples) {
+            if (fields.size() != tuple.size()) {
+                throw new PlanValidationException("Incorrect number of values in a tuple");
+            }
+
+            for (int i = 0; i < fields.size(); i++) {
+                if (!tableSchema.isNullable(fields.get(i)) && tuple.get(i).type() == DatabaseType.NULL) {
+                    throw new PlanValidationException(
+                            String.format("Field '%s' isn't nullable", fields.get(i))
+                    );
+                }
+
+                if (tableSchema.type(fields.get(i)) != tuple.get(i).type() && tuple.get(i).type() != DatabaseType.NULL) {
+                    throw new PlanValidationException(
+                            String.format("Field '%s' has the wrong type", fields.get(i))
+                    );
+                }
+            }
+        }
+
+        return executeInsert(
+                new InsertStatement(
+                        insertStatement.tableName(),
+                        new AllTuplesValueInfo(fields, newTuples, false)
+                ),
+                transaction
         );
-
-        if (filledInsertStatement.newFieldValues().size() != tableLayout.getSchema().getFields().size()) {
-            throw new PlanValidationException("Incorrect number of fields in statement");
-        }
-
-        for (NewFieldValueInfo newFieldValue : filledInsertStatement.newFieldValues()) {
-            if (!tableLayout.getSchema().hasField(newFieldValue.fieldName())) {
-                throw new PlanValidationException(
-                        String.format("Field '%s' doesn't exist in the table", newFieldValue.fieldName())
-                );
-            }
-
-            if (!tableLayout.getSchema().isNullable(newFieldValue.fieldName())
-                    && newFieldValue.newValue().type() == DatabaseType.NULL) {
-                throw new PlanValidationException(
-                        String.format("Field '%s' isn't nullable", newFieldValue.fieldName())
-                );
-            }
-
-            if (tableLayout.getSchema().type(newFieldValue.fieldName()) != newFieldValue.newValue().type()
-                    && newFieldValue.newValue().type() != DatabaseType.NULL) {
-                throw new PlanValidationException(
-                        String.format("Field '%s' has the wrong type", newFieldValue.fieldName())
-                );
-            }
-        }
-
-        return executeInsert(filledInsertStatement, transaction);
     }
 
     /// Validates every aspect of a delete statement and folds constant expressions.

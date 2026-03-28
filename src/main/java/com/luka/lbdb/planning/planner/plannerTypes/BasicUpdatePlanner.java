@@ -2,7 +2,6 @@ package com.luka.lbdb.planning.planner.plannerTypes;
 
 import com.luka.lbdb.metadataManagement.MetadataManager;
 import com.luka.lbdb.parsing.statement.*;
-import com.luka.lbdb.parsing.statement.insert.NewFieldValueInfo;
 import com.luka.lbdb.parsing.statement.update.NewFieldExpressionAssignment;
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.plan.planTypes.update.SelectPlan;
@@ -13,6 +12,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.records.RecordId;
 import com.luka.lbdb.transactionManagement.Transaction;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,26 +35,29 @@ public class BasicUpdatePlanner extends UpdatePlanner {
     /// This insertion strategy allows faster insertion performance, but wastes
     /// space of earlier deleted records until the server restarts.
     ///
-    /// @return 1, because only one row can be inserted at a time.
+    /// @return The number of inserted rows.
     @Override
     protected int executeInsert(InsertStatement insertStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, insertStatement.tableName(), metadataManager);
 
         Optional<RecordId> lastInsertionForTable = getLastInsertion(insertStatement.tableName());
+        List<String> fields = insertStatement.allTuplesValueInfo().fieldNames();
 
         try (UpdateScan insertScan = plan.open()) {
             lastInsertionForTable.ifPresent(insertScan::moveToRecordId);
 
-            insertScan.insert();
+            for (List<Constant> tuple : insertStatement.allTuplesValueInfo().newTuples()) {
+                insertScan.insert();
 
-            for (NewFieldValueInfo newFieldValueInfo : insertStatement.newFieldValues()) {
-                insertScan.setValue(newFieldValueInfo.fieldName(), newFieldValueInfo.newValue());
+                for (int i = 0; i < fields.size(); i++) {
+                    insertScan.setValue(fields.get(i), tuple.get(i));
+                }
             }
 
             setLastInsertion(insertStatement.tableName(), insertScan.getRecordId());
         }
 
-        return 1;
+        return insertStatement.allTuplesValueInfo().newTuples().size();
     }
 
     /// Updates all records that match a predicate. Only provided fields' will be changed.
