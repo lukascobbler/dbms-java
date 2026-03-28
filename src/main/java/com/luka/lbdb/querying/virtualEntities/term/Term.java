@@ -3,7 +3,6 @@ package com.luka.lbdb.querying.virtualEntities.term;
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
-import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
 import com.luka.lbdb.records.schema.Schema;
 
@@ -47,7 +46,11 @@ public class Term {
             return lhsValue.equals(rhsValue);
         }
 
-        if (lhsValue instanceof NullConstant || rhsValue instanceof NullConstant) {
+        if (termOperator == TermOperator.IS_NOT) {
+            return !lhsValue.equals(rhsValue);
+        }
+
+        if (lhsValue.isNull() || rhsValue.isNull()) {
             return false;
         }
 

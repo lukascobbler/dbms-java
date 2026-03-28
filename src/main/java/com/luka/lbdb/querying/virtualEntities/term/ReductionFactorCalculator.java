@@ -52,6 +52,10 @@ public class ReductionFactorCalculator {
                 // NULL IS NULL        -> all rows match
                 // NULL IS C           -> no rows match
                 return (isLeftNull == isRightNull) ? ALL_ROWS_MATCH : NO_ROWS_MATCH;
+            } else if (t.getTermOperator() == IS_NOT) {
+                // NULL IS NOT NULL    -> no rows match
+                // NULL IS NOT C       -> all rows match
+                return (isLeftNull != isRightNull) ? ALL_ROWS_MATCH : NO_ROWS_MATCH;
             } else {
                 // NULL = C            -> no rows match
                 if (isLeftNull || isRightNull) return NO_ROWS_MATCH;
@@ -76,6 +80,9 @@ public class ReductionFactorCalculator {
             if (t.getTermOperator() == IS && isNullConst) {
                 // F IS NULL            -> reduction factor based on number of null values
                 return safeCalculateReductionFactor(totalRowCount, nullRowCount);
+            } else if (t.getTermOperator() == IS_NOT && isNullConst) {
+                // F IS NOT NULL        -> reduction factor based on number of non-null values
+                return safeCalculateReductionFactor(totalRowCount, nonNullRowCount);
             }
 
             // F = NULL                 -> no rows match
@@ -91,9 +98,9 @@ public class ReductionFactorCalculator {
                     // F > C...     -> reduction factor based on number of non-null values
                     //                 and the System R inequality heuristic
                     safeCalculateReductionFactor(totalRowCount, nonNullRowCount / INEQUALITY_MATCH);
-                case NOT_EQUALS ->
-                    // F != C       -> reduction factor based on number of non-null values
-                    //                 and the System R complex expression heuristic
+                case NOT_EQUALS, IS_NOT ->
+                    // F IS NOT C   -> reduction factor based on number of non-null values
+                    // F != C          and the System R complex expression heuristic
                     safeCalculateReductionFactor(totalRowCount, nonNullRowCount / COMPLEX_EXPRESSION_MATCH);
             };
         }
@@ -125,7 +132,7 @@ public class ReductionFactorCalculator {
                     // F1 > F2 ...  -> reduction factor based on non-null values
                     //                 and the System R inequality heuristic
                     safeCalculateReductionFactor(totalRowCount, nonNullRowCount / INEQUALITY_MATCH);
-                case NOT_EQUALS ->
+                case NOT_EQUALS, IS_NOT ->
                     // F1 != F2     -> reduction factor based on number of non-null values
                     //                 and the System R complex expression heuristic
                     safeCalculateReductionFactor(totalRowCount, nonNullRowCount / COMPLEX_EXPRESSION_MATCH);
@@ -144,7 +151,7 @@ public class ReductionFactorCalculator {
                 // F1 = F2 + F3 -> reduction factor based on number of non-null values
                 //                 and the System R complex expression heuristic
                 safeCalculateReductionFactor(totalRowCount, nonNullRowCount / COMPLEX_EXPRESSION_MATCH);
-            case LESS_THAN, GREATER_THAN, LESS_OR_EQUAL, GREATER_OR_EQUAL, NOT_EQUALS ->
+            case LESS_THAN, GREATER_THAN, LESS_OR_EQUAL, GREATER_OR_EQUAL, NOT_EQUALS, IS_NOT ->
                 // F1 > F2 + F3 -> reduction factor based on non-null values
                 //                 and the System R inequality heuristic
                 safeCalculateReductionFactor(totalRowCount, nonNullRowCount / INEQUALITY_MATCH);

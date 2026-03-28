@@ -5,7 +5,7 @@ package com.luka.lbdb.parsing.tokenizer.token;
 public enum KeywordToken implements Token {
     SELECT, FROM, WHERE, AND, INSERT, INTO, VALUES,
     DELETE, UPDATE, SET, CREATE, TABLE, VARCHAR,
-    INT, VIEW, AS, INDEX, ON, NULL, TRUE, FALSE,
+    INT, AS, INDEX, ON, NULL, TRUE, FALSE,
     IS, NOT, BOOLEAN, JOIN, UNION, EXPLAIN, BTREE, HASH,
     TYPE, ALL, START, TRANSACTION, COMMIT, ROLLBACK
 }

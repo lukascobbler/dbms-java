@@ -66,7 +66,13 @@ public class ParsePredicate {
                 case LESS_THAN_OR_EQUAL -> TermOperator.LESS_OR_EQUAL;
                 default -> throw new ParsingException("Expected comparison operator, found: " + st);
             };
-            case KeywordToken.IS -> TermOperator.IS;
+            case KeywordToken.IS -> {
+                if (ctx.eatIfMatches(KeywordToken.NOT)) {
+                    yield TermOperator.IS_NOT;
+                }
+
+                yield TermOperator.IS;
+            }
             default -> throw new ParsingException("Expected comparison operator, found: " + ctx.current());
         };
     }
