@@ -83,6 +83,7 @@ public class Transaction {
 
     /// Pin a block id from this transaction.
     public void pin(BlockId blockId) {
+        concurrencyManager.lockShared(blockId);
         myBuffers.pin(blockId);
     }
 
@@ -98,7 +99,6 @@ public class Transaction {
     /// @return An integer from a given block id at a given offset from a buffer
     /// managed by this transaction.
     public int getInt(BlockId blockId, int offset) {
-        concurrencyManager.lockShared(blockId);
         Buffer buffer = myBuffers.getBuffer(blockId);
         return buffer.getContents().getInt(offset);
     }
@@ -110,7 +110,6 @@ public class Transaction {
     /// @return A string from a given block id at a given offset from a buffer
     /// managed by this transaction.
     public String getString(BlockId blockId, int offset) {
-        concurrencyManager.lockShared(blockId);
         Buffer buffer = myBuffers.getBuffer(blockId);
         return buffer.getContents().getString(offset);
     }
@@ -122,7 +121,6 @@ public class Transaction {
     /// @return A boolean from a given block id at a given offset from a buffer
     /// managed by this transaction.
     public boolean getBoolean(BlockId blockId, int offset) {
-        concurrencyManager.lockShared(blockId);
         Buffer buffer = myBuffers.getBuffer(blockId);
         return buffer.getContents().getBoolean(offset);
     }
