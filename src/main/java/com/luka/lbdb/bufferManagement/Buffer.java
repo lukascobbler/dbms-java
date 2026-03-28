@@ -73,7 +73,7 @@ public class Buffer {
     }
 
     /// Reads the specified block into a buffer.
-    void assignToBlock(BlockId blockId) {
+    public void assignToBlock(BlockId blockId) {
         flush();
         this.blockId = blockId;
         fileManager.read(blockId, contents);
@@ -83,7 +83,7 @@ public class Buffer {
     /// Writes out the modifications to a block to the disk but only if the contents
     /// were modified. Creates a log of the modifications, and sets the state of the
     /// buffer to unmodified (the modifying transaction number becomes -1).
-    void flush() {
+    public void flush() {
         if (transactionNumber >= 0) {
             logManager.flush(lsn);
             if (blockId.blockNum() < fileManager.lengthInBlocks(blockId.filename())) {
@@ -103,7 +103,7 @@ public class Buffer {
     ///
     /// @throws BufferPinException if the buffer is not assigned
     /// to any block id.
-    void pin() {
+    public void pin() {
         if (blockId == null) {
             throw new BufferPinException();
         }
@@ -114,7 +114,7 @@ public class Buffer {
     ///
     /// @throws BufferPinException if the buffer is not assigned
     /// to any block id.
-    void unpin() {
+    public void unpin() {
         if (blockId == null) {
             throw new BufferPinException();
         }

@@ -18,7 +18,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class TestUtils {
     private static final Map<String, AtomicInteger> testIterationCounters = new ConcurrentHashMap<>();
     private static final AtomicLong counter = new AtomicLong(0);
-    private static final FileSystem memoryFileSystem = Jimfs.newFileSystem(Configuration.unix()); // todo make this system agnostic
+
+    static Configuration jimfsTestConfig = System.getProperty("os.name").toLowerCase().contains("win")
+            ? Configuration.windows()
+            : Configuration.unix();
+    private static final FileSystem memoryFileSystem = Jimfs.newFileSystem(jimfsTestConfig);
 
     public enum TmpDirType {
         IN_MEMORY,
