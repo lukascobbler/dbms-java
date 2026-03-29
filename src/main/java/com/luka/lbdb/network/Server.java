@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /// The main entry point for receiving packets from a client.
 /// Handles each client in a separate thread. Threads are managed
@@ -27,6 +28,7 @@ public class Server {
     private final LBDB db;
     private volatile boolean isShutdown = false;
     private volatile boolean isDraining = false;
+    private final ReentrantLock checkpointLock = new ReentrantLock();
     private final int port;
     private ServerSocket serverSocket;
 
@@ -50,8 +52,8 @@ public class Server {
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 
-        checkpointScheduler.scheduleAtFixedRate(
-                () -> db.getTransactionManager().writeCheckpoint(),
+        checkpointScheduler.scheduleWithFixedDelay(
+                this::checkpoint,
                 10, 10, TimeUnit.MINUTES
         );
 
@@ -72,39 +74,54 @@ public class Server {
         }
     }
 
+    /// Atomically write a checkpoint. Will not start writing a new
+    /// checkpoint if one is already in the process of being written.
+    public void checkpoint() {
+        if (!checkpointLock.tryLock()) {
+            return;
+        }
+
+        try {
+            db.getTransactionManager().writeCheckpoint(false);
+        } finally {
+            checkpointLock.unlock();
+        }
+    }
+
     /// Shuts down the server by allowing unfinished transactions to commit or
     /// rollback. Disallows new clients to connect to the database. Writes a
     /// checkpoint.
     public void shutdown() {
         if (isDraining || isShutdown) return;
-        System.out.println("\nEntering drain mode... stopping new queries but allowing COMMIT/ROLLBACK.");
+
+        System.out.println("Entering drain mode... stopping new queries but allowing COMMIT/ROLLBACK.");
         isDraining = true;
 
-        db.getTransactionManager().prepareForShutdown();
-
         try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
+            if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+        } catch (IOException ignored) { }
+
+        checkpointScheduler.shutdown();
+
+        if (!checkpointLock.tryLock()) {
+            // if a checkpoint is being written at the time
+            // of shut down simply wait for it to finish
+            checkpointLock.lock();
+            checkpointLock.unlock();
+        } else {
+            // if a checkpoint isn't being written at the time
+            // of shut down, simply write it
+            try {
+                db.getTransactionManager().writeCheckpoint(true);
+            } finally {
+                checkpointLock.unlock();
             }
-        } catch (IOException ignored) {}
-
-        checkpointScheduler.shutdownNow();
-
-        System.out.println("Waiting for existing transactions to be explicitly closed by clients...");
-        db.getTransactionManager().writeCheckpoint();
+        }
 
         System.out.println("All transactions cleared. Shutting down.");
-        isShutdown = true;
 
-        threadPool.shutdown();
-        try {
-            if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
-                threadPool.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            threadPool.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+        isShutdown = true;
+        threadPool.shutdownNow();
 
         System.out.println("Server stopped safely.");
     }

@@ -87,15 +87,10 @@ public class TransactionManager {
         manualTransactions.remove(sessionId);
     }
 
-    /// Prepares the system for shutdown, allowing only commits and
-    /// rollbacks.
-    public void prepareForShutdown() {
-        acceptingNewTransactions = false;
-    }
-
     /// Waits for all transactions to finish and writes a checkpoint.
-    public synchronized void writeCheckpoint() {
-        System.out.println("Starting system checkpoint...");
+    public synchronized void writeCheckpoint(boolean terminal) {
+        acceptingNewTransactions = false;
+        System.out.println("Starting system checkpoint, waiting for all transactions to finish...");
         waitForAllTransactionsToFinish();
         try {
             int lastTxNum = nextTransactionNum.get();
@@ -104,7 +99,8 @@ public class TransactionManager {
 
             System.out.println("Checkpoint written.");
         } finally {
-            acceptingNewTransactions = true;
+            acceptingNewTransactions = !terminal;
+            systemLock.writeLock().unlock();
         }
     }
 
