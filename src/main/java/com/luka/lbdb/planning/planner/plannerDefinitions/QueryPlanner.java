@@ -22,6 +22,7 @@ import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.transactionManagement.Transaction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /// Abstraction over all implementations of query planners which performs
 /// all semantic checks and prepares the planner for query execution. Any
@@ -103,11 +104,19 @@ public abstract class QueryPlanner {
             List<ProjectionFieldInfo> expandedProjectionFields = expandProjections(singleSelection, ctx);
             Predicate qualifiedPredicate = validateAndQualifyPredicate(singleSelection.predicate(), ctx);
 
+            Set<String> uniqueProjectionNames = expandedProjectionFields.stream().map(ProjectionFieldInfo::name).collect(Collectors.toSet());
+            if (uniqueProjectionNames.size() != expandedProjectionFields.size() &&
+                    selectStatement.unionizedSelections().size() > 1) {
+                // to allow this, a whole rework of schemas must be done, where they need to
+                // remember their field position
+                throw new PlanValidationException("Same named fields mustn't exist when using unions.");
+            }
+
             List<DatabaseType> currentTypes = getProjectionTypes(expandedProjectionFields, ctx.unifiedSchema);
             if (firstTableFieldTypes == null) {
                 firstTableFieldTypes = currentTypes;
-            } else if (!firstTableFieldTypes.equals(currentTypes)) {
-                throw new PlanValidationException("UNION columns do not match.");
+            } else {
+                if (!firstTableFieldTypes.equals(currentTypes)) throw new PlanValidationException("UNION columns do not match.");
             }
 
             if (singleSelection.tables().isEmpty()) {
