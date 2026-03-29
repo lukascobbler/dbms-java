@@ -166,6 +166,23 @@ public class BetterQueryPlanner extends QueryPlanner {
     /// At the bottom are table plans and interfaces to them, after
     /// that are all products that involve two or more tables.
     ///
+    /// After creating the source of data, selection is performed to filter out all
+    /// rows that don't match the query predicate (optional, selection doesn't
+    /// need to exist if there is no predicate), and finally, projection is
+    /// done. Projection removes any rows that weren't mentioned and adds all
+    /// new virtual rows.
+    ///
+    /// @return A partial plan of the query that doesn't involve unions.
+    private Plan<Scan> createSingleSelectionPlan(SingleSelection singleSelection, Transaction transaction) {
+        Plan<Scan> plan = getDataSourcePlan(singleSelection, transaction);
+
+        if (!singleSelection.predicate().getTerms().isEmpty()) {
+            plan = new SelectReadOnlyPlan(plan, singleSelection.predicate());
+        }
+
+        return new ExtendProjectPlan(plan, singleSelection.projectionFields());
+    }
+
     /// Products that involve two tables look like this:
     /// ```
     ///        ┌──────────┐
@@ -201,14 +218,21 @@ public class BetterQueryPlanner extends QueryPlanner {
     /// alone can't create optimal plans, but is slightly better than blindly joining
     /// two tables.
     ///
-    /// After all products are done, selection is performed to filter out all
-    /// rows that don't match the query predicate (optional, selection doesn't
-    /// need to exist if there is no predicate), and finally, projection is
-    /// done. Projection removes any rows that weren't mentioned and adds all
-    /// new virtual rows.
+    /// If there are no tables mentioned, the query is called a constant query and the
+    /// underlying scan will contain only one row consisting only of constant values.
+    /// The data source query tree will look like this:
+    /// ```
+    /// ┌───────────┐
+    /// │ DummyScan │
+    /// └───────────┘
+    /// ```
     ///
-    /// @return A partial plan of the query that doesn't involve unions.
-    private Plan<Scan> createSingleSelectionPlan(SingleSelection singleSelection, Transaction transaction) {
+    /// @return The data source plan.
+    private Plan<Scan> getDataSourcePlan(SingleSelection singleSelection, Transaction transaction) {
+        if (singleSelection.tables().isEmpty()) {
+            return new DummyTablePlan(singleSelection.projectionFields());
+        }
+
         List<Plan<Scan>> differentTablePlans = new ArrayList<>();
 
         for (TableInfo tableInfo : singleSelection.tables()) {
@@ -224,11 +248,7 @@ public class BetterQueryPlanner extends QueryPlanner {
             plan = p1.blocksAccessed() < p2.blocksAccessed() ? p1 : p2;
         }
 
-        if (!singleSelection.predicate().getTerms().isEmpty()) {
-            plan = new SelectReadOnlyPlan(plan, singleSelection.predicate());
-        }
-
-        return new ExtendProjectPlan(plan, singleSelection.projectionFields());
+        return plan;
     }
 
     /// Creates an interface to a table by fully qualifying all the table's fields.

@@ -23,11 +23,13 @@ public record SingleSelection(List<ProjectionFieldInfo> projectionFields, List<T
 
         result = new StringBuilder(result.substring(0, result.length() - 2));
 
-        result.append(" FROM ");
-        for (TableInfo tableInfo : tables)
-            result.append(tableInfo.toString()).append(", ");
+        if (!tables.isEmpty()) {
+            result.append(" FROM ");
+            for (TableInfo tableInfo : tables)
+                result.append(tableInfo.toString()).append(", ");
 
-        result = new StringBuilder(result.substring(0, result.length() - 2));
+            result = new StringBuilder(result.substring(0, result.length() - 2));
+        }
 
         String predicateString = predicate.toString();
         if (!predicateString.isEmpty())

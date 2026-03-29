@@ -110,6 +110,16 @@ public abstract class QueryPlanner {
                 throw new PlanValidationException("UNION columns do not match.");
             }
 
+            if (singleSelection.tables().isEmpty()) {
+                if (expandedProjectionFields.stream().anyMatch(i -> !i.expression().isConstant())) {
+                    throw new PlanValidationException("Constant selects' fields must all be constant");
+                }
+
+                if (qualifiedPredicate.getTerms().stream().anyMatch(t -> !t.getLhs().isConstant() || !t.getRhs().isConstant())) {
+                    throw new PlanValidationException("Constant selects' predicate must not contain non-constant values");
+                }
+            }
+
             expandedSingleSelections.add(new SingleSelection(
                     List.copyOf(expandedProjectionFields),
                     singleSelection.tables(),

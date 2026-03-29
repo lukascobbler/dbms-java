@@ -151,8 +151,10 @@ public class ParseSelectTests {
     }
 
     @Test
-    public void parseFailMissingFromKeyword() {
-        assertThrows(ParsingException.class, () -> parse("SELECT a, b c, d"));
+    public void parseSuccessConstantSelect() {
+        String query = "SELECT 1, 2, 3, 4";
+        String expected = "SELECT 1, 2, 3, 4;";
+        assertEquals(expected, parse(query).toString());
     }
 
     @Test

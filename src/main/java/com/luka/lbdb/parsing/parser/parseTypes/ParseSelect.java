@@ -21,7 +21,7 @@ import java.util.*;
 /// <Field>                     := IdentificationToken
 /// <TableName>                 := IdentificationToken[.IdentificationToken]
 /// <ParseSelect>               := <ParseSingleSelection> [UNION ALL <ParseSingleSelection>]
-/// <ParseSingleSelection>      := SELECT <ProjectedFields> FROM <JoinSpecs> [WHERE<ParsePredicate>]
+/// <ParseSingleSelection>      := SELECT <ProjectedFields> [FROM <JoinSpecs>] [WHERE <ParsePredicate>]
 /// <ProjectedFields>           := <ParseExpression> [AS <Field>] [, <ProjectedFields>]
 /// <JoinSpecs>                 := <TableName> [<JoinSpec>] [, <JoinSpecs>]
 /// <JoinSpec>                  := JOIN <TableName> ON <ParsePredicate>
@@ -47,8 +47,10 @@ public class ParseSelect {
             ctx.eat(KeywordToken.SELECT);
             List<ProjectionFieldInfo> fields = projectedFields();
 
-            ctx.eat(KeywordToken.FROM);
-            List<JoinSpec> joinSpecs = joinSpecs();
+            List<JoinSpec> joinSpecs = new ArrayList<>();
+            if (ctx.eatIfMatches(KeywordToken.FROM)) {
+                joinSpecs = joinSpecs();
+            }
 
             Predicate predicate = new Predicate();
             if (ctx.eatIfMatches(KeywordToken.WHERE)) {

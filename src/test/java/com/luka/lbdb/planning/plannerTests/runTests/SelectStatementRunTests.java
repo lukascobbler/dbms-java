@@ -3,8 +3,7 @@ package com.luka.lbdb.planning.plannerTests.runTests;
 import com.luka.lbdb.planning.PlanTestUtils;
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
-import com.luka.lbdb.querying.virtualEntities.constant.Constant;
-import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
+import com.luka.lbdb.querying.virtualEntities.constant.*;
 import com.luka.lbdb.db.settings.QueryPlannerType;
 import com.luka.lbdb.db.settings.LBDBSettings;
 import com.luka.lbdb.testUtils.TestUtils;
@@ -584,5 +583,79 @@ public class SelectStatementRunTests {
         }
 
         assertEquals(37450, totalCount);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("settingsProvider")
+    public void testConstantExpressionsUnionRegularExpressions1(LBDBSettings settings) throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeFullTables(tmpDir, settings);
+
+        String query =
+                "SELECT t1_intfield1, t1_stringfield1, t1_boolfield1 FROM table1 " +
+                        "UNION ALL " +
+                        "SELECT 1000, 'a', false;";
+
+        Plan<Scan> queryPlan = PlanTestUtils.createQueryPlan(testData, query);
+
+        int totalCount = 0;
+        try (Scan s = queryPlan.open()) {
+            s.beforeFirst();
+            while (s.next()) {
+                Constant v1 = s.getValue("t1_intfield1");
+                Constant v2 = s.getValue("t1_stringfield1");
+                Constant v3 = s.getValue("t1_boolfield1");
+
+                if (totalCount < 250){
+                    assertEquals(new IntConstant(totalCount), v1);
+                    assertEquals(new StringConstant("str" + totalCount), v2);
+                    assertEquals(new BooleanConstant(true), v3);
+                } else {
+                    assertEquals(new IntConstant(1000), v1);
+                    assertEquals(new StringConstant("a"), v2);
+                    assertEquals(new BooleanConstant(false), v3);
+                }
+                totalCount++;
+            }
+        }
+
+        assertEquals(251, totalCount);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("settingsProvider")
+    public void testConstantExpressionsUnionRegularExpressions2(LBDBSettings settings) throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeFullTables(tmpDir, settings);
+
+        String query =
+                "SELECT 1000, 'a', false " +
+                        "UNION ALL " +
+                        "SELECT t1_intfield1, t1_stringfield1, t1_boolfield1 FROM table1;";
+
+        Plan<Scan> queryPlan = PlanTestUtils.createQueryPlan(testData, query);
+
+        int totalCount = 0;
+        try (Scan s = queryPlan.open()) {
+            s.beforeFirst();
+            while (s.next()) {
+                Constant v1 = s.getValue("1000");
+                Constant v2 = s.getValue("'a'");
+                Constant v3 = s.getValue("FALSE");
+
+                if (totalCount == 0) {
+                    assertEquals(new IntConstant(1000), v1);
+                    assertEquals(new StringConstant("a"), v2);
+                    assertEquals(new BooleanConstant(false), v3);
+                } else {
+                    assertEquals(new IntConstant(totalCount - 1), v1);
+                    assertEquals(new StringConstant("str" + (totalCount - 1)), v2);
+                    assertEquals(new BooleanConstant(true), v3);
+                }
+                totalCount++;
+            }
+        }
+
+        assertEquals(251, totalCount);
     }
 }

@@ -18,6 +18,7 @@ import com.luka.lbdb.records.schema.Schema;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
@@ -102,12 +103,19 @@ public class SelectStatementCheckTests {
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
 
-        Function<Integer, String> getName = (Integer pos) -> selectStatement
-                .unionizedSelections().getFirst().projectionFields().get(pos).name();
+        Function<Integer, String> getName = (Integer pos) -> {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields().get(pos).name();
+        };
 
-        Function<Integer, String> getExpressionString = (Integer pos) -> selectStatement
-                .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+        Function<Integer, String> getExpressionString = (Integer pos) -> {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+        };
 
+        assertNotNull(selectStatement);
         assertEquals(12, selectStatement.unionizedSelections().getFirst().projectionFields().size());
         assertEquals("t1_intfield1", getName.apply(0));
         assertEquals("table1.t1_intfield1", getExpressionString.apply(0));
@@ -145,14 +153,20 @@ public class SelectStatementCheckTests {
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
 
-        Function<Integer, String> getName = (Integer pos) -> selectStatement
-                .unionizedSelections().getFirst().projectionFields().get(pos).name();
+        Function<Integer, String> getName = (Integer pos) -> {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields().get(pos).name();
+        };
 
-        Function<Integer, String> getExpressionString = (Integer pos) -> selectStatement
-                .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+        Function<Integer, String> getExpressionString = (Integer pos) -> {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+        };
 
+        assertNotNull(selectStatement);
         assertEquals(12, selectStatement.unionizedSelections().getFirst().projectionFields().size());
-
         assertEquals("t1_intfield1", getName.apply(0));
         assertEquals("table1.t1_intfield1", getExpressionString.apply(0));
         assertEquals("t1_intfield2", getName.apply(1));
@@ -189,6 +203,7 @@ public class SelectStatementCheckTests {
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
 
+        assertNotNull(selectStatement);
         assertEquals(36, selectStatement.unionizedSelections().getFirst().projectionFields().size());
     }
 
@@ -375,10 +390,13 @@ public class SelectStatementCheckTests {
         );
 
         Function<Integer, DatabaseType> typeOf = (Integer fieldNum) ->
-                selectStatement
-                        .unionizedSelections().getFirst().projectionFields()
-                        .get(fieldNum)
-                        .expression().type(unifiedQualifiedSchema);
+        {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields()
+                    .get(fieldNum)
+                    .expression().type(unifiedQualifiedSchema);
+        };
 
         assertEquals(DatabaseType.INT, typeOf.apply(0));
     }
@@ -404,10 +422,13 @@ public class SelectStatementCheckTests {
         );
 
         Function<Integer, DatabaseType> typeOf = (Integer fieldNum) ->
-                selectStatement
-                        .unionizedSelections().getFirst().projectionFields()
-                        .get(fieldNum)
-                        .expression().type(unifiedQualifiedSchema);
+        {
+            assertNotNull(selectStatement);
+            return selectStatement
+                    .unionizedSelections().getFirst().projectionFields()
+                    .get(fieldNum)
+                    .expression().type(unifiedQualifiedSchema);
+        };
 
         assertEquals(DatabaseType.INT, typeOf.apply(0));
         assertEquals(DatabaseType.VARCHAR, typeOf.apply(1));
@@ -489,6 +510,7 @@ public class SelectStatementCheckTests {
 
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+        assertNotNull(selectStatement);
         assertEquals(
                 new Predicate(
                         new Term(
@@ -548,6 +570,7 @@ public class SelectStatementCheckTests {
 
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+        assertNotNull(selectStatement);
         assertEquals(
                 new Predicate(
                         new Term(
@@ -603,6 +626,7 @@ public class SelectStatementCheckTests {
 
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+        assertNotNull(selectStatement);
         assertEquals(2, selectStatement.unionizedSelections().size());
         assertTrue(selectStatement.unionizedSelections().get(0).tables().contains(new TableInfo("table1")));
         assertTrue(selectStatement.unionizedSelections().get(1).tables().contains(new TableInfo("table2")));
@@ -619,6 +643,7 @@ public class SelectStatementCheckTests {
 
         SelectStatement selectStatement = assertDoesNotThrow(
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+        assertNotNull(selectStatement);
         assertEquals(3, selectStatement.unionizedSelections().size());
         assertTrue(selectStatement.unionizedSelections().get(0).tables().contains(new TableInfo("table1")));
         assertTrue(selectStatement.unionizedSelections().get(1).tables().contains(new TableInfo("table2")));
@@ -652,4 +677,91 @@ public class SelectStatementCheckTests {
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
         assertEquals("UNION columns do not match.", ex.getMessage());
     }
+
+    @Test
+    public void testConstantExpressionsSuccess() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, NULL;";
+
+        assertDoesNotThrow(() -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsPredicateSuccess() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, NULL WHERE NULL IS NULL AND 1 = 1;";
+
+        assertDoesNotThrow(() -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsUnionsSuccess() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, NULL UNION ALL SELECT 2, '3', false, NULL;";
+
+        assertDoesNotThrow(() -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsUnionsDifferentTypes() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', 1, NULL UNION ALL SELECT 2, '3', false, NULL;";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsUnionsDifferentLength() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', 1, NULL UNION ALL SELECT 1, '3', false;";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsUnionsWithNonConstant() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, 'a' " +
+                "UNION ALL SELECT t1_intfield1, t2_stringfield1, t1_boolfield1, t1_stringfield3 FROM table1, table2;";
+
+        assertDoesNotThrow(() -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsFieldNameFail() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, NULL, a;";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+    @Test
+    public void testConstantExpressionsFieldNameFailInPredicate() throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
+
+        String query = "SELECT 1, '2', true, NULL WHERE a = 1;";
+
+        assertThrowsExactly(PlanValidationException.class,
+                () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+    }
+
+
 }
