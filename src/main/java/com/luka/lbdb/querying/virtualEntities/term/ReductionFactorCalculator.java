@@ -13,7 +13,8 @@ import static com.luka.lbdb.querying.virtualEntities.term.TermOperator.*;
 /// Encapsulates logic for calculating a reduction factor of a term.
 public class ReductionFactorCalculator {
     // Magic number constants that represent different selectivity values.
-    // todo cite System R inequalities, complex expressions magic number
+    // Taken from the "Access Path Selection in a Relational Database Management System"
+    // paper, describing how the System R optimizes query execution.
 
     private static final double NO_ROWS_MATCH = Double.MAX_VALUE;
     private static final double ALL_ROWS_MATCH = 1.0;
