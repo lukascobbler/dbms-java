@@ -1,7 +1,8 @@
 package com.luka.lbdb.querying.vritualEntitiesTests;
 
+import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.QueryTestUtils;
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanTypes.update.TableScan;
 import com.luka.lbdb.querying.virtualEntities.constant.*;
@@ -376,7 +377,7 @@ public class ExpressionTests {
 
         Expression xPlusY = new BinaryArithmeticExpression(left, ArithmeticOperator.ADD, right);
 
-        assertThrowsExactly(IncompatibleConstantTypeException.class, () -> PartialEvaluator.evaluate(xPlusY));
+        assertThrowsExactly(RuntimeExecutionException.class, () -> PartialEvaluator.evaluate(xPlusY));
     }
 
     @Test
@@ -389,7 +390,7 @@ public class ExpressionTests {
                 x
         );
 
-        assertThrowsExactly(IncompatibleConstantTypeException.class, () -> PartialEvaluator.evaluate(negX));
+        assertThrowsExactly(RuntimeExecutionException.class, () -> PartialEvaluator.evaluate(negX));
     }
 
     @Test

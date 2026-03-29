@@ -2,7 +2,7 @@ package com.luka.lbdb.planning.plannerTests.checkTests;
 
 import com.luka.lbdb.planning.PlanTestUtils;
 import com.luka.lbdb.planning.exceptions.PlanValidationException;
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.testUtils.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +65,7 @@ public class UpdateStatementCheckTests {
 
         String query = "UPDATE table1 SET t1_intfield3 = NULL + 2;";
 
-        assertThrowsExactly(IncompatibleConstantTypeException.class, 
+        assertThrowsExactly(RuntimeExecutionException.class,
                 () -> PlanTestUtils.checkUpdateStatement(testData, query, "executeUpdateValidated"));
     }
 

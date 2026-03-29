@@ -53,7 +53,7 @@ public class ParserContext {
             advance();
             return name;
         }
-        throw new ParsingException("Syntax Error: Expected identifier but found '" + currentToken + "'");
+        throw new ParsingException("Expected identifier but found '" + currentToken + "'");
     }
 
     /// Checks if the current token is an identifier, and if it is,
@@ -86,7 +86,7 @@ public class ParserContext {
     /// current token.
     public void eat(Token expected) {
         if (!eatIfMatches(expected)) {
-            throw new ParsingException("Syntax Error: Expected '" + expected + "' but found '" + currentToken + "'");
+            throw new ParsingException("Expected '" + expected + "' but found '" + currentToken + "'");
         }
     }
 }

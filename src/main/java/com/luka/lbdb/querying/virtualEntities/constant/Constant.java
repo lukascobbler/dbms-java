@@ -1,7 +1,6 @@
 package com.luka.lbdb.querying.virtualEntities.constant;
 
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
-import com.luka.lbdb.querying.exceptions.NullComparisonException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.records.DatabaseType;
 
 /// A constant represents a generic value whose concrete type
@@ -15,46 +14,44 @@ public sealed interface Constant extends Comparable<Constant>
         permits IntConstant, StringConstant, BooleanConstant, NullConstant {
 
     /// @return A value that tells the caller how do two constants compare.
-    /// @throws IncompatibleConstantTypeException if two constants of different
+    /// @throws RuntimeExecutionException if two constants of different
     /// types are compared.
-    /// @throws NullComparisonException if a value is compared to null. Cases
-    /// like these should be handled elsewhere.
     @Override
     default int compareTo(Constant other) {
         if (this.getClass() != other.getClass()) {
-            throw new IncompatibleConstantTypeException();
+            throw new RuntimeExecutionException("Comparison of different types");
         }
 
         return switch (this) {
             case IntConstant i -> i.value().compareTo(((IntConstant) other).value());
             case StringConstant s -> s.value().compareTo(((StringConstant) other).value());
             case BooleanConstant b -> b.value().compareTo(((BooleanConstant) other).value());
-            case NullConstant n -> throw new NullComparisonException();
+            case NullConstant n -> throw new RuntimeExecutionException();
         };
     }
 
     /// @return The constant as a Java integer.
-    /// @throws IncompatibleConstantTypeException if the constant does not
+    /// @throws RuntimeExecutionException if the constant does not
     /// represent an integer value.
     default int asInt() {
         if (this instanceof IntConstant(Integer value)) return value;
-        throw new IncompatibleConstantTypeException();
+        throw new RuntimeExecutionException();
     }
 
     /// @return The constant as a Java string.
-    /// @throws IncompatibleConstantTypeException if the constant does not
+    /// @throws RuntimeExecutionException if the constant does not
     /// represent a string value.
     default String asString() {
         if (this instanceof StringConstant(String value)) return value;
-        throw new IncompatibleConstantTypeException();
+        throw new RuntimeExecutionException();
     }
 
     /// @return The constant as a Java boolean.
-    /// @throws IncompatibleConstantTypeException if the constant does not
+    /// @throws RuntimeExecutionException if the constant does not
     /// represent a boolean value.
     default boolean asBoolean() {
         if (this instanceof BooleanConstant(Boolean value)) return value;
-        throw new IncompatibleConstantTypeException();
+        throw new RuntimeExecutionException();
     }
 
     /// @return Whether this constant has the NULL value.

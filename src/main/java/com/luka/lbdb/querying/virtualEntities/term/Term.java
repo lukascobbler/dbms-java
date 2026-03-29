@@ -1,6 +1,7 @@
 package com.luka.lbdb.querying.virtualEntities.term;
 
 import com.luka.lbdb.planning.plan.Plan;
+import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
@@ -33,14 +34,8 @@ public class Term {
     /// @return Whether two expressions satisfy the operator defined between
     /// them for a given scan.
     public boolean isSatisfied(Scan scan) {
-        Constant rhsValue;
-        Constant lhsValue;
-        try {
-            rhsValue = rhs.evaluate(scan);
-            lhsValue = lhs.evaluate(scan);
-        } catch (Exception e) {
-            throw new RuntimeException(); // todo run exceptions like division by zero and overflows
-        }
+        Constant rhsValue = rhs.evaluate(scan);
+        Constant lhsValue = lhs.evaluate(scan);
 
         if (termOperator == TermOperator.IS) {
             return lhsValue.equals(rhsValue);

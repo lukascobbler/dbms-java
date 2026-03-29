@@ -1,9 +1,10 @@
-package com.luka.lbdb.querying.virtualEntities.expression;
+package com.luka.lbdb.planning.planner;
 
-import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
+import com.luka.lbdb.querying.virtualEntities.expression.*;
 
 /// A set of algorithms that performs obvious calculations on arithmetic
 /// expressions thus reducing the need for them to be calculated on the
@@ -17,7 +18,8 @@ public class PartialEvaluator {
     /// it stops the folding process.
     ///
     /// @return The evaluated arithmetic expression.
-    /// @throws ZeroDivisionException if division by zero is done.
+    /// @throws RuntimeExecutionException if division by zero is performed
+    /// or if overflowing occurs.
     public static Expression evaluate(Expression expr) {
         return switch (expr) {
             case BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
@@ -36,7 +38,8 @@ public class PartialEvaluator {
     /// isn't even done, the result is just returned.
     ///
     /// @return The folded binary arithmetic expression.
-    /// @throws ZeroDivisionException if division by zero is done.
+    /// @throws RuntimeExecutionException if division by zero is performed
+    /// or if overflowing occurs.
     private static Expression foldBinary(Expression left, ArithmeticOperator op, Expression right) {
         if (right instanceof ConstantExpression(Constant rVal) && rVal.isNull()) {
             return new ConstantExpression(NullConstant.INSTANCE);
@@ -49,20 +52,33 @@ public class PartialEvaluator {
         if (left instanceof ConstantExpression(Constant lVal) &&
                 right instanceof ConstantExpression(Constant rVal)) {
 
-            // todo overflow exceptions
-            int result = switch (op) {
-                case ADD -> lVal.asInt() + rVal.asInt();
-                case SUB -> lVal.asInt() - rVal.asInt();
-                case MUL -> lVal.asInt() * rVal.asInt();
-                case DIV -> {
-                    if (rVal.asInt() == 0) {
-                        throw new ZeroDivisionException();
+            try {
+                int l = lVal.asInt();
+                int r = rVal.asInt();
+
+                int result = switch (op) {
+                    case ADD -> Math.addExact(l, r);
+                    case SUB -> Math.subtractExact(l, r);
+                    case MUL -> Math.multiplyExact(l, r);
+                    case DIV -> {
+                        if (l == Integer.MIN_VALUE && r == -1) {
+                            throw new ArithmeticException("integer overflow");
+                        }
+                        yield l / r;
                     }
-                    yield lVal.asInt() / rVal.asInt();
-                }
-                case POWER -> (int) Math.pow(lVal.asInt(), rVal.asInt());
-            };
-            return new ConstantExpression(new IntConstant(result));
+                    case POWER -> {
+                        double p = Math.pow(l, r);
+                        if (p > Integer.MAX_VALUE || p < Integer.MIN_VALUE || Double.isInfinite(p)) {
+                            throw new ArithmeticException("integer overflow");
+                        }
+                        yield (int) p;
+                    }
+                };
+
+                return new ConstantExpression(new IntConstant(result));
+            } catch (ArithmeticException e) {
+                throw new RuntimeExecutionException(e.getMessage());
+            }
         }
 
         if (op == ArithmeticOperator.ADD && right instanceof

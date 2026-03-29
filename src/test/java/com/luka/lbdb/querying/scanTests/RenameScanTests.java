@@ -1,7 +1,7 @@
 package com.luka.lbdb.querying.scanTests;
 
 import com.luka.lbdb.querying.QueryTestUtils;
-import com.luka.lbdb.querying.exceptions.FieldNotFoundInScanException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.UpdateScan;
 import com.luka.lbdb.querying.scanTypes.readOnly.RenameScan;
 import com.luka.lbdb.querying.scanTypes.update.SelectScan;
@@ -55,7 +55,7 @@ public class RenameScanTests {
 
             assertFalse(scan.hasField("t1_stringField1"));
 
-            assertThrows(FieldNotFoundInScanException.class, () -> scan.getValue("t1_stringField1").asString());
+            assertThrows(RuntimeExecutionException.class, () -> scan.getValue("t1_stringField1").asString());
         }
     }
 

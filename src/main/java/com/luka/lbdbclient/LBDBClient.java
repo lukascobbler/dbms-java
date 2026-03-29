@@ -159,7 +159,7 @@ public class LBDBClient implements AutoCloseable {
         PrintWriter out = terminal.writer();
         switch (response) {
             case EmptySet emptySet -> out.println("Rows affected: " + emptySet.rowsAffected());
-            case ErrorResponse errorResponse -> out.println("Database error: " + errorResponse.error());
+            case ErrorResponse errorResponse -> out.println("Database error " + errorResponse.error());
             case QuerySet querySet -> {
                 out.print(TablePrinter.print(querySet.schema(), querySet.tuples()));
                 out.println(querySet.tuples().size() + " rows");

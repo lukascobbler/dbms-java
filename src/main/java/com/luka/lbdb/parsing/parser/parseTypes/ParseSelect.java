@@ -81,7 +81,6 @@ public class ParseSelect {
     private List<ProjectionFieldInfo> projectedFields() {
         List<ProjectionFieldInfo> projectList = new ArrayList<>();
 
-        // todo predicates instead of expressions here
         do {
             String newFieldName;
 

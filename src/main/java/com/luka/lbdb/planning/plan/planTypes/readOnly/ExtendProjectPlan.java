@@ -3,6 +3,7 @@ package com.luka.lbdb.planning.plan.planTypes.readOnly;
 import com.luka.lbdb.parsing.statement.select.ProjectionFieldInfo;
 import com.luka.lbdb.planning.plan.ExplainData;
 import com.luka.lbdb.planning.plan.Plan;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanTypes.readOnly.ExtendProjectScan;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
@@ -114,7 +115,11 @@ public class ExtendProjectPlan implements Plan<Scan> {
         Set<String> referencedFields = expr.getFields();
 
         if (referencedFields.isEmpty()) {
-            return (expr.evaluate(null).isNull()) ? childPlan.recordsOutput() : 0;
+            try {
+                return (expr.evaluate(null).isNull()) ? childPlan.recordsOutput() : 0;
+            } catch (RuntimeExecutionException e) {
+                return 0;
+            }
         }
 
         if (referencedFields.size() == 1) {

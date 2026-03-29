@@ -1,6 +1,6 @@
 package com.luka.lbdb.querying.scanTypes.readOnly;
 
-import com.luka.lbdb.querying.exceptions.FieldNotFoundInScanException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanDefinitions.UnaryScan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
@@ -56,12 +56,12 @@ public class RenameScan extends UnaryScan {
     /// Otherwise, it calls the passed function and returns its result.
     ///
     /// @return The result of the passed function.
-    /// @throws FieldNotFoundInScanException if the old field name is passed as
+    /// @throws RuntimeExecutionException if the old field name is passed as
     /// an argument.
     private <T> T wrapGetMapping(String fieldName, Function<String, T> sourceOperation) {
         String translated = map(fieldName);
         if (translated == null) {
-            throw new FieldNotFoundInScanException(fieldName);
+            throw new RuntimeExecutionException("Field '" + fieldName + "' not found in the runtime");
         }
         return sourceOperation.apply(translated);
     }

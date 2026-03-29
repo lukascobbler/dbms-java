@@ -75,7 +75,7 @@ public class ReductionFactorCalculator {
             double nonNullRowCount = Math.max(0, totalRowCount - nullRowCount);
             double distinctValues = Math.max(1, plan.distinctValues(field));
 
-            boolean isNullConst = constExpr.evaluate(null) instanceof NullConstant;
+            boolean isNullConst = constExpr.evaluate(null).isNull();
 
             if (t.getTermOperator() == IS && isNullConst) {
                 // F IS NULL            -> reduction factor based on number of null values

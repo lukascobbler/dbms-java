@@ -2,7 +2,7 @@ package com.luka.lbdb.parsing.parser.parseTypes;
 
 import com.luka.lbdb.parsing.exceptions.ParsingException;
 import com.luka.lbdb.parsing.parser.ParserContext;
-import com.luka.lbdb.querying.exceptions.WildcardExpressionEvaluationException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.constant.BooleanConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
@@ -342,7 +342,7 @@ public class ParseExpressionTests {
         Expression expr = parse("* + 5");
         BinaryArithmeticExpression bin = assertInstanceOf(BinaryArithmeticExpression.class, expr);
 
-        assertThrows(WildcardExpressionEvaluationException.class, () -> bin.evaluate(null));
+        assertThrows(RuntimeExecutionException.class, () -> bin.evaluate(null));
     }
 
     @Test
@@ -352,7 +352,7 @@ public class ParseExpressionTests {
         BinaryArithmeticExpression leftParen = assertInstanceOf(BinaryArithmeticExpression.class, root.left());
 
         assertInstanceOf(WildcardExpression.class, leftParen.right());
-        assertThrows(WildcardExpressionEvaluationException.class, () -> leftParen.evaluate(null));
+        assertThrows(RuntimeExecutionException.class, () -> leftParen.evaluate(null));
     }
 
     @Test

@@ -1,7 +1,7 @@
 package com.luka.lbdb.querying.scanTests;
 
 import com.luka.lbdb.querying.QueryTestUtils;
-import com.luka.lbdb.querying.exceptions.FieldNotFoundInScanException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanDefinitions.UpdateScan;
 import com.luka.lbdb.querying.scanTypes.readOnly.*;
@@ -293,8 +293,8 @@ public class CombiningScanTests {
 
             assertEquals(50, finalScan.getValue(topLevelName).asInt());
 
-            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getValue(penultimateName).asInt());
-            assertThrowsExactly(FieldNotFoundInScanException.class, () -> finalScan.getValue(baseFieldName).asInt());
+            assertThrowsExactly(RuntimeExecutionException.class, () -> finalScan.getValue(penultimateName).asInt());
+            assertThrowsExactly(RuntimeExecutionException.class, () -> finalScan.getValue(baseFieldName).asInt());
         }
     }
 }

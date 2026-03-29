@@ -8,14 +8,13 @@ import com.luka.lbdb.parsing.statement.select.SingleSelection;
 import com.luka.lbdb.parsing.statement.select.TableInfo;
 import com.luka.lbdb.planning.exceptions.*;
 import com.luka.lbdb.planning.plan.Plan;
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
-import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
+import com.luka.lbdb.planning.planner.PartialEvaluator;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.querying.virtualEntities.expression.FieldNameExpression;
-import com.luka.lbdb.querying.virtualEntities.expression.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.expression.WildcardExpression;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
 import com.luka.lbdb.records.DatabaseType;
@@ -250,7 +249,7 @@ public abstract class QueryPlanner {
             return projections.stream()
                     .map(p -> p.expression().type(unifiedSchema))
                     .toList();
-        } catch (IncompatibleConstantTypeException e) {
+        } catch (RuntimeExecutionException e) {
             throw new PlanValidationException(e.getMessage());
         }
     }
@@ -298,8 +297,8 @@ public abstract class QueryPlanner {
                 }
 
                 singleSelection.predicate().fold();
-            } catch (ZeroDivisionException e) {
-                throw new PlanValidationException("Constant zero division");
+            } catch (RuntimeExecutionException e) {
+                throw new PlanValidationException(e.getMessage());
             }
 
             expandedSingleSelections.add(new SingleSelection(

@@ -5,7 +5,7 @@ import com.luka.lbdb.parsing.statement.CreateTableStatement;
 import com.luka.lbdb.parsing.parser.ParserContext;
 import com.luka.lbdb.parsing.tokenizer.token.KeywordToken;
 import com.luka.lbdb.parsing.tokenizer.token.SymbolToken;
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.records.schema.PhysicalSchema;
 import com.luka.lbdb.records.schema.Schema;
@@ -103,8 +103,12 @@ public class ParseCreateTable {
             int stringLength;
             try {
                 stringLength = constantExpression.evaluate(null).asInt();
-            } catch (IncompatibleConstantTypeException e) {
-                throw new ParsingException("The varchar string runtimeLength must be an integer");
+            } catch (RuntimeExecutionException e) {
+                throw new ParsingException("The varchar string length must be a valid integer");
+            }
+
+            if (stringLength == 0) {
+                throw new ParsingException("The varchar string length can't be zero");
             }
 
             ctx.eat(SymbolToken.RIGHT_PAREN);

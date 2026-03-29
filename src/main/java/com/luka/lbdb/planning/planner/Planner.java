@@ -8,6 +8,7 @@ import com.luka.lbdb.parsing.exceptions.ParseException;
 import com.luka.lbdb.parsing.parser.Parser;
 import com.luka.lbdb.parsing.statement.*;
 import com.luka.lbdb.parsing.statement.transaction.TransactionAction;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.planning.exceptions.PlanValidationException;
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.planner.plannerDefinitions.QueryPlanner;
@@ -84,9 +85,17 @@ public class Planner {
 
             if (isAutoCommit) t.commit();
             return r;
-        } catch (ParseException | PlanValidationException e) {
+        } catch (Exception e) {
             if (isAutoCommit) t.rollback();
-            return new ErrorResponse(e.getMessage());
+
+            String errType = switch (e) {
+                case ParseException parse -> "(parse)";
+                case PlanValidationException plan -> "(plan)";
+                case RuntimeExecutionException runtime -> "(runtime)";
+                default -> "";
+            };
+
+            return new ErrorResponse(errType + ": " + e.getMessage());
         }
     }
 

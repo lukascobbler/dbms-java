@@ -1,6 +1,6 @@
 package com.luka.lbdb.querying.virtualEntities.expression;
 
-import com.luka.lbdb.querying.exceptions.IncompatibleConstantTypeException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.records.DatabaseType;
@@ -54,17 +54,17 @@ public sealed interface Expression permits
                 if (leftT == DatabaseType.INT && rightT == DatabaseType.INT) {
                     yield DatabaseType.INT;
                 }
-                throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
+                throw new RuntimeExecutionException("Arithmetic requires numeric types");
             }
             case UnaryArithmeticExpression u -> {
                 DatabaseType operandT = u.operand().type(schema);
                 if (operandT == DatabaseType.INT) {
                     yield DatabaseType.INT;
                 }
-                throw new IncompatibleConstantTypeException("Arithmetic requires numeric types");
+                throw new RuntimeExecutionException("Arithmetic requires numeric types");
             }
             case WildcardExpression w ->
-                    throw new IncompatibleConstantTypeException("Wildcard has no single type");
+                    throw new RuntimeExecutionException("Wildcard has no single type");
         };
     }
 
@@ -77,7 +77,7 @@ public sealed interface Expression permits
             case BinaryArithmeticExpression b -> Math.max(b.left().length(schema), b.right().length(schema));
             case UnaryArithmeticExpression u -> u.operand().length(schema);
             case WildcardExpression w ->
-                    throw new IncompatibleConstantTypeException("Wildcard has no runtimeLength");
+                    throw new RuntimeExecutionException("Wildcard has no runtimeLength");
         };
     }
 
@@ -89,7 +89,7 @@ public sealed interface Expression permits
             case BinaryArithmeticExpression b -> b.left().isNullable(schema) || b.right().isNullable(schema);
             case UnaryArithmeticExpression u -> u.operand().isNullable(schema);
             case WildcardExpression w ->
-                    throw new IncompatibleConstantTypeException("Wildcard isn't nullable");
+                    throw new RuntimeExecutionException("Wildcard isn't nullable");
         };
     }
 

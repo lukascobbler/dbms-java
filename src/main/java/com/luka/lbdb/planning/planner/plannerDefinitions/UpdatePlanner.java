@@ -6,11 +6,11 @@ import com.luka.lbdb.parsing.statement.*;
 import com.luka.lbdb.parsing.statement.insert.AllTuplesValueInfo;
 import com.luka.lbdb.parsing.statement.update.NewFieldExpressionAssignment;
 import com.luka.lbdb.planning.exceptions.PlanValidationException;
-import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
+import com.luka.lbdb.planning.planner.PartialEvaluator;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
-import com.luka.lbdb.querying.virtualEntities.expression.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.Layout;
@@ -60,8 +60,8 @@ public abstract class UpdatePlanner {
             Expression foldedExpr;
             try {
                 foldedExpr = PartialEvaluator.evaluate(newFieldValue.newValueExpression());
-            } catch (ZeroDivisionException e) {
-                throw new PlanValidationException("Constant zero division");
+            } catch (RuntimeExecutionException e) {
+                throw new PlanValidationException(e.getMessage());
             }
 
             Set<String> exprFields = new HashSet<>(foldedExpr.getFields());
@@ -291,8 +291,8 @@ public abstract class UpdatePlanner {
     private void validateAndFoldPredicate(Predicate predicate, Schema schema) {
         try {
             predicate.fold();
-        } catch (ZeroDivisionException e) {
-            throw new PlanValidationException("Constant zero division");
+        } catch (RuntimeExecutionException e) {
+            throw new PlanValidationException(e.getMessage());
         }
 
         for (Term term : predicate.getTerms()) {

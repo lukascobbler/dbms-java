@@ -1,6 +1,6 @@
 package com.luka.lbdb.querying.virtualEntities.expression;
 
-import com.luka.lbdb.querying.exceptions.NonNumericArithmeticCalculationException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
@@ -14,6 +14,9 @@ public record UnaryArithmeticExpression(ArithmeticOperator op, Expression operan
     /// Evaluates the sub-expression (can be recursive if it is also some sort of AST)
     /// and performs the arithmetic operation defined by the operator on the evaluated
     /// sub-expression. If the operand is NULL, returns NULL.
+    ///
+    /// @throws RuntimeExecutionException if unary arithmetic is performed on non-integer types.
+    /// @throws UnsupportedOperationException if the operator is not a supported unary operator.
     @Override
     public Constant evaluate(Scan scan) {
         Constant val = operand.evaluate(scan);
@@ -23,7 +26,7 @@ public record UnaryArithmeticExpression(ArithmeticOperator op, Expression operan
         }
 
         if (!(val instanceof IntConstant intVal)) {
-            throw new NonNumericArithmeticCalculationException();
+            throw new RuntimeExecutionException("Unary arithmetic performed on non-integer types");
         }
 
         return switch (op) {

@@ -1,6 +1,6 @@
 package com.luka.lbdb.querying.virtualEntities.expression;
 
-import com.luka.lbdb.querying.exceptions.WildcardExpressionEvaluationException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +20,10 @@ public record WildcardExpression(Optional<String> rangeVariableName) implements 
 
     /// A wildcard expression can't be evaluated.
     ///
-    /// @throws WildcardExpressionEvaluationException on every scan.
+    /// @throws RuntimeExecutionException on every scan.
     @Override
     public Constant evaluate(Scan scan) {
-        throw new WildcardExpressionEvaluationException();
+        throw new RuntimeExecutionException("Wildcard operators can't be evaluated");
     }
 
     @Override

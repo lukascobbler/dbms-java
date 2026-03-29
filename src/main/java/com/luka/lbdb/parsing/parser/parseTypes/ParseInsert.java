@@ -6,10 +6,10 @@ import com.luka.lbdb.parsing.parser.ParserContext;
 import com.luka.lbdb.parsing.statement.insert.AllTuplesValueInfo;
 import com.luka.lbdb.parsing.tokenizer.token.KeywordToken;
 import com.luka.lbdb.parsing.tokenizer.token.SymbolToken;
-import com.luka.lbdb.querying.exceptions.ZeroDivisionException;
+import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
-import com.luka.lbdb.querying.virtualEntities.expression.PartialEvaluator;
+import com.luka.lbdb.planning.planner.PartialEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,8 +109,8 @@ public class ParseInsert {
                 }
 
                 constantList.add(foldedConstantExpression.evaluate(null));
-            } catch (ZeroDivisionException e) {
-                throw new ParsingException("Constant zero division");
+            } catch (RuntimeExecutionException e) {
+                throw new ParsingException("A new value must be a valid constant expression");
             }
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
