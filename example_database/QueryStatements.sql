@@ -1,4 +1,4 @@
-SELECT Student.StudentName AS SName, Course.CourseTitle AS CName, Enrollment.Grade AS Grade
+SELECT Student.StudentName AS SName, Course.CourseTitle AS CName, Enrollment.Points AS Points
 FROM Student JOIN Enrollment ON Student.StudentID = Enrollment.StudentID JOIN Course ON Enrollment.CourseID = Course.CourseID
 WHERE Student.IsActive = true AND Enrollment.Grade >= 85 AND Course.Credits = 4;
 
